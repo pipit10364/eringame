@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>The Secret of the Molecular Museum</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <style>
   :root{
     --bg: #06111a;
@@ -84,17 +84,20 @@
   .plaque::before{ top: 10px; left: 10px; border-right: none; border-bottom: none; }
   .plaque::after{ bottom: 10px; right: 10px; border-left: none; border-top: none; }
 
+  .cipher-label{
+    font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; letter-spacing: 0.1em;
+    color: var(--gold); margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
+  }
+  .cipher-label::before{ content: "🔒"; font-size: 0.85rem; }
+
   .plaque p{ margin-bottom: 14px; color: var(--ink-dim); font-size: 0.96rem; }
   .plaque p:last-child{ margin-bottom: 0; }
   .plaque strong{ color: var(--ink); font-weight: 700; }
-
-  .concept-list{ list-style: none; margin: 10px 0 4px; }
-  .concept-list li{ color: var(--ink-dim); font-size: 0.94rem; margin-bottom: 8px; padding-left: 1.4em; position: relative; }
-  .concept-list li span.tag{ position: absolute; left: 0; }
+  .plaque p.salutation{ color: var(--ink); font-weight: 700; font-size: 1.02rem; }
 
   .mission-box{
     margin-top: 22px; padding: 18px 20px; border-left: 2px solid var(--teal);
-    background: rgba(45,212,191,0.05); color: var(--ink); font-size: 0.96rem;
+    background: rgba(45,212,191,0.05); color: var(--ink); font-size: 0.96rem; font-style: italic;
   }
 
   .btn{
@@ -115,8 +118,18 @@
 
   .cta-row{ margin-top: 34px; }
 
-  /* ---------- Game Screen ---------- */
-  .game-wrap{ max-width: 1080px; width: 100%; }
+  /* ---------- Game Screens (shared) ---------- */
+  .game-wrap{ max-width: 760px; width: 100%; }
+
+  .timer-bar{
+    display: inline-flex; align-items: center; gap: 8px; align-self: center;
+    margin: 0 auto 18px; padding: 8px 18px; border-radius: 20px;
+    background: var(--bg-panel); border: 1px solid var(--border);
+    font-family: 'JetBrains Mono', monospace; font-size: 0.95rem; color: var(--cyan);
+    letter-spacing: 0.04em; width: fit-content;
+  }
+  .timer-bar .timer-icon{ font-size: 0.9rem; }
+  .timer-wrap{ display: flex; justify-content: center; }
 
   .progress-row{ display: flex; align-items: center; gap: 10px; margin-bottom: 28px; flex-wrap: wrap; }
   .progress-label{ font-size: 0.78rem; letter-spacing: 0.1em; color: var(--ink-faint); margin-right: 6px; }
@@ -128,8 +141,6 @@
   .progress-dot.done{ border-color: var(--emerald); color: var(--emerald); background: rgba(52,211,153,0.08); }
   .progress-dot.current{ border-color: var(--cyan); color: var(--cyan); box-shadow: 0 0 0 3px rgba(56,189,248,0.12); }
   .progress-line{ flex: 1; height: 1px; background: var(--border); min-width: 12px; }
-
-  .game-grid{ display: grid; grid-template-columns: 1.35fr 1fr; gap: 26px; align-items: start; }
 
   .clue-card{ background: var(--bg-panel); border: 1px solid var(--border); border-radius: 6px; padding: 30px; }
   .round-tag{ color: var(--gold); font-size: 0.78rem; letter-spacing: 0.12em; margin-bottom: 10px; }
@@ -207,7 +218,6 @@
   }
   .mr-option:hover{ border-color: var(--teal); transform: translateY(-2px); }
   .mr-option-label{ font-size: 0.74rem; color: var(--ink-faint); }
-  .mr-shake{ display: contents; }
 
   /* Cipher vault */
   .cip-equations{ max-width: 360px; margin: 0 auto 26px; }
@@ -229,12 +239,11 @@
   }
   .cip-digit:focus{ border-color: var(--cyan); }
 
-  /* ---------- Logic Grid Panel ---------- */
-  .grid-panel{ background: var(--bg-panel); border: 1px solid var(--border); border-radius: 6px; padding: 24px; position: sticky; top: 24px; }
-  .grid-panel h3{ font-size: 1.15rem; color: var(--ink); margin-bottom: 4px; }
-  .grid-panel .hint{ color: var(--ink-faint); font-size: 0.78rem; margin-bottom: 18px; }
-  .grid-category{ margin-bottom: 18px; }
-  .grid-category:last-child{ margin-bottom: 0; }
+  /* ---------- Deduction Panel (Logic Grid) ---------- */
+  .deduction-panel{ background: var(--bg-panel); border: 1px solid var(--border); border-radius: 6px; padding: 26px; margin-top: 22px; }
+  .deduction-panel h3{ font-size: 1.15rem; color: var(--ink); margin-bottom: 4px; }
+  .deduction-panel .hint{ color: var(--ink-faint); font-size: 0.78rem; margin-bottom: 20px; }
+  .deduction-categories{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
   .grid-category-label{ font-size: 0.72rem; letter-spacing: 0.1em; color: var(--cyan); margin-bottom: 8px; }
   .grid-item{
     display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 4px; cursor: pointer;
@@ -263,30 +272,29 @@
   .chip:hover{ border-color: var(--teal); color: var(--ink); }
   .chip.selected{ border-color: var(--teal); color: #04141a; background: linear-gradient(120deg, var(--teal), var(--cyan)); font-weight: 700; }
 
-  .result-box{ margin-top: 8px; padding: 20px; border-radius: 6px; display: none; text-align: center; }
+  .result-box{ margin-top: 8px; padding: 22px; border-radius: 6px; display: none; text-align: center; }
   .result-box.show{ display: block; }
   .result-box.success{ background: rgba(52,211,153,0.08); border: 1px solid rgba(52,211,153,0.35); }
   .result-box.fail{ background: rgba(232,130,122,0.08); border: 1px solid rgba(232,130,122,0.35); }
-  .result-box h3{ font-size: 1.4rem; margin-bottom: 8px; }
+  .result-box h3{ font-size: 1.5rem; margin-bottom: 10px; }
   .result-box.success h3{ color: var(--emerald); }
   .result-box.fail h3{ color: var(--struck); }
-  .result-box p{ color: var(--ink-dim); font-size: 0.92rem; }
+  .result-box p{ color: var(--ink-dim); font-size: 0.92rem; line-height: 1.7; }
+  .result-time{
+    font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--cyan);
+    letter-spacing: 0.06em; margin-bottom: 14px;
+  }
 
   /* ---------- Mobile (max-width: 859px) ---------- */
   @media (max-width: 859px){
     .screen{ padding: 32px 16px 60px; }
-    .game-grid{ grid-template-columns: 1fr; }
-    .grid-panel{ position: static; order: -1; }
     .clue-card{ padding: 22px; }
     .final-card{ padding: 22px; }
+    .deduction-panel{ padding: 20px; }
+    .deduction-categories{ grid-template-columns: 1fr; gap: 18px; }
     .mr-options{ grid-template-columns: repeat(2, 1fr); }
     .pipe-grid{ grid-template-columns: repeat(4, minmax(30px, 48px)); grid-template-rows: repeat(4, minmax(30px, 48px)); }
     .cip-digit{ width: 48px; height: 58px; font-size: 1.4rem; }
-  }
-
-  /* ---------- Desktop (min-width: 860px) ---------- */
-  @media (min-width: 860px){
-    .grid-panel{ max-height: calc(100vh - 48px); overflow-y: auto; }
   }
 </style>
 </head>
@@ -300,19 +308,16 @@
     <p class="welcome-sub">Dedicated to Erin Larasati Angdika 🎓 🔬 🎨</p>
 
     <div class="plaque">
-      <p>Selamat datang di Museum Molekuler! Game investigasi logika ini dirancang khusus untuk merayakan ulang tahun <strong>Erin Larasati Angdika</strong>.</p>
+      <div class="cipher-label">PESAN TERENKRIPSI DARI LAB UTAMA</div>
 
-      <p style="color:var(--gold); font-weight:700; margin-bottom:10px;">Inspirasi &amp; Konsep</p>
-      <ul class="concept-list">
-        <li><span class="tag">🧬</span>Perspektif Akademis — ketelitian dan rasa ingin tahu riset Cell &amp; Molecular Biology (CUHK).</li>
-        <li><span class="tag">🎭</span>Sentuhan Seni &amp; Fantasi — nuansa estetika ala Witch Hat Atelier, Persona 5 Royal, dan keindahan panggung Revue Starlight.</li>
-        <li><span class="tag">🧠</span>Pendekatan INTP &amp; CoC — kuis eliminasi deduksi logika murni (Logic Grid) yang menantang pola pikir intuitif-analitis.</li>
-      </ul>
+      <p class="salutation">Selamat datang di Museum Molekuler, Peneliti Erin.</p>
 
-      <p style="margin-top:16px;">Game ini bukan berisi kuis fakta diri Erin, melainkan petualangan logika yang dibalut dengan vibes dan passion yang dicintainya.</p>
+      <p>Di balik deretan spesimen dan arsip riset ini, sebuah berkas penting berisi 'Peta Penelitian Masa Depan' telah terkunci secara otomatis oleh sistem keamanan museum. Arsip ini tidak bisa dibuka dengan kunci biasa—ia hanya merespons ketelitian, ketajaman intuitif, dan pemikiran analitis.</p>
+
+      <p>Di setiap sektor museum, sebuah prototipe sirkuit dan teka-teki logika telah disiapkan. Selesaikan mini-game di tiap area untuk mengekstrak petunjuk eliminasi, coret kemungkinan yang mustahil di Papan Logic Grid, dan temukan kombinasi tepat untuk membuka Vault Utama.</p>
 
       <div class="mission-box">
-        <strong>Misi Pemain:</strong> Tugasmu adalah menemukan "Peta Penelitian Masa Depan" yang tersembunyi di dalam museum dengan cara mengumpulkan clue di setiap area dan mengeliminasi kemungkinan di Papan Grid Logic.
+        Waktu investigasimu dimulai sekarang. Semoga logikamu menuntun pada jawaban yang tepat.
       </div>
     </div>
 
@@ -322,48 +327,55 @@
   </div>
 </section>
 
-<!-- ===================== GAME SCREEN (Rounds) ===================== -->
-<section class="screen" id="screen-game">
+<!-- ===================== MINI-GAME SCREEN ===================== -->
+<section class="screen" id="screen-minigame">
   <div class="game-wrap">
-    <div class="progress-row" id="progress-row"></div>
+    <div class="timer-wrap">
+      <div class="timer-bar"><span class="timer-icon">⏱</span><span class="timer-display">00:00</span></div>
+    </div>
+    <div class="progress-row"></div>
 
-    <div class="game-grid">
-      <div class="clue-card">
-        <div id="round-pre-start">
-          <div class="round-tag">RONDE 1 · MENUNGGU</div>
-          <h2 class="round-title">Investigasi dimulai di sini</h2>
-          <p class="clue-text">Setiap ronde diawali dengan sebuah tantangan mini-game. Selesaikan tantangannya untuk membuka Clue, lalu coret kemungkinan yang gugur di Logic Grid.</p>
-          <div class="round-actions">
-            <button class="btn btn-primary" onclick="startRound(0)">Mulai Investigasi Ronde 1</button>
-          </div>
-        </div>
-
-        <!-- Mini-game phase -->
-        <div id="minigame-phase" style="display:none;">
-          <div class="round-tag" id="minigame-round-tag"></div>
-          <h2 class="round-title" id="minigame-round-title"></h2>
-          <p class="mg-intro" id="minigame-round-intro"></p>
-          <div id="minigame-progress" class="mg-progress" style="display:none;"></div>
-          <div id="minigame-container"></div>
-          <div class="mg-status" id="minigame-status"></div>
-          <div class="mg-reset-wrap" id="minigame-reset-wrap"></div>
-        </div>
-
-        <!-- Clue phase -->
-        <div id="clue-phase" style="display:none;">
-          <div class="round-tag" id="round-tag-label"></div>
-          <h2 class="round-title" id="round-title-label"></h2>
-          <div class="clue-text" id="round-clue-text"></div>
-          <div class="feedback" id="round-feedback"></div>
-          <div class="round-actions">
-            <button class="btn btn-primary" id="round-submit-btn" onclick="checkRound()">Kirim Jawaban</button>
-          </div>
+    <div class="clue-card">
+      <div id="round-pre-start">
+        <div class="round-tag">RONDE 1 · MENUNGGU</div>
+        <h2 class="round-title">Investigasi dimulai di sini</h2>
+        <p class="clue-text">Setiap ronde diawali dengan sebuah tantangan mini-game. Selesaikan tantangannya untuk membuka Clue di halaman berikutnya, lalu coret kemungkinan yang gugur di Papan Logic Grid.</p>
+        <div class="round-actions">
+          <button class="btn btn-primary" onclick="startRound(0)">Mulai Investigasi Ronde 1</button>
         </div>
       </div>
 
-      <div class="grid-panel">
-        <h3>Logic Grid</h3>
-        <div class="hint">Klik item untuk mencoret kemungkinan yang sudah gugur.</div>
+      <div id="minigame-phase" style="display:none;">
+        <div class="round-tag" id="minigame-round-tag"></div>
+        <h2 class="round-title" id="minigame-round-title"></h2>
+        <p class="mg-intro" id="minigame-round-intro"></p>
+        <div id="minigame-progress" class="mg-progress" style="display:none;"></div>
+        <div id="minigame-container"></div>
+        <div class="mg-status" id="minigame-status"></div>
+        <div class="mg-reset-wrap" id="minigame-reset-wrap"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== CLUE + DEDUCTION SCREEN ===================== -->
+<section class="screen" id="screen-clue">
+  <div class="game-wrap">
+    <div class="timer-wrap">
+      <div class="timer-bar"><span class="timer-icon">⏱</span><span class="timer-display">00:00</span></div>
+    </div>
+    <div class="progress-row"></div>
+
+    <div class="clue-card">
+      <div class="round-tag" id="round-tag-label"></div>
+      <h2 class="round-title" id="round-title-label"></h2>
+      <div class="clue-text" id="round-clue-text"></div>
+    </div>
+
+    <div class="deduction-panel">
+      <h3>Logic Grid</h3>
+      <div class="hint">Klik item untuk mencoret kemungkinan yang sudah gugur berdasarkan clue di atas.</div>
+      <div class="deduction-categories">
         <div class="grid-category">
           <div class="grid-category-label">RUANGAN MUSEUM</div>
           <div id="grid-rooms"></div>
@@ -376,6 +388,10 @@
           <div class="grid-category-label">KODE AKSES</div>
           <div id="grid-codes"></div>
         </div>
+      </div>
+      <div class="feedback" id="round-feedback"></div>
+      <div class="round-actions">
+        <button class="btn btn-primary" id="round-submit-btn" onclick="checkRound()">Kirim Jawaban</button>
       </div>
     </div>
   </div>
@@ -426,7 +442,7 @@
       location: "Cellular Theatre",
       miniGameName: "Rhythm Sequence Memory",
       miniGameIntro: "Ingat urutan not yang menyala — makin panjang lagunya, makin cepat temponya.",
-      clue: "📜 Peta yang hilang <b>TIDAK</b> berada di ruangan yang nama depannya diawali huruf konsonan 'C'. Selain itu, elemen kunci yang dicari <b>BUKAN</b> benda yang digunakan dalam permainan strategi papan 8x8.",
+      clue: "📜 Catatan investigator: 'Ruang yang menyimpan Peta selalu gelap dan senyap, dipenuhi bau logam dan formalin — sangat jauh dari satu ruangan yang tiap malam riuh oleh tepuk tangan penonton dan sorot lampu panggung.' Laporan forensik lain menyebutkan elemen kunci yang dicari bukanlah benda berukir kayu bermotif kotak-kotak hitam-putih dengan total 64 petak.",
       required: [ {cat:"rooms", name:"Cellular Theatre"}, {cat:"elements", name:"Grandmaster Chessboard"} ]
     },
     {
@@ -435,7 +451,7 @@
       location: "Magpie Observatory",
       miniGameName: "Molecule Logic Switch",
       miniGameIntro: "Putar tiap potongan sirkuit — hati-hati pipa buntu — hingga arus tersambung dari Start ke Finish.",
-      clue: "📜 Jika lokasi peta nantinya terbukti berada di ruangan bertema 'Seni Sihir' (Witch's Lab), maka Kode Akses yang sah pastilah <b>TIDAK</b> diawali dengan huruf 'C' maupun 'B'.",
+      clue: "📜 Fragmen log terminal keamanan: 'Setiap kode akses yang dua karakter pembukanya sama-sama huruf konsonan tanpa vokal di antaranya, telah ditandai sistem sebagai kode uji coba lama dan otomatis gagal autentikasi.'",
       required: [ {cat:"codes", name:"CS-01"}, {cat:"codes", name:"BS-D1"} ]
     },
     {
@@ -444,7 +460,7 @@
       location: "Persona Room",
       miniGameName: "Mental Rotation Pattern Match",
       miniGameIntro: "Kenali struktur rantai molekul yang benar-benar identik jika diputar — 3 soal berturut-turut tanpa salah.",
-      clue: "📜 Hasil investigasi di Magpie Observatory dan Persona Room ternyata nihil. Selain itu, elemen 'Anomalous Core' ditemukan masih tersegel rapi di ruang penyimpanan awal (tidak disentuh).",
+      clue: "📜 Dua sektor melaporkan 'nihil' pada waktu yang sama persis: satu sektor bernama seekor burung yang menurut folklor gemar mencuri benda berkilau, satu lagi bernama sebuah istilah dalam psikologi Jung untuk topeng sosial yang kita pakai di depan orang lain. Sementara itu, satu elemen dinyatakan aman total karena masih tersegel utuh sejak awal di ruang penyimpanannya — bentuknya menyerupai inti reaktor yang tidak beraturan.",
       required: [ {cat:"rooms", name:"Magpie Observatory"}, {cat:"rooms", name:"Persona Room"}, {cat:"elements", name:"Anomalous Core"} ]
     },
     {
@@ -453,7 +469,7 @@
       location: "Witch's Lab",
       miniGameName: "Molecular Substitution Cipher",
       miniGameIntro: "Pecahkan nilai A, B, dan C dari persamaan kuadrat &amp; akar berikut, lalu buka vault dengan kode 3 digitnya.",
-      clue: "📜 Di ruangan terakhir (Witch's Lab), peta tidak berada di dekat peralatan melukis/seni visual. Percobaan dengan kode aktivasi 'R&amp;M-44' juga menghasilkan sinyal error.",
+      clue: "📜 Sensor di ruangan terakhir mendeteksi Peta berdekatan dengan sebuah objek yang memancarkan pendarnya sendiri dalam gelap — bukan alat yang justru menyerap warna dari palet dan kanvas saat dipakai. Sementara itu, satu kode akses ditolak sistem karena rangkaian hurufnya diselingi simbol ampersand (&amp;), bukan garis miring atau tanda hubung biasa.",
       required: [ {cat:"elements", name:"Magical Paintbrush"}, {cat:"codes", name:"R&M-44"} ]
     }
   ];
@@ -468,6 +484,62 @@
   const key = (cat, name) => cat + "::" + name;
 
   // ==================================================================
+  // TIMER
+  // ==================================================================
+  let timerInterval = null;
+  let timerStartMs = null;
+  let timerElapsedMs = 0;
+
+  function startTimer(){
+    timerStartMs = Date.now();
+    updateTimerDisplay();
+    timerInterval = setInterval(updateTimerDisplay, 1000);
+  }
+
+  function updateTimerDisplay(){
+    const totalSec = Math.floor((Date.now() - timerStartMs) / 1000);
+    const mm = String(Math.floor(totalSec / 60)).padStart(2, '0');
+    const ss = String(totalSec % 60).padStart(2, '0');
+    document.querySelectorAll('.timer-display').forEach(el => el.textContent = `${mm}:${ss}`);
+  }
+
+  function stopTimer(){
+    if (timerInterval){ clearInterval(timerInterval); timerInterval = null; }
+    timerElapsedMs = Date.now() - timerStartMs;
+  }
+
+  function formatMs(ms){
+    const totalSec = Math.floor(ms / 1000);
+    const mm = String(Math.floor(totalSec / 60)).padStart(2, '0');
+    const ss = String(totalSec % 60).padStart(2, '0');
+    return `${mm}:${ss}`;
+  }
+
+  function timeCategory(minutes){
+    if (minutes < 5){
+      return {
+        title: "The Speedrun Master ⚡",
+        msg: "Luar biasa! Kamu menyelesaikan seluruh rangkaian investigasi ini dengan kecepatan dan presisi yang hampir tidak masuk akal. Kemampuan otakmu dalam memproses pola, mengingat urutan, dan melakukan eksekusi logika berjalan sangat cepat tanpa cela. Kecepatan berpikir dan ketajaman fokus seperti ini benar-benar luar biasa!"
+      };
+    } else if (minutes < 10){
+      return {
+        title: "The Sharp Deductor 🧠",
+        msg: "Luar biasa! Kamu berhasil menuntaskan seluruh teka-teki rumit ini dengan waktu yang sangat mengesankan. Kombinasi antara intuisi yang tajam dan cara berpikir logis yang terstruktur membuatmu mampu mengurai setiap kerumitan dengan tenang. Daya analisis dan ketelitianmu dalam memecahkan masalah benar-benar patut diacungi jempol!"
+      };
+    } else if (minutes < 15){
+      return {
+        title: "The Brilliant Strategist 🔍",
+        msg: "Keren banget! Kamu membuktikan bahwa ketelitian dan kesabaran selalu menghasilkan deduksi yang sempurna. Teka-teki di museum ini memang dirancang untuk menguji daya tahan fokus, dan kamu berhasil melewatinya dengan pendekatan yang sangat sistematis. Kecerdasan, ketenangan, dan pola pikir analitis yang kamu miliki benar-benar terlihat jelas di sini!"
+      };
+    } else {
+      return {
+        title: "The Mastermind Explorer 🎯",
+        msg: "Selamat! Kamu berhasil membuka seluruh rahasia dan menyelesaikan investigasi ini sampai akhir. Perjalanan ini membutuhkan daya ingat ekstra, ketelitian visual, dan pemikiran logika mendalam yang tidak gampang. Daya juang, rasa ingin tahu, dan dedikasi kamu dalam menyelesaikan apa yang sudah dimulai sungguh mengagumkan!"
+      };
+    }
+  }
+
+  // ==================================================================
   // SCREEN NAVIGATION
   // ==================================================================
   function showScreen(id){
@@ -475,7 +547,10 @@
     document.getElementById(id).classList.add('active');
     window.scrollTo(0,0);
   }
-  function goToGame(){ showScreen('screen-game'); }
+  function goToGame(){
+    showScreen('screen-minigame');
+    startTimer();
+  }
 
   // ==================================================================
   // LOGIC GRID
@@ -504,26 +579,20 @@
   }
 
   // ==================================================================
-  // PROGRESS BAR
+  // PROGRESS BAR (duplicated on the mini-game & clue screens)
   // ==================================================================
   function renderProgress(){
-    const row = document.getElementById('progress-row');
-    row.innerHTML = '<span class="progress-label">RONDE</span>';
+    let html = '<span class="progress-label">RONDE</span>';
     ROUNDS.forEach((r, i) => {
-      const dot = document.createElement('div');
-      dot.className = 'progress-dot' + (i < currentRound ? ' done' : (i === currentRound ? ' current' : ''));
-      dot.textContent = i + 1;
-      row.appendChild(dot);
-      if (i < ROUNDS.length - 1){
-        const line = document.createElement('div');
-        line.className = 'progress-line';
-        row.appendChild(line);
-      }
+      const state = i < currentRound ? ' done' : (i === currentRound ? ' current' : '');
+      html += `<div class="progress-dot${state}">${i + 1}</div>`;
+      if (i < ROUNDS.length - 1) html += '<div class="progress-line"></div>';
     });
+    document.querySelectorAll('.progress-row').forEach(row => row.innerHTML = html);
   }
 
   // ==================================================================
-  // ROUND FLOW: pre-start -> minigame phase -> clue phase -> submit
+  // ROUND FLOW: pre-start -> [minigame screen] -> [clue+deduction screen] -> submit
   // ==================================================================
   function startRound(idx){
     currentRound = idx;
@@ -533,8 +602,8 @@
   }
 
   function startMiniGamePhase(){
+    showScreen('screen-minigame');
     document.getElementById('minigame-phase').style.display = 'block';
-    document.getElementById('clue-phase').style.display = 'none';
     const r = ROUNDS[currentRound];
     document.getElementById('minigame-round-tag').textContent = `${r.tag} · ${r.location}`;
     document.getElementById('minigame-round-title').textContent = r.miniGameName;
@@ -551,9 +620,9 @@
     document.getElementById('minigame-status').textContent = 'Berhasil! Membuka clue…';
     document.getElementById('minigame-reset-wrap').innerHTML = '';
     setTimeout(() => {
-      document.getElementById('minigame-phase').style.display = 'none';
-      document.getElementById('clue-phase').style.display = 'block';
+      showScreen('screen-clue');
       renderClue();
+      renderGrid();
     }, 550);
   }
 
@@ -995,8 +1064,15 @@
                      finalSelection.elements === ANSWER.elements &&
                      finalSelection.codes === ANSWER.codes;
     if (correct){
+      stopTimer();
+      const minutes = timerElapsedMs / 60000;
+      const cat = timeCategory(minutes);
       box.className = 'result-box show success';
-      box.innerHTML = '<h3>Selamat!</h3><p>Kamu berhasil memecahkan teka-teki Molecular Museum! (Kartu Ucapan Ulang Tahun Lengkap akan ditambahkan di Step 4)</p>';
+      box.innerHTML = `
+        <div class="result-time">WAKTU TEMPUH: ${formatMs(timerElapsedMs)}</div>
+        <h3>${cat.title}</h3>
+        <p>${cat.msg}</p>
+      `;
     } else {
       box.className = 'result-box show fail';
       box.innerHTML = '<h3>Belum tepat</h3><p>Kombinasi ini belum sesuai dengan hasil deduksi. Cek kembali Logic Grid dan coba lagi.</p>';
@@ -1006,7 +1082,6 @@
   // ==================================================================
   // INIT
   // ==================================================================
-  renderGrid();
   renderProgress();
 </script>
 
