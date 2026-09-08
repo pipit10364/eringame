@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Secret of the Molecular Museum</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #06111a;
+    --bg-panel: #0c1e29;
+    --bg-card: #102838;
+    --bg-tile: #0d222e;
+    --border: #1d3d49;
+    --border-soft: #16303b;
+    --teal: #2dd4bf;
+    --emerald: #34d399;
+    --cyan: #38bdf8;
+    --ink: #eaf6f3;
+    --ink-dim: #85a4ae;
+    --ink-faint: #4d707c;
+    --struck: #e8827a;
+    --gold: #d8b979;
+    --glow: 0 0 40px rgba(45, 212, 191, 0.15);
+    --rhy-red: #ef5b5b;
+    --rhy-blue: #4d9bf0;
+    --rhy-green: #4fce7e;
+    --rhy-yellow: #f0c94d;
+  }
+
+  *{box-sizing:border-box; margin:0; padding:0;}
+
+  body{
+    background:
+      radial-gradient(circle at 15% 10%, rgba(45,212,191,0.08), transparent 45%),
+      radial-gradient(circle at 85% 90%, rgba(56,189,248,0.08), transparent 45%),
+      var(--bg);
+    color: var(--ink);
+    font-family: 'Manrope', sans-serif;
+    min-height: 100vh;
+    line-height: 1.5;
+  }
+
+  .screen{
+    min-height: 100vh;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    padding: 48px 20px 80px;
+  }
+  .screen.active{ display: flex; }
+
+  h1, h2, h3, .display{
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+  }
+
+  /* ---------- Welcome Screen ---------- */
+  .welcome-wrap{ max-width: 640px; width: 100%; text-align: center; }
+
+  .eyebrow-mark{
+    display: inline-flex; align-items: center; gap: 10px;
+    color: var(--gold); font-size: 0.8rem; letter-spacing: 0.14em; margin-bottom: 22px;
+  }
+  .eyebrow-mark::before, .eyebrow-mark::after{
+    content: ""; width: 28px; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold));
+  }
+  .eyebrow-mark::after{ background: linear-gradient(90deg, var(--gold), transparent); }
+
+  .welcome-title{ font-size: clamp(2.1rem, 6vw, 3.4rem); color: var(--ink); text-shadow: var(--glow); line-height: 1.15; }
+  .welcome-sub{ margin-top: 14px; color: var(--teal); font-weight: 600; font-size: 1.02rem; }
+
+  .plaque{
+    margin-top: 36px; text-align: left; background: var(--bg-panel);
+    border: 1px solid var(--border); border-radius: 4px; padding: 30px 28px; position: relative;
+  }
+  .plaque::before, .plaque::after{
+    content: ""; position: absolute; width: 16px; height: 16px;
+    border: 1.5px solid var(--gold); opacity: 0.6;
+  }
+  .plaque::before{ top: 10px; left: 10px; border-right: none; border-bottom: none; }
+  .plaque::after{ bottom: 10px; right: 10px; border-left: none; border-top: none; }
+
+  .plaque p{ margin-bottom: 14px; color: var(--ink-dim); font-size: 0.96rem; }
+  .plaque p:last-child{ margin-bottom: 0; }
+  .plaque strong{ color: var(--ink); font-weight: 700; }
+
+  .concept-list{ list-style: none; margin: 10px 0 4px; }
+  .concept-list li{ color: var(--ink-dim); font-size: 0.94rem; margin-bottom: 8px; padding-left: 1.4em; position: relative; }
+  .concept-list li span.tag{ position: absolute; left: 0; }
+
+  .mission-box{
+    margin-top: 22px; padding: 18px 20px; border-left: 2px solid var(--teal);
+    background: rgba(45,212,191,0.05); color: var(--ink); font-size: 0.96rem;
+  }
+
+  .btn{
+    font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 0.98rem;
+    border: none; border-radius: 3px; padding: 15px 34px; cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease; letter-spacing: 0.01em;
+  }
+  .btn-primary{ background: linear-gradient(120deg, var(--teal), var(--cyan)); color: #04141a; }
+  .btn-primary:hover{ transform: translateY(-2px); box-shadow: 0 10px 30px rgba(45,212,191,0.25); }
+  .btn-primary:active{ transform: translateY(0); }
+  .btn-primary:disabled{ opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+  .btn-secondary{
+    background: transparent; color: var(--teal); border: 1px solid var(--border);
+    font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 0.88rem;
+    border-radius: 3px; padding: 10px 22px; cursor: pointer; transition: border-color 0.15s ease;
+  }
+  .btn-secondary:hover{ border-color: var(--teal); }
+
+  .cta-row{ margin-top: 34px; }
+
+  /* ---------- Game Screen ---------- */
+  .game-wrap{ max-width: 1080px; width: 100%; }
+
+  .progress-row{ display: flex; align-items: center; gap: 10px; margin-bottom: 28px; flex-wrap: wrap; }
+  .progress-label{ font-size: 0.78rem; letter-spacing: 0.1em; color: var(--ink-faint); margin-right: 6px; }
+  .progress-dot{
+    width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center; font-size: 0.82rem;
+    color: var(--ink-faint); font-weight: 700; background: var(--bg-panel);
+  }
+  .progress-dot.done{ border-color: var(--emerald); color: var(--emerald); background: rgba(52,211,153,0.08); }
+  .progress-dot.current{ border-color: var(--cyan); color: var(--cyan); box-shadow: 0 0 0 3px rgba(56,189,248,0.12); }
+  .progress-line{ flex: 1; height: 1px; background: var(--border); min-width: 12px; }
+
+  .game-grid{ display: grid; grid-template-columns: 1.35fr 1fr; gap: 26px; align-items: start; }
+
+  .clue-card{ background: var(--bg-panel); border: 1px solid var(--border); border-radius: 6px; padding: 30px; }
+  .round-tag{ color: var(--gold); font-size: 0.78rem; letter-spacing: 0.12em; margin-bottom: 10px; }
+  .round-title{ font-size: 1.7rem; color: var(--ink); margin-bottom: 18px; }
+  .clue-text{
+    color: var(--ink-dim); font-size: 1.02rem; line-height: 1.75;
+    border-top: 1px solid var(--border-soft); padding-top: 18px; white-space: pre-line;
+  }
+  .clue-text b{ color: var(--teal); font-weight: 700; }
+
+  .feedback{ margin-top: 20px; font-size: 0.92rem; padding: 12px 16px; border-radius: 4px; display: none; }
+  .feedback.show{ display: block; }
+  .feedback.warn{ background: rgba(232,130,122,0.1); color: var(--struck); border: 1px solid rgba(232,130,122,0.3); }
+  .feedback.ok{ background: rgba(52,211,153,0.1); color: var(--emerald); border: 1px solid rgba(52,211,153,0.3); }
+
+  .round-actions{ margin-top: 24px; }
+
+  /* ---------- Mini-game phase ---------- */
+  .mg-intro{ color: var(--ink-dim); font-size: 0.92rem; margin-bottom: 22px; border-top: 1px solid var(--border-soft); padding-top: 16px; }
+  .mg-status{ min-height: 1.3em; font-size: 0.88rem; color: var(--cyan); margin-top: 16px; text-align: center; }
+  .mg-reset-wrap{ text-align: center; margin-top: 14px; min-height: 38px; }
+  .mg-progress{ text-align: center; font-size: 0.78rem; letter-spacing: 0.08em; color: var(--gold); margin-bottom: 16px; }
+
+  @keyframes shakeX{
+    10%,90%{ transform: translateX(-3px); }
+    20%,80%{ transform: translateX(5px); }
+    30%,50%,70%{ transform: translateX(-9px); }
+    40%,60%{ transform: translateX(9px); }
+  }
+  .shake{ animation: shakeX 0.5s; }
+
+  /* Rhythm sequence */
+  .rhy-board{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; max-width: 420px; margin: 0 auto; }
+  .rhy-btn{
+    aspect-ratio: 1; border-radius: 10px; border: none; cursor: pointer;
+    filter: brightness(0.55) saturate(0.75); transition: filter 0.15s ease, transform 0.1s ease;
+  }
+  .rhy-btn:active{ transform: scale(0.95); }
+  .rhy-btn.active{ filter: brightness(1.25) saturate(1.2); box-shadow: 0 0 24px currentColor; }
+  .rhy-red{ background: var(--rhy-red); color: var(--rhy-red); }
+  .rhy-blue{ background: var(--rhy-blue); color: var(--rhy-blue); }
+  .rhy-green{ background: var(--rhy-green); color: var(--rhy-green); }
+  .rhy-yellow{ background: var(--rhy-yellow); color: var(--rhy-yellow); }
+  .rhy-steps{ display:flex; justify-content:center; gap:6px; margin-top:18px; flex-wrap: wrap; }
+  .rhy-step-dot{ width:9px; height:9px; border-radius:50%; background: var(--border); }
+  .rhy-step-dot.filled{ background: var(--teal); }
+
+  /* Pipe puzzle */
+  .pipe-outer{ max-width: 340px; margin: 0 auto; }
+  .pipe-label-row{ font-size: 0.7rem; letter-spacing: 0.1em; color: var(--ink-faint); margin: 0 0 6px; }
+  .pipe-label-row.finish{ text-align: right; margin: 6px 0 0; }
+  .pipe-grid{
+    display: grid; grid-template-columns: repeat(4, minmax(38px, 62px)); grid-template-rows: repeat(4, minmax(38px, 62px));
+    gap: 5px; background: var(--bg-tile); padding: 9px; border-radius: 8px; border: 1px solid var(--border);
+  }
+  .pipe-cell{ position: relative; background: var(--bg-card); border-radius: 5px; cursor: pointer; overflow: hidden; }
+  .pipe-shape{ position: absolute; inset: 0; transition: transform 0.25s ease; }
+  .pipe-arm{ position: absolute; background: var(--ink-faint); border-radius: 2px; }
+  .pipe-cell.solved .pipe-arm{ background: var(--emerald); }
+  .pipe-arm-n{ left: 50%; top: 0; width: 16%; height: 50%; transform: translateX(-50%); }
+  .pipe-arm-e{ top: 50%; right: 0; width: 50%; height: 16%; transform: translateY(-50%); }
+  .pipe-arm-w{ top: 50%; left: 0; width: 50%; height: 16%; transform: translateY(-50%); }
+  .pipe-node{ position: absolute; left: 50%; top: 50%; width: 18%; height: 18%; border-radius: 50%; background: var(--ink-faint); transform: translate(-50%,-50%); }
+  .pipe-cell.solved .pipe-node{ background: var(--emerald); }
+  .pipe-cell.filler .pipe-arm, .pipe-cell.filler .pipe-node{ opacity: 0.35; }
+  .pipe-cell.dead .pipe-arm, .pipe-cell.dead .pipe-node{ opacity: 0.5; background: var(--struck); }
+
+  /* Mental rotation */
+  .mr-main{ display: flex; justify-content: center; margin-bottom: 20px; }
+  .mr-options{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .mr-option{
+    display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 10px 6px;
+    border: 1px solid var(--border); border-radius: 8px; cursor: pointer; background: var(--bg-card);
+    transition: border-color 0.15s ease, transform 0.1s ease;
+  }
+  .mr-option:hover{ border-color: var(--teal); transform: translateY(-2px); }
+  .mr-option-label{ font-size: 0.74rem; color: var(--ink-faint); }
+  .mr-shake{ display: contents; }
+
+  /* Cipher vault */
+  .cip-equations{ max-width: 360px; margin: 0 auto 26px; }
+  .cip-eq-row{
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    padding: 10px 4px; border-bottom: 1px solid var(--border-soft); font-size: 0.98rem; color: var(--ink);
+  }
+  .cip-eq-row:last-child{ border-bottom: none; }
+  .cip-molecule{
+    display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px;
+    border-radius: 50%; border: 1px solid var(--teal); color: var(--teal); font-size: 0.8rem; font-weight: 700;
+    margin: 0 2px;
+  }
+  .cip-vault{ display: flex; justify-content: center; gap: 12px; margin-bottom: 10px; }
+  .cip-digit{
+    width: 58px; height: 68px; text-align: center; font-size: 1.7rem; font-family: 'Manrope', sans-serif;
+    font-weight: 800; color: var(--ink); background: var(--bg-tile); border: 1px solid var(--border);
+    border-radius: 8px; outline: none;
+  }
+  .cip-digit:focus{ border-color: var(--cyan); }
+
+  /* ---------- Logic Grid Panel ---------- */
+  .grid-panel{ background: var(--bg-panel); border: 1px solid var(--border); border-radius: 6px; padding: 24px; position: sticky; top: 24px; }
+  .grid-panel h3{ font-size: 1.15rem; color: var(--ink); margin-bottom: 4px; }
+  .grid-panel .hint{ color: var(--ink-faint); font-size: 0.78rem; margin-bottom: 18px; }
+  .grid-category{ margin-bottom: 18px; }
+  .grid-category:last-child{ margin-bottom: 0; }
+  .grid-category-label{ font-size: 0.72rem; letter-spacing: 0.1em; color: var(--cyan); margin-bottom: 8px; }
+  .grid-item{
+    display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 4px; cursor: pointer;
+    font-size: 0.9rem; color: var(--ink); border: 1px solid transparent; transition: background 0.15s ease;
+  }
+  .grid-item:hover{ background: rgba(255,255,255,0.03); }
+  .grid-item .mark{ width: 15px; height: 15px; border: 1px solid var(--ink-faint); border-radius: 3px; flex-shrink: 0; position: relative; }
+  .grid-item.struck{ color: var(--ink-faint); }
+  .grid-item.struck span.label{ text-decoration: line-through; text-decoration-color: var(--struck); }
+  .grid-item.struck .mark{ border-color: var(--struck); background: rgba(232,130,122,0.12); }
+  .grid-item.struck .mark::before, .grid-item.struck .mark::after{
+    content: ""; position: absolute; top: 50%; left: 50%; width: 10px; height: 1.5px; background: var(--struck);
+  }
+  .grid-item.struck .mark::before{ transform: translate(-50%,-50%) rotate(45deg); }
+  .grid-item.struck .mark::after{ transform: translate(-50%,-50%) rotate(-45deg); }
+
+  /* ---------- Final Submission ---------- */
+  .final-card{ background: var(--bg-panel); border: 1px solid var(--border); border-radius: 6px; padding: 32px; max-width: 640px; width: 100%; }
+  .final-group{ margin-bottom: 24px; }
+  .final-group-label{ font-size: 0.78rem; letter-spacing: 0.1em; color: var(--gold); margin-bottom: 12px; }
+  .chip-row{ display: flex; flex-wrap: wrap; gap: 10px; }
+  .chip{
+    padding: 10px 16px; border: 1px solid var(--border); border-radius: 20px; font-size: 0.88rem;
+    color: var(--ink-dim); cursor: pointer; background: var(--bg-card); transition: all 0.15s ease;
+  }
+  .chip:hover{ border-color: var(--teal); color: var(--ink); }
+  .chip.selected{ border-color: var(--teal); color: #04141a; background: linear-gradient(120deg, var(--teal), var(--cyan)); font-weight: 700; }
+
+  .result-box{ margin-top: 8px; padding: 20px; border-radius: 6px; display: none; text-align: center; }
+  .result-box.show{ display: block; }
+  .result-box.success{ background: rgba(52,211,153,0.08); border: 1px solid rgba(52,211,153,0.35); }
+  .result-box.fail{ background: rgba(232,130,122,0.08); border: 1px solid rgba(232,130,122,0.35); }
+  .result-box h3{ font-size: 1.4rem; margin-bottom: 8px; }
+  .result-box.success h3{ color: var(--emerald); }
+  .result-box.fail h3{ color: var(--struck); }
+  .result-box p{ color: var(--ink-dim); font-size: 0.92rem; }
+
+  /* ---------- Mobile (max-width: 859px) ---------- */
+  @media (max-width: 859px){
+    .screen{ padding: 32px 16px 60px; }
+    .game-grid{ grid-template-columns: 1fr; }
+    .grid-panel{ position: static; order: -1; }
+    .clue-card{ padding: 22px; }
+    .final-card{ padding: 22px; }
+    .mr-options{ grid-template-columns: repeat(2, 1fr); }
+    .pipe-grid{ grid-template-columns: repeat(4, minmax(30px, 48px)); grid-template-rows: repeat(4, minmax(30px, 48px)); }
+    .cip-digit{ width: 48px; height: 58px; font-size: 1.4rem; }
+  }
+
+  /* ---------- Desktop (min-width: 860px) ---------- */
+  @media (min-width: 860px){
+    .grid-panel{ max-height: calc(100vh - 48px); overflow-y: auto; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===================== WELCOME SCREEN ===================== -->
+<section class="screen active" id="screen-welcome">
+  <div class="welcome-wrap">
+    <div class="eyebrow-mark">A Birthday Mystery</div>
+    <h1 class="welcome-title">The Secret of the<br>Molecular Museum</h1>
+    <p class="welcome-sub">Dedicated to Erin Larasati Angdika 🎓 🔬 🎨</p>
+
+    <div class="plaque">
+      <p>Selamat datang di Museum Molekuler! Game investigasi logika ini dirancang khusus untuk merayakan ulang tahun <strong>Erin Larasati Angdika</strong>.</p>
+
+      <p style="color:var(--gold); font-weight:700; margin-bottom:10px;">Inspirasi &amp; Konsep</p>
+      <ul class="concept-list">
+        <li><span class="tag">🧬</span>Perspektif Akademis — ketelitian dan rasa ingin tahu riset Cell &amp; Molecular Biology (CUHK).</li>
+        <li><span class="tag">🎭</span>Sentuhan Seni &amp; Fantasi — nuansa estetika ala Witch Hat Atelier, Persona 5 Royal, dan keindahan panggung Revue Starlight.</li>
+        <li><span class="tag">🧠</span>Pendekatan INTP &amp; CoC — kuis eliminasi deduksi logika murni (Logic Grid) yang menantang pola pikir intuitif-analitis.</li>
+      </ul>
+
+      <p style="margin-top:16px;">Game ini bukan berisi kuis fakta diri Erin, melainkan petualangan logika yang dibalut dengan vibes dan passion yang dicintainya.</p>
+
+      <div class="mission-box">
+        <strong>Misi Pemain:</strong> Tugasmu adalah menemukan "Peta Penelitian Masa Depan" yang tersembunyi di dalam museum dengan cara mengumpulkan clue di setiap area dan mengeliminasi kemungkinan di Papan Grid Logic.
+      </div>
+    </div>
+
+    <div class="cta-row">
+      <button class="btn btn-primary" onclick="goToGame()">Mulai Petualangan Logika</button>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== GAME SCREEN (Rounds) ===================== -->
+<section class="screen" id="screen-game">
+  <div class="game-wrap">
+    <div class="progress-row" id="progress-row"></div>
+
+    <div class="game-grid">
+      <div class="clue-card">
+        <div id="round-pre-start">
+          <div class="round-tag">RONDE 1 · MENUNGGU</div>
+          <h2 class="round-title">Investigasi dimulai di sini</h2>
+          <p class="clue-text">Setiap ronde diawali dengan sebuah tantangan mini-game. Selesaikan tantangannya untuk membuka Clue, lalu coret kemungkinan yang gugur di Logic Grid.</p>
+          <div class="round-actions">
+            <button class="btn btn-primary" onclick="startRound(0)">Mulai Investigasi Ronde 1</button>
+          </div>
+        </div>
+
+        <!-- Mini-game phase -->
+        <div id="minigame-phase" style="display:none;">
+          <div class="round-tag" id="minigame-round-tag"></div>
+          <h2 class="round-title" id="minigame-round-title"></h2>
+          <p class="mg-intro" id="minigame-round-intro"></p>
+          <div id="minigame-progress" class="mg-progress" style="display:none;"></div>
+          <div id="minigame-container"></div>
+          <div class="mg-status" id="minigame-status"></div>
+          <div class="mg-reset-wrap" id="minigame-reset-wrap"></div>
+        </div>
+
+        <!-- Clue phase -->
+        <div id="clue-phase" style="display:none;">
+          <div class="round-tag" id="round-tag-label"></div>
+          <h2 class="round-title" id="round-title-label"></h2>
+          <div class="clue-text" id="round-clue-text"></div>
+          <div class="feedback" id="round-feedback"></div>
+          <div class="round-actions">
+            <button class="btn btn-primary" id="round-submit-btn" onclick="checkRound()">Kirim Jawaban</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-panel">
+        <h3>Logic Grid</h3>
+        <div class="hint">Klik item untuk mencoret kemungkinan yang sudah gugur.</div>
+        <div class="grid-category">
+          <div class="grid-category-label">RUANGAN MUSEUM</div>
+          <div id="grid-rooms"></div>
+        </div>
+        <div class="grid-category">
+          <div class="grid-category-label">ELEMEN KUNCI</div>
+          <div id="grid-elements"></div>
+        </div>
+        <div class="grid-category">
+          <div class="grid-category-label">KODE AKSES</div>
+          <div id="grid-codes"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FINAL SUBMISSION SCREEN ===================== -->
+<section class="screen" id="screen-final">
+  <div class="final-card">
+    <div class="round-tag">FINAL VERIFICATION</div>
+    <h2 class="round-title" style="margin-bottom:6px;">Susun Kesimpulan Akhirmu</h2>
+    <p style="color:var(--ink-dim); font-size:0.92rem; margin-bottom:26px;">Pilih satu jawaban dari tiap kategori berdasarkan hasil eliminasi di Logic Grid.</p>
+
+    <div class="final-group">
+      <div class="final-group-label">RUANGAN</div>
+      <div class="chip-row" id="final-rooms"></div>
+    </div>
+    <div class="final-group">
+      <div class="final-group-label">ELEMEN KUNCI</div>
+      <div class="chip-row" id="final-elements"></div>
+    </div>
+    <div class="final-group">
+      <div class="final-group-label">KODE AKSES</div>
+      <div class="chip-row" id="final-codes"></div>
+    </div>
+
+    <button class="btn btn-primary" style="width:100%;" onclick="checkFinal()">Submit Final Deduction</button>
+
+    <div class="result-box" id="final-result"></div>
+  </div>
+</section>
+
+<script>
+  // ==================================================================
+  // DATA
+  // ==================================================================
+  const CATEGORIES = {
+    rooms: ["Cellular Theatre", "Witch's Lab", "Persona Room", "Magpie Observatory"],
+    elements: ["Glowing Mask", "Magical Paintbrush", "Anomalous Core", "Grandmaster Chessboard"],
+    codes: ["R&M-44", "CS-01", "D/N/A-01", "BS-D1"]
+  };
+
+  const ANSWER = { rooms: "Witch's Lab", elements: "Glowing Mask", codes: "D/N/A-01" };
+
+  const ROUNDS = [
+    {
+      tag: "RONDE 1",
+      title: "Jejak Pertama di Museum",
+      location: "Cellular Theatre",
+      miniGameName: "Rhythm Sequence Memory",
+      miniGameIntro: "Ingat urutan not yang menyala — makin panjang lagunya, makin cepat temponya.",
+      clue: "📜 Peta yang hilang <b>TIDAK</b> berada di ruangan yang nama depannya diawali huruf konsonan 'C'. Selain itu, elemen kunci yang dicari <b>BUKAN</b> benda yang digunakan dalam permainan strategi papan 8x8.",
+      required: [ {cat:"rooms", name:"Cellular Theatre"}, {cat:"elements", name:"Grandmaster Chessboard"} ]
+    },
+    {
+      tag: "RONDE 2",
+      title: "Menelusuri Kode Akses",
+      location: "Magpie Observatory",
+      miniGameName: "Molecule Logic Switch",
+      miniGameIntro: "Putar tiap potongan sirkuit — hati-hati pipa buntu — hingga arus tersambung dari Start ke Finish.",
+      clue: "📜 Jika lokasi peta nantinya terbukti berada di ruangan bertema 'Seni Sihir' (Witch's Lab), maka Kode Akses yang sah pastilah <b>TIDAK</b> diawali dengan huruf 'C' maupun 'B'.",
+      required: [ {cat:"codes", name:"CS-01"}, {cat:"codes", name:"BS-D1"} ]
+    },
+    {
+      tag: "RONDE 3",
+      title: "Ruangan yang Gugur",
+      location: "Persona Room",
+      miniGameName: "Mental Rotation Pattern Match",
+      miniGameIntro: "Kenali struktur rantai molekul yang benar-benar identik jika diputar — 3 soal berturut-turut tanpa salah.",
+      clue: "📜 Hasil investigasi di Magpie Observatory dan Persona Room ternyata nihil. Selain itu, elemen 'Anomalous Core' ditemukan masih tersegel rapi di ruang penyimpanan awal (tidak disentuh).",
+      required: [ {cat:"rooms", name:"Magpie Observatory"}, {cat:"rooms", name:"Persona Room"}, {cat:"elements", name:"Anomalous Core"} ]
+    },
+    {
+      tag: "RONDE 4",
+      title: "Cahaya di Witch's Lab",
+      location: "Witch's Lab",
+      miniGameName: "Molecular Substitution Cipher",
+      miniGameIntro: "Pecahkan nilai A, B, dan C dari persamaan kuadrat &amp; akar berikut, lalu buka vault dengan kode 3 digitnya.",
+      clue: "📜 Di ruangan terakhir (Witch's Lab), peta tidak berada di dekat peralatan melukis/seni visual. Percobaan dengan kode aktivasi 'R&amp;M-44' juga menghasilkan sinyal error.",
+      required: [ {cat:"elements", name:"Magical Paintbrush"}, {cat:"codes", name:"R&M-44"} ]
+    }
+  ];
+
+  // ==================================================================
+  // GLOBAL STATE
+  // ==================================================================
+  let struck = new Set();
+  let currentRound = -1;
+  let finalSelection = { rooms: null, elements: null, codes: null };
+
+  const key = (cat, name) => cat + "::" + name;
+
+  // ==================================================================
+  // SCREEN NAVIGATION
+  // ==================================================================
+  function showScreen(id){
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0,0);
+  }
+  function goToGame(){ showScreen('screen-game'); }
+
+  // ==================================================================
+  // LOGIC GRID
+  // ==================================================================
+  function renderGrid(){
+    renderCategory('grid-rooms', 'rooms');
+    renderCategory('grid-elements', 'elements');
+    renderCategory('grid-codes', 'codes');
+  }
+  function renderCategory(containerId, cat){
+    const container = document.getElementById(containerId);
+    container.innerHTML = '';
+    CATEGORIES[cat].forEach(name => {
+      const isStruck = struck.has(key(cat, name));
+      const item = document.createElement('div');
+      item.className = 'grid-item' + (isStruck ? ' struck' : '');
+      item.innerHTML = `<span class="mark"></span><span class="label">${name}</span>`;
+      item.onclick = () => toggleStrike(cat, name);
+      container.appendChild(item);
+    });
+  }
+  function toggleStrike(cat, name){
+    const k = key(cat, name);
+    if (struck.has(k)) struck.delete(k); else struck.add(k);
+    renderGrid();
+  }
+
+  // ==================================================================
+  // PROGRESS BAR
+  // ==================================================================
+  function renderProgress(){
+    const row = document.getElementById('progress-row');
+    row.innerHTML = '<span class="progress-label">RONDE</span>';
+    ROUNDS.forEach((r, i) => {
+      const dot = document.createElement('div');
+      dot.className = 'progress-dot' + (i < currentRound ? ' done' : (i === currentRound ? ' current' : ''));
+      dot.textContent = i + 1;
+      row.appendChild(dot);
+      if (i < ROUNDS.length - 1){
+        const line = document.createElement('div');
+        line.className = 'progress-line';
+        row.appendChild(line);
+      }
+    });
+  }
+
+  // ==================================================================
+  // ROUND FLOW: pre-start -> minigame phase -> clue phase -> submit
+  // ==================================================================
+  function startRound(idx){
+    currentRound = idx;
+    document.getElementById('round-pre-start').style.display = 'none';
+    renderProgress();
+    startMiniGamePhase();
+  }
+
+  function startMiniGamePhase(){
+    document.getElementById('minigame-phase').style.display = 'block';
+    document.getElementById('clue-phase').style.display = 'none';
+    const r = ROUNDS[currentRound];
+    document.getElementById('minigame-round-tag').textContent = `${r.tag} · ${r.location}`;
+    document.getElementById('minigame-round-title').textContent = r.miniGameName;
+    document.getElementById('minigame-round-intro').innerHTML = r.miniGameIntro;
+    document.getElementById('minigame-status').textContent = '';
+    document.getElementById('minigame-reset-wrap').innerHTML = '';
+    const prog = document.getElementById('minigame-progress');
+    prog.style.display = 'none';
+    prog.textContent = '';
+    [initMiniGame1, initMiniGame2, initMiniGame3, initMiniGame4][currentRound]();
+  }
+
+  function miniGameSuccess(){
+    document.getElementById('minigame-status').textContent = 'Berhasil! Membuka clue…';
+    document.getElementById('minigame-reset-wrap').innerHTML = '';
+    setTimeout(() => {
+      document.getElementById('minigame-phase').style.display = 'none';
+      document.getElementById('clue-phase').style.display = 'block';
+      renderClue();
+    }, 550);
+  }
+
+  function mgSetStatus(text){
+    const el = document.getElementById('minigame-status');
+    if (el) el.textContent = text;
+  }
+
+  function mgShake(selector){
+    const el = typeof selector === 'string' ? document.querySelector(selector) : selector;
+    if (!el) return;
+    el.classList.remove('shake');
+    void el.offsetWidth; // restart animation
+    el.classList.add('shake');
+  }
+
+  function mgShowReset(label, onClick){
+    const wrap = document.getElementById('minigame-reset-wrap');
+    wrap.innerHTML = `<button class="btn btn-secondary" id="mg-reset-btn">${label}</button>`;
+    document.getElementById('mg-reset-btn').onclick = onClick;
+  }
+
+  function mgHideReset(){
+    document.getElementById('minigame-reset-wrap').innerHTML = '';
+  }
+
+  function renderClue(){
+    const r = ROUNDS[currentRound];
+    document.getElementById('round-tag-label').textContent = r.tag;
+    document.getElementById('round-title-label').textContent = r.title;
+    document.getElementById('round-clue-text').innerHTML = r.clue;
+    const fb = document.getElementById('round-feedback');
+    fb.className = 'feedback';
+    fb.textContent = '';
+    document.getElementById('round-submit-btn').textContent =
+      currentRound === ROUNDS.length - 1 ? 'Kirim Jawaban & Lanjut ke Final' : `Kirim Jawaban Ronde ${currentRound + 1}`;
+  }
+
+  function checkRound(){
+    const r = ROUNDS[currentRound];
+    const allStruck = r.required.every(req => struck.has(key(req.cat, req.name)));
+    const fb = document.getElementById('round-feedback');
+
+    if (!allStruck){
+      fb.className = 'feedback show warn';
+      fb.textContent = 'Belum tepat. Coba baca ulang clue di atas, lalu coret kemungkinan yang sudah jelas gugur di Logic Grid.';
+      return;
+    }
+
+    fb.className = 'feedback show ok';
+    fb.textContent = 'Deduksi tepat! Melangkah ke tahap berikutnya…';
+
+    setTimeout(() => {
+      if (currentRound < ROUNDS.length - 1){
+        currentRound++;
+        renderProgress();
+        startMiniGamePhase();
+      } else {
+        currentRound = ROUNDS.length;
+        renderProgress();
+        goToFinal();
+      }
+    }, 700);
+  }
+
+  // ==================================================================
+  // MINI-GAME 1 — Rhythm Sequence Memory (8 notes, accelerando)
+  // ==================================================================
+  const RHY_COLORS = ['red', 'blue', 'green', 'yellow'];
+  const RHY_LENGTH = 8;
+  let rhySequence = [];
+  let rhyPlayerIdx = 0;
+  let rhyPlaying = false;
+
+  function initMiniGame1(){
+    const container = document.getElementById('minigame-container');
+    container.innerHTML = `
+      <div class="rhy-board" id="rhy-board">
+        ${RHY_COLORS.map(c => `<button class="rhy-btn rhy-${c}" data-color="${c}" onclick="rhyPress('${c}')"></button>`).join('')}
+      </div>
+      <div class="rhy-steps" id="rhy-steps"></div>
+    `;
+    rhyGenerateSequence();
+    rhyRenderSteps();
+    rhyPlaySequence();
+  }
+
+  function rhyGenerateSequence(){
+    rhySequence = Array.from({length: RHY_LENGTH}, () => RHY_COLORS[Math.floor(Math.random() * 4)]);
+    rhyPlayerIdx = 0;
+  }
+
+  function rhyRenderSteps(){
+    const wrap = document.getElementById('rhy-steps');
+    if (!wrap) return;
+    wrap.innerHTML = rhySequence.map((_, i) =>
+      `<div class="rhy-step-dot${i < rhyPlayerIdx ? ' filled' : ''}"></div>`
+    ).join('');
+  }
+
+  function rhyFlash(color){
+    const btn = document.querySelector(`.rhy-btn[data-color="${color}"]`);
+    if (!btn) return;
+    btn.classList.add('active');
+    setTimeout(() => btn.classList.remove('active'), 320);
+  }
+
+  // Accelerando: each note lands faster than the last (600ms down to a 260ms floor)
+  function rhyDelay(stepIndex){
+    return Math.max(260, 620 - stepIndex * 48);
+  }
+
+  function rhyPlaySequence(){
+    rhyPlaying = true;
+    mgSetStatus('Perhatikan urutannya — temponya makin cepat…');
+    mgHideReset();
+    let t = 0;
+    const times = [0];
+    for (let i = 1; i < rhySequence.length; i++){
+      t += rhyDelay(i - 1);
+      times.push(t);
+    }
+    rhySequence.forEach((color, i) => {
+      setTimeout(() => rhyFlash(color), times[i]);
+    });
+    setTimeout(() => {
+      rhyPlaying = false;
+      mgSetStatus('Giliranmu! Ulangi kedelapan not tersebut.');
+    }, times[times.length - 1] + rhyDelay(times.length - 1) + 200);
+  }
+
+  function rhyPress(color){
+    if (rhyPlaying || currentRound !== 0) return;
+    rhyFlash(color);
+    if (color === rhySequence[rhyPlayerIdx]){
+      rhyPlayerIdx++;
+      rhyRenderSteps();
+      if (rhyPlayerIdx === rhySequence.length){
+        miniGameSuccess();
+      }
+    } else {
+      mgShake('#rhy-board');
+      mgSetStatus('Pola salah!');
+      mgShowReset('Ulangi Pola', () => {
+        rhyGenerateSequence();
+        rhyRenderSteps();
+        rhyPlaySequence();
+      });
+    }
+  }
+
+  // ==================================================================
+  // MINI-GAME 2 — Molecule Logic Switch (4x4 pipe rotation puzzle)
+  // ==================================================================
+  // Functional path: West of (0,0) -> (0,0) -> (1,0) -> (1,1) -> (1,2) -> (2,2) -> (2,3) -> (3,3) -> South (Finish)
+  const PIPE_FUNCTIONAL = [
+    { col: 0, row: 0, type: 'straight', accepted: [0, 180] },
+    { col: 1, row: 0, type: 'elbow',    accepted: [180] },
+    { col: 1, row: 1, type: 'straight', accepted: [90, 270] },
+    { col: 1, row: 2, type: 't',        accepted: [0] },
+    { col: 2, row: 2, type: 'elbow',    accepted: [180] },
+    { col: 2, row: 3, type: 'elbow',    accepted: [0] },
+    { col: 3, row: 3, type: 'elbow',    accepted: [180] }
+  ];
+  const PIPE_ARMS = {
+    straight: ['pipe-arm-w', 'pipe-arm-e'],
+    elbow:    ['pipe-arm-n', 'pipe-arm-e'],
+    t:        ['pipe-arm-n', 'pipe-arm-e', 'pipe-arm-w'],
+    dead:     ['pipe-arm-n']
+  };
+  let pipeState = {};
+
+  function initMiniGame2(){
+    const container = document.getElementById('minigame-container');
+    const funcMap = {};
+    PIPE_FUNCTIONAL.forEach(f => funcMap[`${f.col},${f.row}`] = f);
+    pipeState = {};
+
+    const fillerTypes = ['dead','elbow','t','straight','dead','elbow','t','straight','dead'];
+    let fillerIdx = 0;
+
+    let cellsHtml = '';
+    for (let row = 0; row < 4; row++){
+      for (let col = 0; col < 4; col++){
+        const k = `${col},${row}`;
+        const func = funcMap[k];
+        let type, rotation, isDead = false;
+        if (func){
+          type = func.type;
+          const options = [0, 90, 180, 270].filter(v => !func.accepted.includes(v));
+          rotation = options[Math.floor(Math.random() * options.length)];
+        } else {
+          type = fillerTypes[fillerIdx % fillerTypes.length];
+          fillerIdx++;
+          isDead = type === 'dead';
+          rotation = [0, 90, 180, 270][Math.floor(Math.random() * 4)];
+        }
+        pipeState[k] = rotation;
+        const arms = PIPE_ARMS[type].map(cls => `<div class="pipe-arm ${cls}"></div>`).join('');
+        cellsHtml += `
+          <div class="pipe-cell${func ? '' : ' filler'}${isDead ? ' dead' : ''}" data-col="${col}" data-row="${row}" onclick="pipeRotate(${col},${row})">
+            <div class="pipe-shape" style="transform: rotate(${rotation}deg);">
+              ${arms}
+              <div class="pipe-node"></div>
+            </div>
+          </div>`;
+      }
+    }
+
+    container.innerHTML = `
+      <div class="pipe-outer">
+        <div class="pipe-label-row start">◀ START (kiri-atas)</div>
+        <div class="pipe-grid">${cellsHtml}</div>
+        <div class="pipe-label-row finish">FINISH (kanan-bawah) ▶</div>
+      </div>
+    `;
+    mgSetStatus('Klik potongan sirkuit untuk memutarnya 90°. Waspadai pipa buntu!');
+    mgShowReset('Acak Ulang Sirkuit', () => initMiniGame2());
+  }
+
+  function pipeRotate(col, row){
+    if (currentRound !== 1) return;
+    const k = `${col},${row}`;
+    pipeState[k] = (pipeState[k] + 90) % 360;
+    const cell = document.querySelector(`.pipe-cell[data-col="${col}"][data-row="${row}"] .pipe-shape`);
+    if (cell) cell.style.transform = `rotate(${pipeState[k]}deg)`;
+    pipeCheckSolved();
+  }
+
+  function pipeCheckSolved(){
+    const solved = PIPE_FUNCTIONAL.every(f => f.accepted.includes(pipeState[`${f.col},${f.row}`]));
+    if (solved){
+      PIPE_FUNCTIONAL.forEach(f => {
+        const cellEl = document.querySelector(`.pipe-cell[data-col="${f.col}"][data-row="${f.row}"]`);
+        if (cellEl) cellEl.classList.add('solved');
+      });
+      setTimeout(() => miniGameSuccess(), 300);
+    }
+  }
+
+  // ==================================================================
+  // MINI-GAME 3 — Mental Rotation Pattern Match (streak of 3, molecule chains)
+  // ==================================================================
+  const MOL_COLORS = { teal: '#2dd4bf', cyan: '#38bdf8', gold: '#d8b979', emerald: '#34d399' };
+
+  const MR_SHAPES = [
+    {
+      atoms: [ {x:0,y:1,c:'teal'}, {x:0,y:0,c:'cyan'}, {x:0,y:-1,c:'gold'}, {x:1,y:0,c:'emerald'} ],
+      bonds: [ [0,1], [1,2], [1,3] ]
+    },
+    {
+      atoms: [ {x:0,y:0,c:'cyan'}, {x:1,y:0,c:'teal'}, {x:1,y:1,c:'gold'}, {x:-1,y:0,c:'emerald'} ],
+      bonds: [ [0,1], [1,2], [0,3] ]
+    }
+  ];
+
+  const MR_TOTAL = 3;
+  let mrQuestionIndex = 0;
+  let mrStreak = 0;
+  let mrCorrectIndex = -1;
+
+  function mrRotatePoint(p){ return { x: -p.y, y: p.x }; }
+  function mrMirrorPoint(p){ return { x: -p.x, y: p.y }; }
+  function mrTransformShape(atoms, fn){ return atoms.map(a => ({ ...fn(a), c: a.c })); }
+  function mrRotateShape(atoms){ return mrTransformShape(atoms, mrRotatePoint); }
+  function mrMirrorShape(atoms){ return mrTransformShape(atoms, mrMirrorPoint); }
+  function mrShapesEqual(a, b){
+    return a.every((p, i) => Math.abs(p.x - b[i].x) < 0.001 && Math.abs(p.y - b[i].y) < 0.001);
+  }
+
+  function mrMoleculeSvg(atoms, bonds, size){
+    const unit = 30, pad = 24;
+    const xs = atoms.map(a => a.x * unit), ys = atoms.map(a => a.y * unit);
+    const minX = Math.min(...xs) - pad, maxX = Math.max(...xs) + pad;
+    const minY = Math.min(...ys) - pad, maxY = Math.max(...ys) + pad;
+    const bondsHtml = bonds.map(([i,j]) =>
+      `<line x1="${atoms[i].x*unit}" y1="${atoms[i].y*unit}" x2="${atoms[j].x*unit}" y2="${atoms[j].y*unit}" stroke="#3a5c68" stroke-width="6" stroke-linecap="round"/>`
+    ).join('');
+    const atomsHtml = atoms.map(a =>
+      `<circle cx="${a.x*unit}" cy="${a.y*unit}" r="12" fill="${MOL_COLORS[a.c]}" stroke="#06111a" stroke-width="2"/>`
+    ).join('');
+    return `<svg viewBox="${minX} ${minY} ${maxX-minX} ${maxY-minY}" width="${size}" height="${size}">${bondsHtml}${atomsHtml}</svg>`;
+  }
+
+  function mrNextQuestion(){
+    const base = MR_SHAPES[Math.floor(Math.random() * MR_SHAPES.length)].atoms;
+    const bonds = MR_SHAPES.find(s => s.atoms === base) ? MR_SHAPES.find(s => s.atoms === base).bonds
+      : MR_SHAPES[0].bonds;
+
+    const rotations = [base];
+    for (let i = 1; i < 4; i++) rotations.push(mrRotateShape(rotations[i-1]));
+
+    const correctRotIdx = 1 + Math.floor(Math.random() * 3);
+    const correctShape = rotations[correctRotIdx];
+
+    const mirrorRotations = [mrMirrorShape(base)];
+    for (let i = 1; i < 4; i++) mirrorRotations.push(mrRotateShape(mirrorRotations[i-1]));
+    const distractors = mirrorRotations.filter(m => !mrShapesEqual(m, correctShape));
+
+    for (let i = distractors.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random() * (i + 1));
+      [distractors[i], distractors[j]] = [distractors[j], distractors[i]];
+    }
+    const options = [correctShape, ...distractors.slice(0, 3)];
+    for (let i = options.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random() * (i + 1));
+      [options[i], options[j]] = [options[j], options[i]];
+    }
+    mrCorrectIndex = options.findIndex(o => mrShapesEqual(o, correctShape));
+
+    const prog = document.getElementById('minigame-progress');
+    prog.style.display = 'block';
+    prog.textContent = `Soal ${mrQuestionIndex + 1} dari ${MR_TOTAL} · Streak ${mrStreak}/${MR_TOTAL}`;
+
+    const container = document.getElementById('minigame-container');
+    container.innerHTML = `
+      <div class="mr-main">${mrMoleculeSvg(base, bonds, 120)}</div>
+      <div class="mr-options" id="mr-options">
+        ${options.map((o, i) => `
+          <div class="mr-option" onclick="mrPick(${i})">
+            ${mrMoleculeSvg(o, bonds, 84)}
+            <div class="mr-option-label">Opsi ${i + 1}</div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+    mgSetStatus('Pilih struktur yang identik jika molekul utama diputar. Waspadai jebakan cerminan!');
+    mgHideReset();
+  }
+
+  function initMiniGame3(){
+    mrQuestionIndex = 0;
+    mrStreak = 0;
+    mrNextQuestion();
+  }
+
+  function mrPick(idx){
+    if (currentRound !== 2) return;
+    if (idx === mrCorrectIndex){
+      mrStreak++;
+      if (mrStreak === MR_TOTAL){
+        miniGameSuccess();
+        return;
+      }
+      mrQuestionIndex++;
+      mgSetStatus('Tepat! Lanjut ke soal berikutnya…');
+      setTimeout(() => mrNextQuestion(), 500);
+    } else {
+      mgShake('#mr-options');
+      mgSetStatus('Belum tepat — streak direset, mulai dari Soal 1 lagi.');
+      mrStreak = 0;
+      mrQuestionIndex = 0;
+      setTimeout(() => mrNextQuestion(), 850);
+    }
+  }
+
+  // ==================================================================
+  // MINI-GAME 4 — Molecular Substitution Cipher (kuadrat & akar)
+  // ==================================================================
+  function initMiniGame4(){
+    const container = document.getElementById('minigame-container');
+    container.innerHTML = `
+      <div class="cip-equations">
+        <div class="cip-eq-row"><span><span class="cip-molecule">A</span>&sup2; + 11 = 36</span></div>
+        <div class="cip-eq-row"><span>&radic;(<span class="cip-molecule">B</span> + <span class="cip-molecule">A</span>) = 3</span></div>
+        <div class="cip-eq-row"><span><span class="cip-molecule">C</span>&sup2; &minus; (<span class="cip-molecule">B</span> &times; <span class="cip-molecule">A</span>) = 29</span></div>
+      </div>
+      <div class="cip-vault" id="cip-vault">
+        <input class="cip-digit" id="cip-0" maxlength="1" inputmode="numeric" placeholder="A">
+        <input class="cip-digit" id="cip-1" maxlength="1" inputmode="numeric" placeholder="B">
+        <input class="cip-digit" id="cip-2" maxlength="1" inputmode="numeric" placeholder="C">
+      </div>
+      <div class="round-actions" style="text-align:center;">
+        <button class="btn btn-primary" onclick="cipherCheck()">Buka Vault</button>
+      </div>
+    `;
+    mgSetStatus('Hitung nilai A, B, dan C, lalu masukkan sebagai kode 3 digit.');
+    mgHideReset();
+
+    ['cip-0','cip-1','cip-2'].forEach((id, i) => {
+      const input = document.getElementById(id);
+      input.addEventListener('input', () => {
+        input.value = input.value.replace(/[^0-9]/g, '').slice(0,1);
+        if (input.value && i < 2) document.getElementById(`cip-${i+1}`).focus();
+      });
+    });
+  }
+
+  function cipherCheck(){
+    if (currentRound !== 3) return;
+    const code = ['cip-0','cip-1','cip-2'].map(id => document.getElementById(id).value).join('');
+    if (code === '547'){
+      miniGameSuccess();
+    } else {
+      mgShake('#cip-vault');
+      mgSetStatus('Kode belum tepat. Cek kembali hasil hitunganmu.');
+      mgShowReset('Reset Kode', () => {
+        ['cip-0','cip-1','cip-2'].forEach(id => document.getElementById(id).value = '');
+        document.getElementById('cip-0').focus();
+        mgHideReset();
+        mgSetStatus('Hitung nilai A, B, dan C, lalu masukkan sebagai kode 3 digit.');
+      });
+    }
+  }
+
+  // ==================================================================
+  // FINAL SUBMISSION
+  // ==================================================================
+  function goToFinal(){
+    renderFinalChips('final-rooms', 'rooms');
+    renderFinalChips('final-elements', 'elements');
+    renderFinalChips('final-codes', 'codes');
+    showScreen('screen-final');
+  }
+
+  function renderFinalChips(containerId, cat){
+    const container = document.getElementById(containerId);
+    container.innerHTML = '';
+    CATEGORIES[cat].forEach(name => {
+      const chip = document.createElement('div');
+      chip.className = 'chip' + (finalSelection[cat] === name ? ' selected' : '');
+      chip.textContent = name;
+      chip.onclick = () => {
+        finalSelection[cat] = name;
+        renderFinalChips(containerId, cat);
+      };
+      container.appendChild(chip);
+    });
+  }
+
+  function checkFinal(){
+    const box = document.getElementById('final-result');
+    if (!finalSelection.rooms || !finalSelection.elements || !finalSelection.codes){
+      box.className = 'result-box show fail';
+      box.innerHTML = '<h3>Belum lengkap</h3><p>Pilih satu jawaban dari tiap kategori sebelum submit.</p>';
+      return;
+    }
+    const correct = finalSelection.rooms === ANSWER.rooms &&
+                     finalSelection.elements === ANSWER.elements &&
+                     finalSelection.codes === ANSWER.codes;
+    if (correct){
+      box.className = 'result-box show success';
+      box.innerHTML = '<h3>Selamat!</h3><p>Kamu berhasil memecahkan teka-teki Molecular Museum! (Kartu Ucapan Ulang Tahun Lengkap akan ditambahkan di Step 4)</p>';
+    } else {
+      box.className = 'result-box show fail';
+      box.innerHTML = '<h3>Belum tepat</h3><p>Kombinasi ini belum sesuai dengan hasil deduksi. Cek kembali Logic Grid dan coba lagi.</p>';
+    }
+  }
+
+  // ==================================================================
+  // INIT
+  // ==================================================================
+  renderGrid();
+  renderProgress();
+</script>
+
+</body>
+</html>
