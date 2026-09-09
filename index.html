@@ -100,6 +100,13 @@
     background: rgba(45,212,191,0.05); color: var(--ink); font-size: 0.96rem; font-style: italic;
   }
 
+  .warning-box{
+    margin-top: 16px; padding: 16px 18px; border: 1px solid rgba(232,130,122,0.4);
+    background: rgba(232,130,122,0.08); border-radius: 4px; color: var(--struck); font-size: 0.9rem;
+    text-align: left; line-height: 1.6;
+  }
+  .warning-box b{ color: var(--struck); }
+
   .btn{
     font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 0.98rem;
     border: none; border-radius: 3px; padding: 15px 34px; cursor: pointer;
@@ -117,6 +124,30 @@
   .btn-secondary:hover{ border-color: var(--teal); }
 
   .cta-row{ margin-top: 34px; }
+
+  /* ---------- Lives ---------- */
+  .lives-bar{ display: flex; align-items: center; justify-content: center; gap: 5px; margin-bottom: 8px; }
+  .life-heart{ font-size: 1.05rem; color: var(--struck); line-height: 1; }
+  .life-heart.empty{ color: var(--border); }
+  .lives-regen-note{
+    text-align: center; font-family: 'JetBrains Mono', monospace; font-size: 0.72rem;
+    color: var(--ink-faint); margin-bottom: 16px; min-height: 1.2em;
+  }
+  .lives-next-timer{ color: var(--cyan); }
+
+  .lives-lock-overlay{
+    position: fixed; inset: 0; background: rgba(6,17,26,0.94); z-index: 50;
+    display: none; align-items: center; justify-content: center; padding: 24px; text-align: center;
+  }
+  .lives-lock-overlay.show{ display: flex; }
+  .lives-lock-box{ max-width: 360px; }
+  .lives-lock-box .lives-bar{ margin-bottom: 18px; }
+  .lives-lock-box h2{ color: var(--struck); font-size: 1.8rem; margin-bottom: 14px; }
+  .lives-lock-box p{ color: var(--ink-dim); margin-bottom: 20px; font-size: 0.94rem; }
+  .lives-lock-timer{
+    font-family: 'JetBrains Mono', monospace; font-size: 2.2rem; color: var(--cyan);
+    letter-spacing: 0.06em; text-shadow: var(--glow);
+  }
 
   /* ---------- Game Screens (shared) ---------- */
   .game-wrap{ max-width: 760px; width: 100%; }
@@ -163,6 +194,10 @@
   .mg-status{ min-height: 1.3em; font-size: 0.88rem; color: var(--cyan); margin-top: 16px; text-align: center; }
   .mg-reset-wrap{ text-align: center; margin-top: 14px; min-height: 38px; }
   .mg-progress{ text-align: center; font-size: 0.78rem; letter-spacing: 0.08em; color: var(--gold); margin-bottom: 16px; }
+
+  .mg-ready{ text-align: center; padding: 46px 0; }
+  .mg-ready-label{ color: var(--ink-dim); font-size: 0.94rem; margin-bottom: 12px; }
+  .mg-ready-num{ font-family: 'Cormorant Garamond', serif; font-size: 3.4rem; color: var(--cyan); text-shadow: var(--glow); display: block; }
 
   @keyframes shakeX{
     10%,90%{ transform: translateX(-3px); }
@@ -319,9 +354,14 @@
       <div class="mission-box">
         Waktu investigasimu dimulai sekarang. Semoga logikamu menuntun pada jawaban yang tepat.
       </div>
+
+      <div class="warning-box">
+        <b>⚠️ Peringatan:</b> Investigasi ini hanya mengizinkan <b>5 nyawa</b>. Setiap mini-game yang gagal, jawaban ronde yang keliru, atau deduksi akhir yang salah akan mengurangi satu nyawa — dan nyawa yang habis hanya terisi kembali satu per satu setiap 15 menit. Pikirkan baik-baik sebelum menjawab.
+      </div>
     </div>
 
     <div class="cta-row">
+      <div class="lives-bar" id="welcome-lives-bar"></div>
       <button class="btn btn-primary" onclick="goToGame()">Mulai Petualangan Logika</button>
     </div>
   </div>
@@ -333,6 +373,8 @@
     <div class="timer-wrap">
       <div class="timer-bar"><span class="timer-icon">⏱</span><span class="timer-display">00:00</span></div>
     </div>
+    <div class="lives-bar"></div>
+    <div class="lives-regen-note"></div>
     <div class="progress-row"></div>
 
     <div class="clue-card">
@@ -364,6 +406,8 @@
     <div class="timer-wrap">
       <div class="timer-bar"><span class="timer-icon">⏱</span><span class="timer-display">00:00</span></div>
     </div>
+    <div class="lives-bar"></div>
+    <div class="lives-regen-note"></div>
     <div class="progress-row"></div>
 
     <div class="clue-card">
@@ -422,6 +466,16 @@
     <div class="result-box" id="final-result"></div>
   </div>
 </section>
+
+<!-- ===================== LIVES LOCK OVERLAY ===================== -->
+<div class="lives-lock-overlay" id="lives-lock-overlay">
+  <div class="lives-lock-box">
+    <div class="lives-bar" id="lock-lives-bar"></div>
+    <h2>Nyawa Habis</h2>
+    <p>Kamu kehabisan nyawa untuk sementara. Nyawa berikutnya akan terisi otomatis dalam:</p>
+    <div class="lives-lock-timer" id="lives-lock-timer">00:00</div>
+  </div>
+</div>
 
 <script>
   // ==================================================================
@@ -482,6 +536,99 @@
   let finalSelection = { rooms: null, elements: null, codes: null };
 
   const key = (cat, name) => cat + "::" + name;
+
+  // ==================================================================
+  // LIVES SYSTEM (5 lives, +1 regen every 15 minutes, persisted locally)
+  // ==================================================================
+  const LIVES_MAX = 5;
+  const LIFE_REGEN_MS = 15 * 60 * 1000;
+  const LIVES_STORAGE_KEY = 'mm_lives_state_v1';
+
+  let lives = LIVES_MAX;
+  let nextLifeAt = null; // timestamp, or null when full
+
+  function loadLivesState(){
+    try {
+      const raw = localStorage.getItem(LIVES_STORAGE_KEY);
+      if (raw){
+        const parsed = JSON.parse(raw);
+        lives = typeof parsed.lives === 'number' ? parsed.lives : LIVES_MAX;
+        nextLifeAt = parsed.nextLifeAt || null;
+      }
+    } catch (e) { /* ignore malformed storage */ }
+    catchUpRegen();
+  }
+
+  function saveLivesState(){
+    try {
+      localStorage.setItem(LIVES_STORAGE_KEY, JSON.stringify({ lives, nextLifeAt }));
+    } catch (e) { /* storage unavailable, continue without persistence */ }
+  }
+
+  function catchUpRegen(){
+    let changed = false;
+    while (nextLifeAt && Date.now() >= nextLifeAt && lives < LIVES_MAX){
+      lives++;
+      nextLifeAt = lives < LIVES_MAX ? nextLifeAt + LIFE_REGEN_MS : null;
+      changed = true;
+    }
+    if (changed) saveLivesState();
+  }
+
+  function loseLife(){
+    if (lives <= 0) return;
+    const wasFull = lives === LIVES_MAX;
+    lives--;
+    if (wasFull) nextLifeAt = Date.now() + LIFE_REGEN_MS;
+    saveLivesState();
+    renderLivesUI();
+    if (lives <= 0){
+      setTimeout(() => showLivesLockOverlay(), 900);
+    }
+  }
+
+  function renderLivesUI(){
+    const heartsHtml = Array.from({ length: LIVES_MAX }, (_, i) =>
+      `<span class="life-heart${i < lives ? '' : ' empty'}">❤</span>`
+    ).join('');
+    document.querySelectorAll('.lives-bar').forEach(el => el.innerHTML = heartsHtml);
+
+    document.querySelectorAll('.lives-regen-note').forEach(el => {
+      el.innerHTML = (lives < LIVES_MAX && nextLifeAt)
+        ? `Nyawa berikutnya dalam <span class="lives-next-timer">--:--</span>`
+        : '';
+    });
+  }
+
+  function tickLivesRegen(){
+    catchUpRegen();
+    if (lives <= 0 && nextLifeAt) {
+      const remain = Math.max(0, nextLifeAt - Date.now());
+      const totalSec = Math.ceil(remain / 1000);
+      const mm = String(Math.floor(totalSec / 60)).padStart(2, '0');
+      const ss = String(totalSec % 60).padStart(2, '0');
+      const lockTimerEl = document.getElementById('lives-lock-timer');
+      if (lockTimerEl) lockTimerEl.textContent = `${mm}:${ss}`;
+      if (lives > 0) hideLivesLockOverlay();
+    } else {
+      hideLivesLockOverlay();
+    }
+    if (lives < LIVES_MAX && nextLifeAt){
+      const remain = Math.max(0, nextLifeAt - Date.now());
+      const totalSec = Math.ceil(remain / 1000);
+      const mm = String(Math.floor(totalSec / 60)).padStart(2, '0');
+      const ss = String(totalSec % 60).padStart(2, '0');
+      document.querySelectorAll('.lives-next-timer').forEach(el => el.textContent = `${mm}:${ss}`);
+    }
+  }
+
+  function showLivesLockOverlay(){
+    if (lives > 0) return;
+    document.getElementById('lives-lock-overlay').classList.add('show');
+  }
+  function hideLivesLockOverlay(){
+    document.getElementById('lives-lock-overlay').classList.remove('show');
+  }
 
   // ==================================================================
   // TIMER
@@ -592,6 +739,33 @@
   }
 
   // ==================================================================
+  // READY COUNTDOWN — a short "brace yourself" beat before the
+  // memorize-heavy (Round 1) and streak-heavy (Round 3) mini-games
+  // ==================================================================
+  function mgReadyCountdown(seconds, label, onDone){
+    const container = document.getElementById('minigame-container');
+    let n = seconds;
+    container.innerHTML = `
+      <div class="mg-ready">
+        <div class="mg-ready-label">${label}</div>
+        <span class="mg-ready-num" id="mg-ready-num">${n}</span>
+      </div>
+    `;
+    mgSetStatus('');
+    mgHideReset();
+    const iv = setInterval(() => {
+      n--;
+      const el = document.getElementById('mg-ready-num');
+      if (n > 0){
+        if (el) el.textContent = n;
+      } else {
+        clearInterval(iv);
+        onDone();
+      }
+    }, 1000);
+  }
+
+  // ==================================================================
   // ROUND FLOW: pre-start -> [minigame screen] -> [clue+deduction screen] -> submit
   // ==================================================================
   function startRound(idx){
@@ -661,14 +835,26 @@
       currentRound === ROUNDS.length - 1 ? 'Kirim Jawaban & Lanjut ke Final' : `Kirim Jawaban Ronde ${currentRound + 1}`;
   }
 
+  function getCumulativeRequired(uptoRoundIdx){
+    const set = new Set();
+    for (let i = 0; i <= uptoRoundIdx; i++){
+      ROUNDS[i].required.forEach(req => set.add(key(req.cat, req.name)));
+    }
+    return set;
+  }
+
   function checkRound(){
-    const r = ROUNDS[currentRound];
-    const allStruck = r.required.every(req => struck.has(key(req.cat, req.name)));
+    const cumulative = getCumulativeRequired(currentRound);
+    const missing = [...cumulative].filter(k => !struck.has(k));
+    const extra = [...struck].filter(k => !cumulative.has(k));
     const fb = document.getElementById('round-feedback');
 
-    if (!allStruck){
+    if (missing.length > 0 || extra.length > 0){
       fb.className = 'feedback show warn';
-      fb.textContent = 'Belum tepat. Coba baca ulang clue di atas, lalu coret kemungkinan yang sudah jelas gugur di Logic Grid.';
+      fb.textContent = extra.length > 0
+        ? 'Belum tepat. Ada kemungkinan yang kamu coret padahal belum benar-benar terbukti gugur oleh clue — jangan asal coret semua, tinjau ulang satu per satu.'
+        : 'Belum tepat. Coba baca ulang clue di atas, lalu coret kemungkinan yang sudah jelas gugur di Logic Grid.';
+      loseLife();
       return;
     }
 
@@ -698,16 +884,18 @@
   let rhyPlaying = false;
 
   function initMiniGame1(){
-    const container = document.getElementById('minigame-container');
-    container.innerHTML = `
-      <div class="rhy-board" id="rhy-board">
-        ${RHY_COLORS.map(c => `<button class="rhy-btn rhy-${c}" data-color="${c}" onclick="rhyPress('${c}')"></button>`).join('')}
-      </div>
-      <div class="rhy-steps" id="rhy-steps"></div>
-    `;
-    rhyGenerateSequence();
-    rhyRenderSteps();
-    rhyPlaySequence();
+    mgReadyCountdown(3, 'Bersiap menghafal urutan not…', () => {
+      const container = document.getElementById('minigame-container');
+      container.innerHTML = `
+        <div class="rhy-board" id="rhy-board">
+          ${RHY_COLORS.map(c => `<button class="rhy-btn rhy-${c}" data-color="${c}" onclick="rhyPress('${c}')"></button>`).join('')}
+        </div>
+        <div class="rhy-steps" id="rhy-steps"></div>
+      `;
+      rhyGenerateSequence();
+      rhyRenderSteps();
+      rhyPlaySequence();
+    });
   }
 
   function rhyGenerateSequence(){
@@ -766,6 +954,7 @@
     } else {
       mgShake('#rhy-board');
       mgSetStatus('Pola salah!');
+      loseLife();
       mgShowReset('Ulangi Pola', () => {
         rhyGenerateSequence();
         rhyRenderSteps();
@@ -956,7 +1145,7 @@
   function initMiniGame3(){
     mrQuestionIndex = 0;
     mrStreak = 0;
-    mrNextQuestion();
+    mgReadyCountdown(3, 'Bersiap — 3 soal rotasi berturut-turut tanpa salah…', () => mrNextQuestion());
   }
 
   function mrPick(idx){
@@ -973,6 +1162,7 @@
     } else {
       mgShake('#mr-options');
       mgSetStatus('Belum tepat — streak direset, mulai dari Soal 1 lagi.');
+      loseLife();
       mrStreak = 0;
       mrQuestionIndex = 0;
       setTimeout(() => mrNextQuestion(), 850);
@@ -1019,6 +1209,7 @@
     } else {
       mgShake('#cip-vault');
       mgSetStatus('Kode belum tepat. Cek kembali hasil hitunganmu.');
+      loseLife();
       mgShowReset('Reset Kode', () => {
         ['cip-0','cip-1','cip-2'].forEach(id => document.getElementById(id).value = '');
         document.getElementById('cip-0').focus();
@@ -1076,13 +1267,18 @@
     } else {
       box.className = 'result-box show fail';
       box.innerHTML = '<h3>Belum tepat</h3><p>Kombinasi ini belum sesuai dengan hasil deduksi. Cek kembali Logic Grid dan coba lagi.</p>';
+      loseLife();
     }
   }
 
   // ==================================================================
   // INIT
   // ==================================================================
+  loadLivesState();
+  renderLivesUI();
   renderProgress();
+  setInterval(tickLivesRegen, 1000);
+  tickLivesRegen();
 </script>
 
 </body>
