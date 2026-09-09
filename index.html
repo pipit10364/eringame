@@ -356,7 +356,7 @@
       </div>
 
       <div class="warning-box">
-        <b>⚠️ Peringatan:</b> Investigasi ini hanya mengizinkan <b>5 nyawa</b>. Setiap mini-game yang gagal, jawaban ronde yang keliru, atau deduksi akhir yang salah akan mengurangi satu nyawa — dan nyawa yang habis hanya terisi kembali satu per satu setiap 15 menit. Pikirkan baik-baik sebelum menjawab.
+        <b>⚠️ Peringatan:</b> Investigasi ini hanya mengizinkan <b>5 nyawa</b>. Setiap mini-game yang gagal, jawaban ronde yang keliru, atau deduksi akhir yang salah akan mengurangi satu nyawa — dan nyawa yang habis hanya terisi kembali satu per satu setiap 10 menit. Pikirkan baik-baik sebelum menjawab.
       </div>
     </div>
 
@@ -464,6 +464,10 @@
     <button class="btn btn-primary" style="width:100%;" onclick="checkFinal()">Submit Final Deduction</button>
 
     <div class="result-box" id="final-result"></div>
+
+    <div class="round-actions" style="text-align:center;">
+      <button class="btn btn-secondary" onclick="location.reload()">Main Lagi</button>
+    </div>
   </div>
 </section>
 
@@ -541,7 +545,7 @@
   // LIVES SYSTEM (5 lives, +1 regen every 15 minutes, persisted locally)
   // ==================================================================
   const LIVES_MAX = 5;
-  const LIFE_REGEN_MS = 15 * 60 * 1000;
+  const LIFE_REGEN_MS = 10 * 60 * 1000;
   const LIVES_STORAGE_KEY = 'mm_lives_state_v1';
 
   let lives = LIVES_MAX;
@@ -966,16 +970,52 @@
   // ==================================================================
   // MINI-GAME 2 — Molecule Logic Switch (4x4 pipe rotation puzzle)
   // ==================================================================
-  // Functional path: West of (0,0) -> (0,0) -> (1,0) -> (1,1) -> (1,2) -> (2,2) -> (2,3) -> (3,3) -> South (Finish)
-  const PIPE_FUNCTIONAL = [
-    { col: 0, row: 0, type: 'straight', accepted: [0, 180] },
-    { col: 1, row: 0, type: 'elbow',    accepted: [180] },
-    { col: 1, row: 1, type: 'straight', accepted: [90, 270] },
-    { col: 1, row: 2, type: 't',        accepted: [0] },
-    { col: 2, row: 2, type: 'elbow',    accepted: [180] },
-    { col: 2, row: 3, type: 'elbow',    accepted: [0] },
-    { col: 3, row: 3, type: 'elbow',    accepted: [180] }
+  // All paths run West-of-(0,0) -> ... -> South-of-(3,3) (Finish), so the
+  // START/FINISH labels stay accurate, but the route through the grid is
+  // picked at random each attempt so the board doesn't always look the same.
+  const PIPE_PATH_VARIANTS = [
+    // Variant A: up-over-down staircase through the middle, includes a T-piece
+    [
+      { col: 0, row: 0, type: 'straight', accepted: [0, 180] },
+      { col: 1, row: 0, type: 'elbow',    accepted: [180] },
+      { col: 1, row: 1, type: 'straight', accepted: [90, 270] },
+      { col: 1, row: 2, type: 't',        accepted: [0] },
+      { col: 2, row: 2, type: 'elbow',    accepted: [180] },
+      { col: 2, row: 3, type: 'elbow',    accepted: [0] },
+      { col: 3, row: 3, type: 'elbow',    accepted: [180] }
+    ],
+    // Variant B: zigzag stair-step across the whole board
+    [
+      { col: 0, row: 0, type: 'elbow',    accepted: [180] },
+      { col: 0, row: 1, type: 'elbow',    accepted: [0] },
+      { col: 1, row: 1, type: 'straight', accepted: [0, 180] },
+      { col: 2, row: 1, type: 'elbow',    accepted: [180] },
+      { col: 2, row: 2, type: 'elbow',    accepted: [0] },
+      { col: 3, row: 2, type: 'elbow',    accepted: [180] },
+      { col: 3, row: 3, type: 'straight', accepted: [90, 270] }
+    ],
+    // Variant C: long horizontal run first, then drops down, T-piece placed differently
+    [
+      { col: 0, row: 0, type: 'straight', accepted: [0, 180] },
+      { col: 1, row: 0, type: 'straight', accepted: [0, 180] },
+      { col: 2, row: 0, type: 'elbow',    accepted: [180] },
+      { col: 2, row: 1, type: 't',        accepted: [90] },
+      { col: 2, row: 2, type: 'elbow',    accepted: [0] },
+      { col: 3, row: 2, type: 'elbow',    accepted: [180] },
+      { col: 3, row: 3, type: 'straight', accepted: [90, 270] }
+    ],
+    // Variant D: pure staircase of elbows only, no straight or T pieces
+    [
+      { col: 0, row: 0, type: 'elbow', accepted: [180] },
+      { col: 0, row: 1, type: 'elbow', accepted: [0] },
+      { col: 1, row: 1, type: 'elbow', accepted: [180] },
+      { col: 1, row: 2, type: 'elbow', accepted: [0] },
+      { col: 2, row: 2, type: 'elbow', accepted: [180] },
+      { col: 2, row: 3, type: 'elbow', accepted: [0] },
+      { col: 3, row: 3, type: 'elbow', accepted: [180] }
+    ]
   ];
+  let PIPE_FUNCTIONAL = PIPE_PATH_VARIANTS[0];
   const PIPE_ARMS = {
     straight: ['pipe-arm-w', 'pipe-arm-e'],
     elbow:    ['pipe-arm-n', 'pipe-arm-e'],
@@ -985,6 +1025,7 @@
   let pipeState = {};
 
   function initMiniGame2(){
+    PIPE_FUNCTIONAL = PIPE_PATH_VARIANTS[Math.floor(Math.random() * PIPE_PATH_VARIANTS.length)];
     const container = document.getElementById('minigame-container');
     const funcMap = {};
     PIPE_FUNCTIONAL.forEach(f => funcMap[`${f.col},${f.row}`] = f);
@@ -1065,6 +1106,22 @@
     {
       atoms: [ {x:0,y:0,c:'cyan'}, {x:1,y:0,c:'teal'}, {x:1,y:1,c:'gold'}, {x:-1,y:0,c:'emerald'} ],
       bonds: [ [0,1], [1,2], [0,3] ]
+    },
+    {
+      // diagonal staircase — no branch at all, reads very differently from the L-shapes above
+      atoms: [ {x:0,y:0,c:'cyan'}, {x:1,y:0,c:'teal'}, {x:1,y:1,c:'gold'}, {x:2,y:1,c:'emerald'} ],
+      bonds: [ [0,1], [1,2], [2,3] ]
+    },
+    {
+      // three-armed "Y" — geometry alone is near mirror-symmetric, so the color
+      // placement on the two upper arms is what makes mirroring a genuine trap
+      atoms: [ {x:0,y:0,c:'cyan'}, {x:-1,y:-1,c:'teal'}, {x:1,y:-1,c:'gold'}, {x:0,y:1,c:'emerald'} ],
+      bonds: [ [0,1], [0,2], [0,3] ]
+    },
+    {
+      // staircase running the opposite diagonal direction from shape 3
+      atoms: [ {x:0,y:0,c:'teal'}, {x:0,y:-1,c:'cyan'}, {x:1,y:-1,c:'gold'}, {x:1,y:-2,c:'emerald'} ],
+      bonds: [ [0,1], [1,2], [2,3] ]
     }
   ];
 
@@ -1170,15 +1227,31 @@
   }
 
   // ==================================================================
-  // MINI-GAME 4 — Molecular Substitution Cipher (kuadrat & akar)
+  // MINI-GAME 4 — Molecular Substitution Cipher (kuadrat & akar, 10 variasi)
   // ==================================================================
+  const CIPHER_SETS = [
+    { A:5, B:4, C:7, k1:11, m1:36, n:3, m3:29 },
+    { A:6, B:3, C:8, k1:9,  m1:45, n:3, m3:46 },
+    { A:4, B:5, C:9, k1:20, m1:36, n:3, m3:61 },
+    { A:7, B:9, C:9, k1:1,  m1:50, n:4, m3:18 },
+    { A:3, B:6, C:8, k1:30, m1:39, n:3, m3:46 },
+    { A:8, B:1, C:5, k1:2,  m1:66, n:3, m3:17 },
+    { A:2, B:7, C:6, k1:30, m1:34, n:3, m3:22 },
+    { A:9, B:7, C:8, k1:5,  m1:86, n:4, m3:1  },
+    { A:1, B:8, C:9, k1:15, m1:16, n:3, m3:73 },
+    { A:7, B:2, C:4, k1:15, m1:64, n:3, m3:2  }
+  ];
+  let cipherSet = null;
+
   function initMiniGame4(){
+    cipherSet = CIPHER_SETS[Math.floor(Math.random() * CIPHER_SETS.length)];
+    const s = cipherSet;
     const container = document.getElementById('minigame-container');
     container.innerHTML = `
       <div class="cip-equations">
-        <div class="cip-eq-row"><span><span class="cip-molecule">A</span>&sup2; + 11 = 36</span></div>
-        <div class="cip-eq-row"><span>&radic;(<span class="cip-molecule">B</span> + <span class="cip-molecule">A</span>) = 3</span></div>
-        <div class="cip-eq-row"><span><span class="cip-molecule">C</span>&sup2; &minus; (<span class="cip-molecule">B</span> &times; <span class="cip-molecule">A</span>) = 29</span></div>
+        <div class="cip-eq-row"><span><span class="cip-molecule">A</span>&sup2; + ${s.k1} = ${s.m1}</span></div>
+        <div class="cip-eq-row"><span>&radic;(<span class="cip-molecule">B</span> + <span class="cip-molecule">A</span>) = ${s.n}</span></div>
+        <div class="cip-eq-row"><span><span class="cip-molecule">C</span>&sup2; &minus; (<span class="cip-molecule">B</span> &times; <span class="cip-molecule">A</span>) = ${s.m3}</span></div>
       </div>
       <div class="cip-vault" id="cip-vault">
         <input class="cip-digit" id="cip-0" maxlength="1" inputmode="numeric" placeholder="A">
@@ -1204,7 +1277,8 @@
   function cipherCheck(){
     if (currentRound !== 3) return;
     const code = ['cip-0','cip-1','cip-2'].map(id => document.getElementById(id).value).join('');
-    if (code === '547'){
+    const correctCode = `${cipherSet.A}${cipherSet.B}${cipherSet.C}`;
+    if (code === correctCode){
       miniGameSuccess();
     } else {
       mgShake('#cip-vault');
