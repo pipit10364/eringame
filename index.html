@@ -58,7 +58,7 @@
   }
 
   /* ---------- Welcome Screen ---------- */
-  .welcome-wrap{ max-width: 640px; width: 100%; text-align: center; }
+  .welcome-wrap{ max-width: min(760px, 92vw); width: 100%; text-align: center; }
 
   .eyebrow-mark{
     display: inline-flex; align-items: center; gap: 10px;
@@ -150,7 +150,7 @@
   }
 
   /* ---------- Game Screens (shared) ---------- */
-  .game-wrap{ max-width: 760px; width: 100%; }
+  .game-wrap{ max-width: min(1080px, 92vw); width: 100%; }
 
   .timer-bar{
     display: inline-flex; align-items: center; gap: 8px; align-self: center;
@@ -296,7 +296,7 @@
   .grid-item.struck .mark::after{ transform: translate(-50%,-50%) rotate(-45deg); }
 
   /* ---------- Final Submission ---------- */
-  .final-card{ background: var(--bg-panel); border: 1px solid var(--border); border-radius: 6px; padding: 32px; max-width: 640px; width: 100%; }
+  .final-card{ background: var(--bg-panel); border: 1px solid var(--border); border-radius: 6px; padding: 32px; max-width: min(760px, 92vw); width: 100%; }
   .final-group{ margin-bottom: 24px; }
   .final-group-label{ font-size: 0.78rem; letter-spacing: 0.1em; color: var(--gold); margin-bottom: 12px; }
   .chip-row{ display: flex; flex-wrap: wrap; gap: 10px; }
