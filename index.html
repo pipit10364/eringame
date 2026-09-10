@@ -322,6 +322,19 @@
     font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--cyan);
     letter-spacing: 0.06em; margin-bottom: 14px;
   }
+  .result-score-big{
+    margin: 2px 0 6px; font-family: 'Cormorant Garamond', serif; font-weight: 700;
+    font-size: clamp(2.4rem, 8vw, 3.6rem); color: var(--emerald); text-shadow: var(--glow); line-height: 1.1;
+  }
+  .result-score-unit{
+    font-size: 0.4em; color: var(--ink-dim); font-family: 'Manrope', sans-serif;
+    font-weight: 700; letter-spacing: 0.08em; margin-left: 8px; text-transform: uppercase;
+  }
+  .high-score-badge{
+    display: inline-block; margin: 6px 0 10px; padding: 5px 14px; border-radius: 20px;
+    background: rgba(216,185,121,0.12); border: 1px solid var(--gold); color: var(--gold);
+    font-size: 0.76rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  }
 
   /* ---------- Gate / Unlock Screen ---------- */
   .gate-wrap{ max-width: min(720px, 92vw); width: 100%; text-align: center; }
@@ -898,24 +911,44 @@
     if (minutes < 5){
       return {
         title: "The Speedrun Master ⚡",
-        msg: "Luar biasa! Kamu menyelesaikan seluruh rangkaian investigasi ini dengan kecepatan dan presisi yang hampir tidak masuk akal. Kemampuan otakmu dalam memproses pola, mengingat urutan, dan melakukan eksekusi logika berjalan sangat cepat tanpa cela. Kecepatan berpikir dan ketajaman fokus seperti ini benar-benar luar biasa!"
+        msg: "Kecepatanmu di luar dugaan — seluruh rangkaian investigasi ini kamu tuntaskan dengan presisi yang nyaris sempurna. Otakmu memproses pola, mengingat urutan, dan mengeksekusi logika nyaris tanpa jeda. Fokus setajam ini jarang ditemukan."
       };
     } else if (minutes < 10){
       return {
         title: "The Sharp Deductor 🧠",
-        msg: "Luar biasa! Kamu berhasil menuntaskan seluruh teka-teki rumit ini dengan waktu yang sangat mengesankan. Kombinasi antara intuisi yang tajam dan cara berpikir logis yang terstruktur membuatmu mampu mengurai setiap kerumitan dengan tenang. Daya analisis dan ketelitianmu dalam memecahkan masalah benar-benar patut diacungi jempol!"
+        msg: "Kombinasi intuisi tajam dan cara berpikir yang terstruktur bikin kamu menuntaskan seluruh teka-teki rumit ini dengan waktu yang mengesankan. Kamu mengurai tiap kerumitan dengan tenang, dan itu bukan hal yang gampang dilakukan."
       };
     } else if (minutes < 15){
       return {
         title: "The Brilliant Strategist 🔍",
-        msg: "Keren banget! Kamu membuktikan bahwa ketelitian dan kesabaran selalu menghasilkan deduksi yang sempurna. Teka-teki di museum ini memang dirancang untuk menguji daya tahan fokus, dan kamu berhasil melewatinya dengan pendekatan yang sangat sistematis. Kecerdasan, ketenangan, dan pola pikir analitis yang kamu miliki benar-benar terlihat jelas di sini!"
+        msg: "Ketelitian dan kesabaran memang selalu berujung pada deduksi yang sempurna, dan kamu baru saja membuktikannya. Museum ini dirancang untuk menguji daya tahan fokus, dan kamu melewatinya dengan pendekatan yang sistematis dari awal sampai akhir."
       };
     } else {
       return {
         title: "The Mastermind Explorer 🎯",
-        msg: "Selamat! Kamu berhasil membuka seluruh rahasia dan menyelesaikan investigasi ini sampai akhir. Perjalanan ini membutuhkan daya ingat ekstra, ketelitian visual, dan pemikiran logika mendalam yang tidak gampang. Daya juang, rasa ingin tahu, dan dedikasi kamu dalam menyelesaikan apa yang sudah dimulai sungguh mengagumkan!"
+        msg: "Yang penting bukan seberapa cepat, tapi seberapa tuntas — dan kamu berhasil membuka seluruh rahasia sampai akhir. Perjalanan ini menuntut daya ingat ekstra, ketelitian visual, dan pemikiran logika yang dalam. Daya juangmu menyelesaikan apa yang sudah dimulai patut diacungi jempol."
       };
     }
+  }
+
+  // ==================================================================
+  // GAME 1 SCORE (untuk selebrasi + rekor pribadi, terpisah dari skor leaderboard gabungan)
+  // ==================================================================
+  const GAME1_SCORE_BASE = 1000;
+  const GAME1_SCORE_DECAY_EVERY = 3; // detik per 1 poin berkurang
+  const GAME1_BEST_SCORE_KEY = 'eg_game1_best_score_v1';
+
+  function calcGame1Score(ms){
+    const totalSec = Math.floor(ms / 1000);
+    return Math.max(0, GAME1_SCORE_BASE - Math.floor(totalSec / GAME1_SCORE_DECAY_EVERY));
+  }
+
+  function checkAndUpdateBestScore(key, score){
+    const prevRaw = localStorage.getItem(key);
+    const prev = prevRaw ? parseInt(prevRaw, 10) : null;
+    const isNewBest = prev === null || score > prev;
+    if (isNewBest) localStorage.setItem(key, String(score));
+    return isNewBest;
   }
 
   // ==================================================================
@@ -1568,9 +1601,13 @@
       localStorage.setItem(GAME1_TIME_KEY, String(timerElapsedMs));
       const minutes = timerElapsedMs / 60000;
       const cat = timeCategory(minutes);
+      const score1 = calcGame1Score(timerElapsedMs);
+      const isBest = checkAndUpdateBestScore(GAME1_BEST_SCORE_KEY, score1);
       box.className = 'result-box show success';
       box.innerHTML = `
         <div class="result-time">WAKTU TEMPUH: ${formatMs(timerElapsedMs)}</div>
+        <div class="result-score-big">${score1}<span class="result-score-unit">Poin</span></div>
+        ${isBest ? '<div class="high-score-badge">🏆 Rekor Pribadi Baru</div>' : ''}
         <h3>${cat.title}</h3>
         <p>${cat.msg}</p>
         <div class="cta-row" style="margin-top:22px;">
