@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cerebral Hunt Arena — Stage 2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #06111a;
+    --bg-panel: #0c1e29;
+    --bg-card: #102838;
+    --bg-tile: #0d222e;
+    --border: #1d3d49;
+    --border-soft: #16303b;
+    --teal: #2dd4bf;
+    --emerald: #34d399;
+    --cyan: #38bdf8;
+    --ink: #eaf6f3;
+    --ink-dim: #85a4ae;
+    --ink-faint: #4d707c;
+    --struck: #e8827a;
+    --gold: #d8b979;
+    --glow: 0 0 40px rgba(45, 212, 191, 0.15);
+  }
+
+  *{box-sizing:border-box; margin:0; padding:0;}
+
+  body{
+    background:
+      radial-gradient(circle at 15% 10%, rgba(45,212,191,0.08), transparent 45%),
+      radial-gradient(circle at 85% 90%, rgba(56,189,248,0.08), transparent 45%),
+      var(--bg);
+    color: var(--ink);
+    font-family: 'Manrope', sans-serif;
+    min-height: 100vh;
+    line-height: 1.5;
+  }
+
+  .screen{
+    min-height: 100vh;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px 60px;
+  }
+  .screen.active{ display: flex; }
+
+  h1, h2, h3, .display{
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+  }
+
+  /* ---------- Welcome ---------- */
+  .welcome-wrap{ max-width: 660px; width: 100%; text-align: center; }
+
+  .eyebrow-mark{
+    display: inline-flex; align-items: center; gap: 10px;
+    color: var(--gold); font-size: 0.8rem; letter-spacing: 0.14em; margin-bottom: 22px;
+  }
+  .eyebrow-mark::before, .eyebrow-mark::after{
+    content: ""; width: 28px; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold));
+  }
+  .eyebrow-mark::after{ background: linear-gradient(90deg, var(--gold), transparent); }
+
+  .welcome-title{ font-size: clamp(2.1rem, 6vw, 3.3rem); color: var(--ink); text-shadow: var(--glow); line-height: 1.15; }
+  .welcome-sub{ margin-top: 14px; color: var(--teal); font-weight: 600; font-size: 1.02rem; }
+
+  .plaque{
+    margin-top: 36px; text-align: left; background: var(--bg-panel);
+    border: 1px solid var(--border); border-radius: 4px; padding: 30px 28px; position: relative;
+  }
+  .plaque::before, .plaque::after{
+    content: ""; position: absolute; width: 16px; height: 16px;
+    border: 1.5px solid var(--gold); opacity: 0.6;
+  }
+  .plaque::before{ top: 10px; left: 10px; border-right: none; border-bottom: none; }
+  .plaque::after{ bottom: 10px; right: 10px; border-left: none; border-top: none; }
+
+  .cipher-label{
+    font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; letter-spacing: 0.1em;
+    color: var(--gold); margin-bottom: 16px;
+  }
+
+  .plaque p{ margin-bottom: 12px; color: var(--ink-dim); font-size: 0.96rem; }
+  .plaque p:last-child{ margin-bottom: 0; }
+  .plaque strong{ color: var(--ink); font-weight: 700; }
+  .plaque ul{ margin: 4px 0 14px 20px; color: var(--ink-dim); font-size: 0.95rem; }
+  .plaque li{ margin-bottom: 6px; }
+
+  .btn{
+    font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 0.98rem;
+    border: none; border-radius: 3px; padding: 15px 34px; cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease; letter-spacing: 0.01em;
+  }
+  .btn-primary{ background: linear-gradient(120deg, var(--teal), var(--cyan)); color: #04141a; }
+  .btn-primary:hover{ transform: translateY(-2px); box-shadow: 0 10px 30px rgba(45,212,191,0.25); }
+  .btn-primary:active{ transform: translateY(0); }
+  .btn-primary:disabled{ opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+  .btn-secondary{
+    background: transparent; color: var(--teal); border: 1px solid var(--border);
+    font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 0.85rem;
+    border-radius: 3px; padding: 10px 20px; cursor: pointer; transition: border-color 0.15s ease;
+  }
+  .btn-secondary:hover{ border-color: var(--teal); }
+
+  .cta-row{ margin-top: 30px; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+  /* ---------- Lock overlay (fixed clock time) ---------- */
+  .lock-note{ margin-top: 18px; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--ink-faint); }
+  .lock-timer{ margin-top: 10px; font-family: 'JetBrains Mono', monospace; font-size: 1.6rem; color: var(--cyan); letter-spacing: 0.05em; text-shadow: var(--glow); }
+
+  /* ---------- Shared arena chrome ---------- */
+  .arena-wrap{ max-width: 900px; width: 100%; }
+
+  .arena-stats-row{ display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px; }
+  .stat-chip{
+    background: var(--bg-panel); border: 1px solid var(--border); border-radius: 20px;
+    padding: 8px 18px; font-family: 'JetBrains Mono', monospace; font-size: 0.88rem;
+    display: flex; align-items: center; gap: 8px; color: var(--ink-dim);
+  }
+  .stat-chip .stat-val{ font-weight: 700; }
+  .stat-chip.timer .stat-val{ color: var(--cyan); }
+  .stat-chip.timer.low .stat-val{ color: var(--struck); }
+  .stat-chip.score .stat-val{ color: var(--emerald); }
+  .stat-chip.lives .stat-val{ color: var(--gold); }
+
+  .progress-wrap{ margin-bottom: 20px; width: 100%; }
+  .progress-label{ display: flex; justify-content: space-between; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--ink-dim); margin-bottom: 6px; }
+  .progress-track{ height: 10px; border-radius: 6px; background: var(--bg-tile); border: 1px solid var(--border); overflow: hidden; }
+  .progress-fill{ height: 100%; background: linear-gradient(90deg, var(--teal), var(--cyan)); transition: width 0.3s ease; width: 0%; }
+
+  .screen-label{ text-align: center; margin-bottom: 22px; }
+  .screen-label .eyebrow-mark{ margin-bottom: 10px; }
+
+  /* ---------- Logic screen ---------- */
+  .clue-box{
+    background: var(--bg-panel); border: 1px solid var(--border); border-radius: 6px;
+    padding: 18px 22px; margin-bottom: 22px; color: var(--ink-dim); font-size: 0.94rem; line-height: 1.65; width: 100%;
+  }
+  .clue-box strong{ color: var(--gold); }
+
+  .logic-card{ background: var(--bg-panel); border: 1px solid var(--border); border-radius: 6px; padding: 26px 28px; margin-bottom: 24px; width: 100%; }
+  .panel-tag{ color: var(--gold); font-size: 0.78rem; letter-spacing: 0.12em; margin-bottom: 10px; }
+  .logic-question{ font-size: 1.2rem; color: var(--ink); line-height: 1.55; margin-bottom: 20px; }
+  .logic-row{ display: flex; gap: 10px; flex-wrap: wrap; }
+  .logic-row input{
+    flex: 1; min-width: 140px; background: var(--bg-tile); border: 1px solid var(--border);
+    border-radius: 4px; padding: 12px 14px; color: var(--ink); font-family: 'JetBrains Mono', monospace; font-size: 1rem;
+  }
+  .logic-row input:focus{ outline: none; border-color: var(--teal); }
+
+  .feedback{ margin-top: 16px; font-size: 0.9rem; padding: 10px 14px; border-radius: 4px; display: none; }
+  .feedback.show{ display: block; }
+  .feedback.warn{ background: rgba(232,130,122,0.1); color: var(--struck); border: 1px solid rgba(232,130,122,0.3); }
+  .feedback.ok{ background: rgba(52,211,153,0.1); color: var(--emerald); border: 1px solid rgba(52,211,153,0.3); }
+
+  .choice-grid{ display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  @media (max-width: 480px){ .choice-grid{ grid-template-columns: 1fr; } }
+  .choice-btn{
+    background: var(--bg-tile); border: 1px solid var(--border); color: var(--ink);
+    font-family: 'Manrope', sans-serif; font-weight: 600; font-size: 0.94rem;
+    border-radius: 4px; padding: 13px 16px; cursor: pointer; text-align: left;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+  .choice-btn:hover{ border-color: var(--teal); background: rgba(45,212,191,0.06); }
+
+  .all-revealed-note{
+    background: var(--bg-panel); border: 1px solid var(--border); border-radius: 6px;
+    padding: 26px 28px; margin-bottom: 24px; width: 100%; text-align: center; color: var(--ink-dim);
+  }
+
+  /* ---------- Board screen ---------- */
+  .wordbank-grid{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 24px; width: 100%; }
+  @media (max-width: 600px){ .wordbank-grid{ grid-template-columns: repeat(2, 1fr); } }
+  .wordbank-cat{ background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; padding: 14px 10px; text-align: center; }
+  .wordbank-cat-title{ font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; letter-spacing: 0.08em; color: var(--ink-faint); margin-bottom: 8px; }
+  .wordbank-word{ font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; padding: 3px 0; color: var(--ink-faint); letter-spacing: 0.03em; }
+  .wordbank-word.revealed{ color: var(--gold); font-weight: 700; }
+  .wordbank-word.found{ color: var(--emerald); text-decoration: line-through; }
+
+  .ws-board-wrap{ background: var(--bg-panel); border: 1px solid var(--border); border-radius: 6px; padding: 16px; margin-bottom: 22px; display: flex; justify-content: center; overflow-x: auto; width: 100%; }
+  .ws-grid{ display: grid; gap: 3px; user-select: none; -webkit-user-select: none; }
+  .ws-cell{
+    width: clamp(20px, 6vw, 32px); height: clamp(20px, 6vw, 32px);
+    display: flex; align-items: center; justify-content: center;
+    background: var(--bg-tile); border: 1px solid var(--border-soft); border-radius: 3px;
+    font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: clamp(0.68rem, 2.4vw, 0.9rem);
+    color: var(--ink-dim); touch-action: none; cursor: pointer; transition: background 0.1s ease;
+  }
+  .ws-cell.selecting{ background: rgba(56,189,248,0.28); border-color: var(--cyan); color: var(--ink); }
+  .ws-cell.found{ background: rgba(52,211,153,0.2); border-color: var(--emerald); color: var(--emerald); }
+
+  /* ---------- End screens ---------- */
+  .result-box{ margin-top: 34px; text-align: center; background: var(--bg-panel); border: 1px solid var(--border); border-radius: 6px; padding: 34px 28px; max-width: 560px; }
+  .result-box.success{ border-color: var(--emerald); }
+  .result-box.timeup{ border-color: var(--struck); }
+  .result-time{ font-family: 'JetBrains Mono', monospace; color: var(--cyan); font-size: 0.92rem; letter-spacing: 0.08em; margin-bottom: 10px; }
+  .result-box h3{ font-size: 1.9rem; margin-bottom: 14px; color: var(--ink); }
+  .result-box p{ color: var(--ink-dim); font-size: 0.98rem; margin-bottom: 8px; }
+
+  .bday-popup{ margin-top: 22px; padding: 22px 24px; border: 1px solid var(--gold); border-radius: 6px; background: rgba(216,185,121,0.06); text-align: center; }
+  .bday-popup p{ color: var(--ink); font-size: 1.02rem; line-height: 1.7; }
+  .bday-popup .bday-name{ color: var(--gold); font-weight: 700; }
+
+  @keyframes shake{
+    10%,90%{ transform: translateX(-1px); }
+    20%,80%{ transform: translateX(2px); }
+    30%,50%,70%{ transform: translateX(-4px); }
+    40%,60%{ transform: translateX(4px); }
+  }
+  .shake{ animation: shake 0.45s; }
+</style>
+</head>
+<body>
+
+  <!-- ================= WELCOME / LOCK SCREEN ================= -->
+  <div class="screen active" id="screen-welcome">
+    <div class="welcome-wrap">
+      <div class="eyebrow-mark">STAGE 02</div>
+      <h1 class="welcome-title">Cerebral Hunt Arena</h1>
+      <p class="welcome-sub">Logic meets word hunt. No time to think twice.</p>
+
+      <div class="plaque">
+        <div class="cipher-label">BRIEFING</div>
+        <p class="salutation" style="color:var(--ink);font-weight:700;">Selamat datang kembali, Investigator.</p>
+        <p>Sebuah papan besar penuh huruf menyimpan <strong>12 kata rahasia</strong> tersembunyi di dalamnya. Kamu belum tahu di mana letaknya — sampai kamu membuka petunjuknya sendiri:</p>
+        <ul>
+          <li><strong>Layar Logika</strong> — jawab soal, setiap jawaban benar membongkar nama satu kata yang tersembunyi di papan.</li>
+          <li><strong>Layar Papan</strong> — geser jari atau klik-tarik lurus (horizontal, vertikal, atau diagonal) menyusuri huruf untuk menemukan kata yang sudah terbongkar namanya.</li>
+        </ul>
+        <p>Kedua layar itu bisa kamu pindah bolak-balik kapan saja. Waktu terus berjalan sejak kamu mulai, dan bonus skor menyusut tiap detik, jadi makin cepat makin baik.</p>
+        <div class="warning-box" style="margin-top:16px;padding:16px 18px;border:1px solid rgba(216,185,121,0.4);background:rgba(216,185,121,0.06);border-radius:4px;color:var(--gold);font-size:0.9rem;text-align:left;line-height:1.6;">
+          Temukan semua 12 kata untuk membuka pesan rahasia di akhir arena.
+        </div>
+      </div>
+
+      <div class="cta-row">
+        <button class="btn btn-primary" id="start-btn" onclick="startArena()" disabled>Masuk Arena</button>
+      </div>
+      <div class="lock-note" id="lock-note"></div>
+      <div class="lock-timer" id="lock-timer"></div>
+    </div>
+  </div>
+
+  <!-- ================= LOGIC SCREEN ================= -->
+  <div class="screen" id="screen-logic">
+    <div class="arena-wrap">
+      <div class="arena-stats-row">
+        <div class="stat-chip timer js-timer-chip">WAKTU <span class="stat-val js-timer-val">00:00</span></div>
+        <div class="stat-chip score">SKOR <span class="stat-val js-score-val">0</span></div>
+        <div class="stat-chip lives">NYAWA <span class="stat-val js-lives-val">3</span>/3</div>
+      </div>
+      <div class="progress-wrap">
+        <div class="progress-label"><span>Kata ditemukan</span><span class="js-progress-text">0 / 12</span></div>
+        <div class="progress-track"><div class="progress-fill js-progress-fill"></div></div>
+      </div>
+
+      <div class="screen-label"><div class="eyebrow-mark">LAYAR LOGIKA</div></div>
+
+      <div class="clue-box">
+        Papan menyimpan 12 kata dari 4 tema: Animals, Food &amp; Drinks, Colors, Professions. Jawab benar untuk membongkar nama satu kata, lalu pindah ke Layar Papan untuk mencarinya. Jawaban salah mengurangi nyawa — nyawa yang habis butuh 10 menit untuk pulih.
+      </div>
+
+      <div class="logic-card" id="logic-card-active">
+        <div class="panel-tag">SOAL LOGIKA</div>
+        <div class="logic-question" id="logic-question">—</div>
+        <div class="logic-row" id="logic-number-row">
+          <input type="text" id="logic-input" placeholder="Jawabanmu…" autocomplete="off">
+          <button class="btn btn-primary" onclick="submitLogic()">Cek Jawaban</button>
+        </div>
+        <div class="choice-grid" id="logic-choice-row"></div>
+        <div class="feedback" id="logic-feedback"></div>
+      </div>
+
+      <div class="all-revealed-note" id="all-revealed-note" style="display:none;"></div>
+      <div class="all-revealed-note" id="lives-empty-note" style="display:none;">
+        Nyawa habis. Nyawa berikutnya pulih dalam <span id="lives-countdown">10:00</span> — sementara itu, cari kata yang sudah terbongkar di Layar Papan.
+      </div>
+
+      <div class="cta-row">
+        <button class="btn btn-secondary" onclick="goToBoard()">Ke Layar Papan</button>
+        <button class="btn btn-secondary" onclick="manualFinish()">Selesai &amp; Lihat Skor</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= BOARD SCREEN ================= -->
+  <div class="screen" id="screen-board">
+    <div class="arena-wrap">
+      <div class="arena-stats-row">
+        <div class="stat-chip timer js-timer-chip">WAKTU <span class="stat-val js-timer-val">00:00</span></div>
+        <div class="stat-chip score">SKOR <span class="stat-val js-score-val">0</span></div>
+        <div class="stat-chip lives">NYAWA <span class="stat-val js-lives-val">3</span>/3</div>
+      </div>
+      <div class="progress-wrap">
+        <div class="progress-label"><span>Kata ditemukan</span><span class="js-progress-text">0 / 12</span></div>
+        <div class="progress-track"><div class="progress-fill js-progress-fill"></div></div>
+      </div>
+
+      <div class="screen-label"><div class="eyebrow-mark">LAYAR PAPAN</div></div>
+
+      <div class="panel-tag" style="margin-bottom:14px;">DAFTAR KATA</div>
+      <div class="wordbank-grid" id="wordbank-grid"></div>
+
+      <div class="ws-board-wrap"><div class="ws-grid" id="ws-grid"></div></div>
+
+      <div class="cta-row">
+        <button class="btn btn-secondary" id="back-to-logic-btn" onclick="goToLogic()">Jawab Soal Lagi</button>
+        <button class="btn btn-secondary" onclick="manualFinish()">Selesai &amp; Lihat Skor</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= END SCREEN ================= -->
+  <div class="screen" id="screen-end">
+    <div class="welcome-wrap" id="end-content"></div>
+  </div>
+
+<script>
+  // ==================================================================
+  // CONFIG — EDIT INI SEBELUM DIKIRIM KE ERIN
+  // ==================================================================
+  const STAGE_UNLOCK_AT = new Date('2020-01-01T00:00:00'); // ganti ke jadwal asli sebelum deploy
+  const BONUS_START = 200;       // bonus skor maksimum di detik ke-0
+  const BONUS_DECAY_EVERY = 2;   // bonus berkurang 1 poin tiap 2 detik berjalan
+  const GRID_SIZE = 13;
+
+  // ==================================================================
+  // DATA
+  // ==================================================================
+  const CATEGORIES = {
+    animals:      { label: 'ANIMALS',       words: ['CAT','BIRD','MAGPIE'] },
+    food:         { label: 'FOOD & DRINKS', words: ['EGG','SOUP','COFFEE'] },
+    colors:       { label: 'COLORS',        words: ['BLUE','GREEN','ORANGE'] },
+    professions:  { label: 'PROFESSIONS',   words: ['CASTER','SINGER','DOCTOR'] },
+  };
+
+  const WORD_LIST = [];
+  Object.keys(CATEGORIES).forEach(key => {
+    CATEGORIES[key].words.forEach(w => WORD_LIST.push({ word: w, catKey: key }));
+  });
+  const TOTAL_WORDS = WORD_LIST.length;
+
+  const LOGIC_BANK = [
+    { type: 'number', q: 'Sebuah kultur diawali dari 3 sel. Setiap 20 detik, jumlah sel berlipat dua (1 sel membelah menjadi 2 sel). Setelah 1 menit (60 detik) berlalu, berapa total sel yang ada?', a: 24 },
+    { type: 'number', q: 'Sebuah mobil menempuh jarak 1,5 km dalam waktu 30 detik dengan kecepatan konstan. Berapa kecepatan mobil tersebut dalam km/jam?', a: 180 },
+    { type: 'choice', q: 'Lengkapi analogi ini: Sel : Membran = Rumah : ?', options: ['Dinding','Atap','Lantai','Pintu'], a: 'Dinding' },
+    { type: 'choice', q: 'Mana yang paling beda sendiri dari kelompok ini?', options: ['Mikroskop','Teleskop','Termometer','Megafon'], a: 'Megafon' },
+    { type: 'text', q: 'Lengkapi pola tangga nada berikut: Do, Re, Mi, ?, Sol', accept: ['fa'] },
+    { type: 'choice', q: 'Sebuah alat musik diam kalau dipetik lembut, tapi bersuara panjang kalau digesek dengan busur. Alat musik apa ini?', options: ['Biola','Gitar','Piano','Drum'], a: 'Biola' },
+    { type: 'number', q: 'Tim balap F1 melakukan pit stop: 2 detik untuk mengganti keempat ban secara bersamaan, ditambah 1 detik untuk manuver masuk dan keluar pit. Berapa total waktu pit stop tersebut, dalam detik?', a: 3 },
+    { type: 'choice', q: 'Di tengah pertunjukan teater panjang, biasanya ada waktu singkat untuk penonton beristirahat sebelum babak berikutnya. Istilah untuk waktu ini adalah?', options: ['Jeda','Klimaks','Prolog','Epilog'], a: 'Jeda' },
+    { type: 'number', q: 'Air murni memiliki tingkat keasaman netral pada skala pH. Berapa nilai pH air murni tersebut?', a: 7 },
+    { type: 'choice', q: 'Mana yang bukan bagian dari sel tumbuhan?', options: ['Nukleus','Mitokondria','Kloroplas','Insang'], a: 'Insang' },
+    { type: 'choice', q: 'Lengkapi analogi ini: Oksigen : Manusia = Klorofil : ?', options: ['Tumbuhan','Air','Tanah','Matahari'], a: 'Tumbuhan' },
+    { type: 'choice', q: 'Molekul ini membawa cetak biru kehidupan dalam untaian ganda di setiap sel makhluk hidup. Apa namanya?', options: ['DNA','RNA','Protein','Enzim'], a: 'DNA' },
+    { type: 'choice', q: 'Mana yang bukan warna bendera balap F1?', options: ['Kotak-kotak','Kuning','Merah','Ungu'], a: 'Ungu' },
+    { type: 'choice', q: 'Lengkapi analogi ini: Pit stop : Ban = Bengkel : ?', options: ['Mobil','Rumah','Toko','Sekolah'], a: 'Mobil' },
+    { type: 'number', q: 'Podium balapan F1 terdiri dari juara 1, juara 2, dan juara ke berapa lagi?', a: 3 },
+    { type: 'choice', q: 'Bendera ini dikibarkan untuk pembalap yang melewati garis finis lebih dulu. Bendera apa ini?', options: ['Bendera Kotak-kotak','Bendera Kuning','Bendera Merah','Bendera Hijau'], a: 'Bendera Kotak-kotak' },
+    { type: 'choice', q: 'Mana yang bukan alat musik gesek?', options: ['Biola','Cello','Gitar','Kontrabas'], a: 'Gitar' },
+    { type: 'choice', q: 'Lengkapi analogi ini: Not : Melodi = Kata : ?', options: ['Kalimat','Huruf','Buku','Bab'], a: 'Kalimat' },
+    { type: 'choice', q: 'Alat musik ini punya 88 tuts hitam dan putih, dimainkan dengan sepuluh jari. Alat musik apa ini?', options: ['Piano','Gitar','Biola','Drum'], a: 'Piano' },
+    { type: 'choice', q: 'Mana yang bukan bagian dari panggung teater?', options: ['Backstage','Auditorium','Wing','Akuarium'], a: 'Akuarium' },
+    { type: 'choice', q: 'Lengkapi analogi ini: Sutradara : Film = Sutradara Panggung : ?', options: ['Teater','Konser','Film','Radio'], a: 'Teater' },
+    { type: 'choice', q: 'Benda ini dipakai aktor untuk menyembunyikan wajah aslinya dan menjadi karakter lain. Apa namanya?', options: ['Topeng','Kostum','Wig','Sepatu'], a: 'Topeng' },
+    { type: 'choice', q: 'Sebuah drama biasanya dibagi menjadi beberapa bagian besar yang disebut apa?', options: ['Babak','Bab','Episode','Season'], a: 'Babak' },
+    { type: 'choice', q: 'Mana yang bukan termasuk sumber energi terbarukan?', options: ['Matahari','Angin','Batu Bara','Air'], a: 'Batu Bara' },
+    { type: 'choice', q: 'Lengkapi analogi ini: Matahari : Cahaya = Tumbuhan : ?', options: ['Oksigen','Karbon','Tanah','Awan'], a: 'Oksigen' },
+    { type: 'choice', q: 'Hutan hujan Amazon sering dijuluki apa karena perannya menghasilkan oksigen untuk dunia?', options: ['Paru-paru Dunia','Jantung Bumi','Otak Hijau','Nafas Alam'], a: 'Paru-paru Dunia' },
+    { type: 'choice', q: 'Mana yang bukan termasuk prinsip 3R dalam menjaga lingkungan?', options: ['Reduce','Reuse','Recycle','Replace'], a: 'Replace' },
+  ];
+
+  // ==================================================================
+  // STATE
+  // ==================================================================
+  let baseScore = 0;
+  let elapsedSec = 0;
+  let timerHandle = null;
+  let solvedTotal = 0;
+
+  let logicBag = [];
+  let currentLogic = null;
+
+  let revealPool = [];
+  let revealedWords = new Set();
+  let foundWords = new Set();
+
+  let gridLetters = [];
+  let gridCells = [];
+
+  let selecting = false;
+  let selStart = null;
+  let selPath = [];
+
+  const LIVES_MAX = 3;
+  const LIFE_REGEN_MS = 10 * 60 * 1000; // 10 menit
+  let lives = LIVES_MAX;
+  let nextLifeAt = null;
+
+  // ==================================================================
+  // LOCK SCREEN
+  // ==================================================================
+  function checkLock(){
+    const now = new Date();
+    const startBtn = document.getElementById('start-btn');
+    const note = document.getElementById('lock-note');
+    const timerEl = document.getElementById('lock-timer');
+
+    if (now >= STAGE_UNLOCK_AT){
+      startBtn.disabled = false;
+      note.textContent = 'Arena sudah terbuka. Selamat berjuang!';
+      timerEl.textContent = '';
+      return;
+    }
+    startBtn.disabled = true;
+    note.textContent = 'Arena terbuka pada ' + STAGE_UNLOCK_AT.toLocaleString('id-ID', { dateStyle: 'full', timeStyle: 'short' });
+    const remain = STAGE_UNLOCK_AT - now;
+    const totalSec = Math.max(0, Math.floor(remain / 1000));
+    const hh = String(Math.floor(totalSec / 3600)).padStart(2,'0');
+    const mm = String(Math.floor((totalSec % 3600) / 60)).padStart(2,'0');
+    const ss = String(totalSec % 60).padStart(2,'0');
+    timerEl.textContent = `${hh}:${mm}:${ss}`;
+  }
+  checkLock();
+  setInterval(checkLock, 1000);
+
+  // ==================================================================
+  // SCREEN NAV
+  // ==================================================================
+  function showScreen(id){
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0,0);
+  }
+
+  function goToLogic(){
+    refreshLogicScreenState();
+    showScreen('screen-logic');
+  }
+
+  function goToBoard(){
+    showScreen('screen-board');
+  }
+
+  // ==================================================================
+  // ARENA START / RESET
+  // ==================================================================
+  function startArena(){
+    if (new Date() < STAGE_UNLOCK_AT) return;
+
+    baseScore = 0;
+    elapsedSec = 0;
+    solvedTotal = 0;
+    revealedWords = new Set();
+    foundWords = new Set();
+    revealPool = shuffleArray(WORD_LIST.map(w => w.word));
+    logicBag = [];
+    refillLogicBag();
+    lives = LIVES_MAX;
+    nextLifeAt = null;
+
+    buildAndRenderGrid();
+    renderWordbank();
+    updateProgress();
+    updateStatChips();
+    updateLivesDisplay();
+    nextLogicQuestion();
+    startTimer();
+    goToLogic();
+  }
+
+  function shuffleArray(arr){
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function startTimer(){
+    updateTimerDisplay();
+    clearInterval(timerHandle);
+    timerHandle = setInterval(() => {
+      elapsedSec++;
+      updateTimerDisplay();
+      updateStatChips();
+      tickLivesRegen();
+    }, 1000);
+  }
+
+  function updateLivesDisplay(){
+    document.querySelectorAll('.js-lives-val').forEach(el => el.textContent = lives);
+  }
+
+  function updateLivesCountdown(){
+    const el = document.getElementById('lives-countdown');
+    if (!el || nextLifeAt === null) return;
+    const remain = Math.max(0, nextLifeAt - Date.now());
+    const mm = String(Math.floor(remain / 60000)).padStart(2,'0');
+    const ss = String(Math.floor((remain % 60000) / 1000)).padStart(2,'0');
+    el.textContent = `${mm}:${ss}`;
+  }
+
+  function loseLife(){
+    if (lives <= 0) return;
+    lives--;
+    updateLivesDisplay();
+    if (nextLifeAt === null) nextLifeAt = Date.now() + LIFE_REGEN_MS;
+    refreshLogicScreenState();
+  }
+
+  function tickLivesRegen(){
+    if (lives >= LIVES_MAX || nextLifeAt === null) return;
+    if (Date.now() >= nextLifeAt){
+      const wasLocked = lives <= 0;
+      lives++;
+      updateLivesDisplay();
+      nextLifeAt = lives < LIVES_MAX ? Date.now() + LIFE_REGEN_MS : null;
+      if (wasLocked && lives > 0 && revealPool.length > 0) nextLogicQuestion();
+      else refreshLogicScreenState();
+    } else {
+      updateLivesCountdown();
+    }
+  }
+
+  function updateTimerDisplay(){
+    const mm = String(Math.floor(elapsedSec / 60)).padStart(2,'0');
+    const ss = String(elapsedSec % 60).padStart(2,'0');
+    document.querySelectorAll('.js-timer-val').forEach(el => el.textContent = `${mm}:${ss}`);
+  }
+
+  function calcBonus(){
+    return Math.max(0, BONUS_START - Math.floor(elapsedSec / BONUS_DECAY_EVERY));
+  }
+
+  function updateStatChips(){
+    const bonus = calcBonus();
+    document.querySelectorAll('.js-score-val').forEach(el => el.textContent = baseScore + bonus);
+    document.querySelectorAll('.js-timer-chip').forEach(el => el.classList.toggle('low', bonus <= 0));
+  }
+
+  function updateProgress(){
+    document.querySelectorAll('.js-progress-text').forEach(el => el.textContent = `${solvedTotal} / ${TOTAL_WORDS}`);
+    document.querySelectorAll('.js-progress-fill').forEach(el => el.style.width = `${Math.round((solvedTotal / TOTAL_WORDS) * 100)}%`);
+  }
+
+  // ==================================================================
+  // LOGIC PHASE
+  // ==================================================================
+  function refillLogicBag(){
+    logicBag = LOGIC_BANK.map((_, i) => i);
+    for (let i = logicBag.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random() * (i + 1));
+      [logicBag[i], logicBag[j]] = [logicBag[j], logicBag[i]];
+    }
+  }
+
+  function refreshLogicScreenState(){
+    const allRevealed = revealPool.length === 0;
+    const card = document.getElementById('logic-card-active');
+    const revealedNote = document.getElementById('all-revealed-note');
+    const livesNote = document.getElementById('lives-empty-note');
+
+    if (allRevealed){
+      card.style.display = 'none';
+      livesNote.style.display = 'none';
+      revealedNote.style.display = 'block';
+      revealedNote.textContent = `Semua ${TOTAL_WORDS} nama kata sudah terbongkar. Baru ditemukan ${solvedTotal} dari ${TOTAL_WORDS} — sisanya cari di Layar Papan.`;
+    } else if (lives <= 0){
+      card.style.display = 'none';
+      revealedNote.style.display = 'none';
+      livesNote.style.display = 'block';
+    } else {
+      card.style.display = 'block';
+      revealedNote.style.display = 'none';
+      livesNote.style.display = 'none';
+    }
+  }
+
+  function nextLogicQuestion(){
+    refreshLogicScreenState();
+    if (revealPool.length === 0 || lives <= 0) return;
+
+    if (logicBag.length === 0) refillLogicBag();
+    const idx = logicBag.pop();
+    currentLogic = LOGIC_BANK[idx];
+    document.getElementById('logic-question').textContent = currentLogic.q;
+
+    const fb = document.getElementById('logic-feedback');
+    fb.className = 'feedback';
+    fb.textContent = '';
+
+    const numberRow = document.getElementById('logic-number-row');
+    const choiceRow = document.getElementById('logic-choice-row');
+
+    if (currentLogic.type === 'choice'){
+      numberRow.style.display = 'none';
+      choiceRow.style.display = 'grid';
+      const shuffledOptions = shuffleArray(currentLogic.options);
+      choiceRow.innerHTML = shuffledOptions.map(opt =>
+        `<button class="choice-btn" onclick="submitChoice(this, '${opt.replace(/'/g, "\\'")}')">${opt}</button>`
+      ).join('');
+    } else {
+      numberRow.style.display = 'flex';
+      choiceRow.style.display = 'none';
+      document.getElementById('logic-input').value = '';
+    }
+  }
+
+  function handleCorrect(fb){
+    baseScore++;
+    updateStatChips();
+    const revealed = revealNextWord();
+    fb.className = 'feedback show ok';
+    fb.textContent = revealed ? `Tepat! Kata "${revealed}" baru saja terbongkar.` : 'Tepat! Semua kata sudah terbongkar.';
+    setTimeout(() => { nextLogicQuestion(); goToBoard(); }, 900);
+  }
+
+  function handleWrong(fb){
+    fb.className = 'feedback show warn';
+    fb.textContent = 'Belum tepat, nyawa berkurang 1.';
+    mgShake('#logic-card-active');
+    loseLife();
+  }
+
+  function submitLogic(){
+    if (!currentLogic || currentLogic.type === 'choice') return;
+    const input = document.getElementById('logic-input');
+    const raw = input.value;
+    const fb = document.getElementById('logic-feedback');
+
+    if (!raw.trim()){
+      mgShake('#logic-input');
+      return;
+    }
+
+    let correct = false;
+    if (currentLogic.type === 'number'){
+      const val = parseFloat(raw);
+      correct = !isNaN(val) && val === currentLogic.a;
+    } else if (currentLogic.type === 'text'){
+      correct = currentLogic.accept.includes(raw.trim().toLowerCase());
+    }
+
+    if (correct) handleCorrect(fb);
+    else handleWrong(fb);
+  }
+
+  function submitChoice(btnEl, chosen){
+    if (!currentLogic || currentLogic.type !== 'choice') return;
+    const fb = document.getElementById('logic-feedback');
+    if (chosen === currentLogic.a){
+      handleCorrect(fb);
+    } else {
+      handleWrong(fb);
+    }
+  }
+
+  function revealNextWord(){
+    if (revealPool.length === 0) return null;
+    const word = revealPool.pop();
+    revealedWords.add(word);
+    renderWordbank();
+    document.getElementById('back-to-logic-btn').style.display = revealPool.length === 0 ? 'none' : 'inline-block';
+    return word;
+  }
+
+  function mgShake(selector){
+    const el = document.querySelector(selector);
+    if (!el) return;
+    el.classList.remove('shake');
+    void el.offsetWidth;
+    el.classList.add('shake');
+  }
+
+  // ==================================================================
+  // WORD BANK
+  // ==================================================================
+  function renderWordbank(){
+    const grid = document.getElementById('wordbank-grid');
+    grid.innerHTML = '';
+    Object.keys(CATEGORIES).forEach(key => {
+      const cat = CATEGORIES[key];
+      const card = document.createElement('div');
+      card.className = 'wordbank-cat';
+      const rows = cat.words.map(w => {
+        let cls = '';
+        let label = '???';
+        if (foundWords.has(w)){ cls = 'found'; label = w; }
+        else if (revealedWords.has(w)){ cls = 'revealed'; label = w; }
+        return `<div class="wordbank-word ${cls}">${label}</div>`;
+      }).join('');
+      card.innerHTML = `<div class="wordbank-cat-title">${cat.label}</div>${rows}`;
+      grid.appendChild(card);
+    });
+  }
+
+  // ==================================================================
+  // WORD SEARCH GRID
+  // ==================================================================
+  function buildGrid(words){
+    const size = GRID_SIZE;
+    const grid = Array.from({ length: size }, () => Array(size).fill(null));
+    const dirs = [[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]];
+    const sorted = [...words].sort((a,b) => b.length - a.length);
+
+    function validRange(delta, len){
+      if (delta === 1) return [0, size - len];
+      if (delta === -1) return [len - 1, size - 1];
+      return [0, size - 1];
+    }
+
+    sorted.forEach(word => {
+      let placed = false;
+      const shuffledDirs = shuffleArray(dirs);
+      for (const [dr, dc] of shuffledDirs){
+        if (placed) break;
+        const [rMin, rMax] = validRange(dr, word.length);
+        const [cMin, cMax] = validRange(dc, word.length);
+        if (rMin > rMax || cMin > cMax) continue;
+
+        for (let attempt = 0; attempt < 60 && !placed; attempt++){
+          const row = rMin + Math.floor(Math.random() * (rMax - rMin + 1));
+          const col = cMin + Math.floor(Math.random() * (cMax - cMin + 1));
+          let ok = true;
+          const cells = [];
+          for (let i = 0; i < word.length; i++){
+            const r = row + dr * i, c = col + dc * i;
+            const existing = grid[r][c];
+            if (existing && existing !== word[i]){ ok = false; break; }
+            cells.push([r, c]);
+          }
+          if (!ok) continue;
+          cells.forEach(([r, c], i) => { grid[r][c] = word[i]; });
+          placed = true;
+        }
+      }
+      if (!placed){
+        outer:
+        for (let row = 0; row < size; row++){
+          for (let col = 0; col < size; col++){
+            for (const [dr, dc] of dirs){
+              const endR = row + dr * (word.length - 1);
+              const endC = col + dc * (word.length - 1);
+              if (endR < 0 || endR >= size || endC < 0 || endC >= size) continue;
+              const cells = [];
+              let ok = true;
+              for (let i = 0; i < word.length; i++){
+                const r = row + dr * i, c = col + dc * i;
+                if (grid[r][c] && grid[r][c] !== word[i]){ ok = false; break; }
+                cells.push([r, c]);
+              }
+              if (ok){
+                cells.forEach(([r, c], i) => { grid[r][c] = word[i]; });
+                placed = true;
+                break outer;
+              }
+            }
+          }
+        }
+      }
+    });
+
+    const ALPHA = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    for (let r = 0; r < size; r++)
+      for (let c = 0; c < size; c++)
+        if (!grid[r][c]) grid[r][c] = ALPHA[Math.floor(Math.random() * ALPHA.length)];
+
+    return grid;
+  }
+
+  function buildAndRenderGrid(){
+    gridLetters = buildGrid(WORD_LIST.map(w => w.word));
+    const wrap = document.getElementById('ws-grid');
+    wrap.style.gridTemplateColumns = `repeat(${GRID_SIZE}, 1fr)`;
+    wrap.innerHTML = '';
+    gridCells = [];
+    for (let r = 0; r < GRID_SIZE; r++){
+      const rowCells = [];
+      for (let c = 0; c < GRID_SIZE; c++){
+        const cell = document.createElement('div');
+        cell.className = 'ws-cell';
+        cell.textContent = gridLetters[r][c];
+        cell.dataset.r = r;
+        cell.dataset.c = c;
+        cell.addEventListener('pointerdown', onCellDown);
+        wrap.appendChild(cell);
+        rowCells.push(cell);
+      }
+      gridCells.push(rowCells);
+    }
+    document.addEventListener('pointermove', onPointerMove);
+    document.addEventListener('pointerup', onPointerUp);
+  }
+
+  function cellFromPoint(x, y){
+    const el = document.elementFromPoint(x, y);
+    if (!el || !el.classList.contains('ws-cell')) return null;
+    return { r: parseInt(el.dataset.r), c: parseInt(el.dataset.c) };
+  }
+
+  function onCellDown(e){
+    const r = parseInt(e.currentTarget.dataset.r);
+    const c = parseInt(e.currentTarget.dataset.c);
+    selecting = true;
+    selStart = { r, c };
+    selPath = [{ r, c }];
+    paintSelection();
+  }
+
+  function onPointerMove(e){
+    if (!selecting) return;
+    const cell = cellFromPoint(e.clientX, e.clientY);
+    if (!cell) return;
+    const path = computeLinePath(selStart, cell);
+    if (path) selPath = path;
+    paintSelection();
+  }
+
+  function onPointerUp(){
+    if (!selecting) return;
+    selecting = false;
+    tryMatchSelection();
+    clearTempSelection();
+    selPath = [];
+    selStart = null;
+  }
+
+  function computeLinePath(start, end){
+    const dR = end.r - start.r;
+    const dC = end.c - start.c;
+    if (dR === 0 && dC === 0) return [start];
+    const isStraight = dR === 0 || dC === 0 || Math.abs(dR) === Math.abs(dC);
+    if (!isStraight) return null;
+    const steps = Math.max(Math.abs(dR), Math.abs(dC));
+    const stepR = dR === 0 ? 0 : dR / Math.abs(dR);
+    const stepC = dC === 0 ? 0 : dC / Math.abs(dC);
+    const path = [];
+    for (let i = 0; i <= steps; i++){
+      path.push({ r: start.r + stepR * i, c: start.c + stepC * i });
+    }
+    return path;
+  }
+
+  function paintSelection(){
+    for (let r = 0; r < GRID_SIZE; r++)
+      for (let c = 0; c < GRID_SIZE; c++)
+        if (!gridCells[r][c].classList.contains('found'))
+          gridCells[r][c].classList.remove('selecting');
+    selPath.forEach(({ r, c }) => {
+      if (!gridCells[r][c].classList.contains('found'))
+        gridCells[r][c].classList.add('selecting');
+    });
+  }
+
+  function clearTempSelection(){
+    for (let r = 0; r < GRID_SIZE; r++)
+      for (let c = 0; c < GRID_SIZE; c++)
+        if (!gridCells[r][c].classList.contains('found'))
+          gridCells[r][c].classList.remove('selecting');
+  }
+
+  function tryMatchSelection(){
+    if (selPath.length < 2) return;
+    const forward = selPath.map(({ r, c }) => gridLetters[r][c]).join('');
+    const backward = forward.split('').reverse().join('');
+
+    let matched = null;
+    revealedWords.forEach(w => {
+      if (foundWords.has(w)) return;
+      if (w === forward || w === backward) matched = w;
+    });
+    if (!matched) return;
+
+    foundWords.add(matched);
+    solvedTotal++;
+    baseScore += 2;
+    updateStatChips();
+    updateProgress();
+    renderWordbank();
+    selPath.forEach(({ r, c }) => gridCells[r][c].classList.add('found'));
+
+    if (solvedTotal >= TOTAL_WORDS){
+      clearInterval(timerHandle);
+      endGame(true);
+    }
+  }
+
+  // ==================================================================
+  // END GAME
+  // ==================================================================
+  function manualFinish(){
+    clearInterval(timerHandle);
+    endGame(solvedTotal >= TOTAL_WORDS);
+  }
+
+  function endGame(won){
+    clearInterval(timerHandle);
+    const finalScore = baseScore + calcBonus();
+    const mm = String(Math.floor(elapsedSec / 60)).padStart(2,'0');
+    const ss = String(elapsedSec % 60).padStart(2,'0');
+    showScreen('screen-end');
+    const el = document.getElementById('end-content');
+    if (won){
+      el.innerHTML = `
+        <div class="eyebrow-mark">ARENA CLEARED</div>
+        <h1 class="welcome-title">Semua Kata Ditemukan</h1>
+        <div class="result-box success">
+          <div class="result-time">WAKTU TEMPUH: ${mm}:${ss} · SKOR AKHIR: ${finalScore} POIN</div>
+          <h3>The Cerebral Champion</h3>
+          <p>Kamu berhasil menemukan seluruh kata di papan. Makin cepat, makin besar bonus waktunya.</p>
+        </div>
+        <div class="bday-popup">
+          <p>Congratulations! You cleared all stages.<br>
+          Special Happy Birthday to <span class="bday-name">Erin Larasati Angdika</span>!<br>
+          Keep inspiring and communicating science to the world!</p>
+        </div>
+        <div class="cta-row"><button class="btn btn-primary" onclick="startArena()">Main Lagi</button></div>
+      `;
+    } else {
+      el.innerHTML = `
+        <div class="eyebrow-mark">SESI SELESAI</div>
+        <h1 class="welcome-title">Skor Terkunci</h1>
+        <div class="result-box timeup">
+          <div class="result-time">WAKTU TEMPUH: ${mm}:${ss} · SKOR AKHIR: ${finalScore} POIN</div>
+          <h3>${solvedTotal} dari ${TOTAL_WORDS} kata ditemukan</h3>
+          <p>Bonus waktu terus menyusut selama arena berjalan — main lagi buat coba kejar skor yang lebih tinggi.</p>
+        </div>
+        <div class="cta-row"><button class="btn btn-primary" onclick="startArena()">Main Lagi</button></div>
+      `;
+    }
+  }
+</script>
+</body>
+</html>
