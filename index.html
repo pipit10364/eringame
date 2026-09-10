@@ -6,6 +6,9 @@
 <title>The Secret of the Molecular Museum</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<!-- Firebase (leaderboard) -->
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
 <style>
   :root{
     --bg: #06111a;
@@ -320,6 +323,68 @@
     letter-spacing: 0.06em; margin-bottom: 14px;
   }
 
+  /* ---------- Gate / Unlock Screen ---------- */
+  .gate-wrap{ max-width: min(720px, 92vw); width: 100%; text-align: center; }
+  .gate-note{
+    margin-top: 26px; color: var(--ink-dim); font-size: 0.82rem;
+    letter-spacing: 0.08em; text-transform: uppercase;
+  }
+  .gate-timer{
+    margin-top: 14px; font-family: 'JetBrains Mono', monospace; font-weight: 700;
+    font-size: clamp(2.6rem, 12vw, 6rem); color: var(--cyan); letter-spacing: 0.02em;
+    text-shadow: var(--glow); line-height: 1.05; word-break: break-word;
+  }
+  .gate-sub{ margin-top: 18px; color: var(--ink-faint); font-size: 0.86rem; }
+
+  /* ---------- Username box ---------- */
+  .username-box{
+    margin-top: 26px; text-align: left; background: var(--bg-panel);
+    border: 1px solid var(--border); border-radius: 4px; padding: 20px 22px;
+  }
+  .username-label{
+    display:block; font-family: 'JetBrains Mono', monospace; font-size: 0.74rem;
+    letter-spacing: 0.08em; color: var(--gold); margin-bottom: 10px; text-transform: uppercase;
+  }
+  .username-input{
+    width: 100%; background: var(--bg-tile); border: 1px solid var(--border); border-radius: 4px;
+    padding: 12px 14px; color: var(--ink); font-family: 'JetBrains Mono', monospace; font-size: 1rem;
+    letter-spacing: 0.02em;
+  }
+  .username-input:focus{ outline:none; border-color: var(--teal); }
+  .username-hint{ margin-top: 8px; color: var(--ink-faint); font-size: 0.76rem; }
+  .username-feedback{ margin-top: 8px; font-size: 0.8rem; min-height: 1.1em; }
+  .username-feedback.warn{ color: var(--struck); }
+  .username-feedback.ok{ color: var(--emerald); }
+
+  /* ---------- Leaderboard ---------- */
+  .leaderboard-link{
+    margin-top: 16px; background: transparent; border: none; color: var(--ink-faint);
+    font-family: 'Manrope', sans-serif; font-size: 0.82rem; text-decoration: underline;
+    cursor: pointer; letter-spacing: 0.02em;
+  }
+  .leaderboard-link:hover{ color: var(--teal); }
+  .leaderboard-overlay{
+    position: fixed; inset: 0; background: rgba(6,17,26,0.94); z-index: 60;
+    display: none; align-items: center; justify-content: center; padding: 24px;
+  }
+  .leaderboard-overlay.show{ display: flex; }
+  .leaderboard-box{
+    max-width: min(480px, 92vw); width: 100%; background: var(--bg-panel);
+    border: 1px solid var(--border); border-radius: 6px; padding: 26px 24px; max-height: 80vh; overflow-y: auto;
+  }
+  .leaderboard-box h3{ font-size: 1.4rem; color: var(--gold); margin-bottom: 4px; }
+  .leaderboard-box .lb-hint{ color: var(--ink-faint); font-size: 0.78rem; margin-bottom: 18px; }
+  .leaderboard-row{
+    display: flex; align-items: center; gap: 10px; padding: 10px 4px;
+    border-bottom: 1px solid var(--border-soft); font-size: 0.92rem;
+  }
+  .leaderboard-row:last-child{ border-bottom: none; }
+  .lb-rank{ width: 34px; color: var(--ink-faint); font-family: 'JetBrains Mono', monospace; }
+  .lb-name{ flex: 1; color: var(--ink); font-weight: 700; overflow-wrap: anywhere; }
+  .lb-score{ color: var(--emerald); font-family: 'JetBrains Mono', monospace; font-size: 0.86rem; }
+  .leaderboard-loading, .leaderboard-empty{ color: var(--ink-faint); font-size: 0.88rem; text-align: center; padding: 12px 0; }
+  .leaderboard-close{ margin-top: 18px; width: 100%; }
+
   /* ---------- Mobile (max-width: 859px) ---------- */
   @media (max-width: 859px){
     .screen{ padding: 32px 16px 60px; }
@@ -335,8 +400,19 @@
 </head>
 <body>
 
+<!-- ===================== GATE / UNLOCK SCREEN ===================== -->
+<section class="screen active" id="screen-gate">
+  <div class="gate-wrap">
+    <div class="eyebrow-mark">A Birthday Mystery</div>
+    <h1 class="welcome-title">The Secret of the<br>Molecular Museum</h1>
+    <p class="gate-note" id="gate-note">Permainan akan tersedia dalam</p>
+    <div class="gate-timer" id="gate-timer">00:00:00</div>
+    <p class="gate-sub">Tandai kalendermu — sesuatu akan terbuka.</p>
+  </div>
+</section>
+
 <!-- ===================== WELCOME SCREEN ===================== -->
-<section class="screen active" id="screen-welcome">
+<section class="screen" id="screen-welcome">
   <div class="welcome-wrap">
     <div class="eyebrow-mark">A Birthday Mystery</div>
     <h1 class="welcome-title">The Secret of the<br>Molecular Museum</h1>
@@ -360,12 +436,30 @@
       </div>
     </div>
 
+    <div class="username-box">
+      <label class="username-label" for="username-input">Nama Investigator (untuk Leaderboard)</label>
+      <input type="text" id="username-input" class="username-input" placeholder="contoh: erin.larasati" maxlength="20" autocomplete="off">
+      <div class="username-hint">Hanya huruf kecil, titik (.), dan underscore (_) — 3 sampai 20 karakter. Nama ini dipakai di kedua game, jadi cukup diisi sekali.</div>
+      <div class="username-feedback" id="username-feedback"></div>
+    </div>
+
     <div class="cta-row">
       <div class="lives-bar" id="welcome-lives-bar"></div>
-      <button class="btn btn-primary" onclick="goToGame()">Mulai Petualangan Logika</button>
+      <button class="btn btn-primary" id="start-game-btn" onclick="goToGame()" disabled>Mulai Petualangan Logika</button>
+      <div><button class="leaderboard-link" onclick="openLeaderboard()">Lihat Leaderboard</button></div>
     </div>
   </div>
 </section>
+
+<!-- ===================== LEADERBOARD OVERLAY ===================== -->
+<div class="leaderboard-overlay" id="leaderboard-overlay">
+  <div class="leaderboard-box">
+    <h3>Leaderboard</h3>
+    <div class="lb-hint">Skor diambil dari total waktu penyelesaian Game 1 + Game 2. Makin cepat, makin tinggi skornya.</div>
+    <div id="leaderboard-list"><div class="leaderboard-loading">Memuat leaderboard…</div></div>
+    <button class="btn btn-secondary leaderboard-close" onclick="closeLeaderboard()">Tutup</button>
+  </div>
+</div>
 
 <!-- ===================== MINI-GAME SCREEN ===================== -->
 <section class="screen" id="screen-minigame">
@@ -467,6 +561,7 @@
 
     <div class="round-actions" style="text-align:center;">
       <button class="btn btn-secondary" onclick="location.reload()">Main Lagi</button>
+      <button class="btn btn-secondary" onclick="openLeaderboard()">Lihat Leaderboard</button>
     </div>
   </div>
 </section>
@@ -482,6 +577,139 @@
 </div>
 
 <script>
+  // ==================================================================
+  // FIREBASE (LEADERBOARD) — ganti config di bawah dengan milikmu sendiri
+  // Ambil dari: Firebase Console → Project Settings → General →
+  // "Your apps" → SDK setup and configuration → Config
+  // Pakai Realtime Database (bukan Firestore), rules contoh ada di README.
+  // ==================================================================
+  const firebaseConfig = {
+    apiKey: "AIzaSyDyfktOuIxMwtKfoniVHYvMgd55Ml95gP8",
+    authDomain: "erin-game.firebaseapp.com",
+    databaseURL: "https://erin-game-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "erin-game",
+    storageBucket: "erin-game.firebasestorage.app",
+    messagingSenderId: "303866378537",
+    appId: "1:303866378537:web:f3844c701203391f4b5f38"
+  };
+  let db = null;
+  try {
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.database();
+  } catch (e) {
+    console.warn('Firebase belum dikonfigurasi — leaderboard tidak aktif.', e);
+  }
+
+  // Shared storage keys — HARUS SAMA dengan cerebral-hunt-arena.html
+  const USERNAME_KEY = 'eg_username_v1';
+  const GAME1_TIME_KEY = 'eg_game1_time_ms_v1';
+
+  function isValidUsername(u){
+    return /^[a-z_.]{3,20}$/.test(u);
+  }
+
+  function initUsernameField(){
+    const input = document.getElementById('username-input');
+    const saved = localStorage.getItem(USERNAME_KEY);
+    if (saved) input.value = saved;
+    input.addEventListener('input', () => {
+      input.value = input.value.replace(/[^a-z_.]/g, '');
+      updateUsernameFeedback();
+    });
+    updateUsernameFeedback();
+  }
+
+  function updateUsernameFeedback(){
+    const input = document.getElementById('username-input');
+    const btn = document.getElementById('start-game-btn');
+    const fb = document.getElementById('username-feedback');
+    const val = input.value.trim();
+    const valid = isValidUsername(val);
+    btn.disabled = !valid;
+    if (!val){
+      fb.textContent = '';
+      fb.className = 'username-feedback';
+    } else if (!valid){
+      fb.textContent = 'Gunakan 3–20 karakter: huruf kecil a-z, titik (.), underscore (_).';
+      fb.className = 'username-feedback show warn';
+    } else {
+      fb.textContent = 'Nama siap dipakai ✓';
+      fb.className = 'username-feedback show ok';
+    }
+  }
+
+  function escapeHtml(str){
+    return String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  async function openLeaderboard(){
+    const overlay = document.getElementById('leaderboard-overlay');
+    const listEl = document.getElementById('leaderboard-list');
+    overlay.classList.add('show');
+    listEl.innerHTML = '<div class="leaderboard-loading">Memuat leaderboard…</div>';
+    if (!db){
+      listEl.innerHTML = '<div class="leaderboard-empty">Leaderboard belum dikonfigurasi.</div>';
+      return;
+    }
+    try {
+      const snap = await db.ref('leaderboard').orderByChild('score').limitToLast(10).once('value');
+      const rows = [];
+      snap.forEach(child => rows.push(child.val()));
+      rows.reverse();
+      if (rows.length === 0){
+        listEl.innerHTML = '<div class="leaderboard-empty">Belum ada skor masuk. Jadilah yang pertama!</div>';
+        return;
+      }
+      listEl.innerHTML = rows.map((r, i) => `
+        <div class="leaderboard-row">
+          <span class="lb-rank">#${i + 1}</span>
+          <span class="lb-name">${escapeHtml(r.username)}</span>
+          <span class="lb-score">${Number(r.score).toLocaleString('id-ID')} pts</span>
+        </div>
+      `).join('');
+    } catch (e){
+      listEl.innerHTML = '<div class="leaderboard-empty">Gagal memuat leaderboard.</div>';
+      console.error(e);
+    }
+  }
+
+  function closeLeaderboard(){
+    document.getElementById('leaderboard-overlay').classList.remove('show');
+  }
+
+  function goToNextGame(){
+    window.location.href = 'cerebral-hunt-arena.html';
+  }
+
+  // ==================================================================
+  // GATE / UNLOCK SCREEN — Game 1 muncul 17 November 2026, jam 09:00
+  // ==================================================================
+  const GAME1_UNLOCK_AT = new Date('2024-01-01T00:00:00'); // TESTING: dibuka sementara, ganti balik ke 2026-11-17T09:00:00 sebelum hari-H
+  let gateInterval = null;
+
+  function formatCountdown(ms){
+    const totalSec = Math.max(0, Math.floor(ms / 1000));
+    const d = Math.floor(totalSec / 86400);
+    const h = Math.floor((totalSec % 86400) / 3600);
+    const m = Math.floor((totalSec % 3600) / 60);
+    const s = totalSec % 60;
+    const pad = n => String(n).padStart(2, '0');
+    return d > 0 ? `${d}h ${pad(h)}:${pad(m)}:${pad(s)}` : `${pad(h)}:${pad(m)}:${pad(s)}`;
+  }
+
+  function checkGate(){
+    const now = new Date();
+    if (now >= GAME1_UNLOCK_AT){
+      if (gateInterval){ clearInterval(gateInterval); gateInterval = null; }
+      if (document.getElementById('screen-gate').classList.contains('active')){
+        showScreen('screen-welcome');
+      }
+      return;
+    }
+    const remain = GAME1_UNLOCK_AT - now;
+    document.getElementById('gate-timer').textContent = formatCountdown(remain);
+  }
+
   // ==================================================================
   // DATA
   // ==================================================================
@@ -699,6 +927,13 @@
     window.scrollTo(0,0);
   }
   function goToGame(){
+    const input = document.getElementById('username-input');
+    const val = input.value.trim();
+    if (!isValidUsername(val)){
+      updateUsernameFeedback();
+      return;
+    }
+    localStorage.setItem(USERNAME_KEY, val);
     showScreen('screen-minigame');
     startTimer();
   }
@@ -1330,6 +1565,7 @@
                      finalSelection.codes === ANSWER.codes;
     if (correct){
       stopTimer();
+      localStorage.setItem(GAME1_TIME_KEY, String(timerElapsedMs));
       const minutes = timerElapsedMs / 60000;
       const cat = timeCategory(minutes);
       box.className = 'result-box show success';
@@ -1337,6 +1573,9 @@
         <div class="result-time">WAKTU TEMPUH: ${formatMs(timerElapsedMs)}</div>
         <h3>${cat.title}</h3>
         <p>${cat.msg}</p>
+        <div class="cta-row" style="margin-top:22px;">
+          <button class="btn btn-primary" onclick="goToNextGame()">Lanjut ke Game 2 →</button>
+        </div>
       `;
     } else {
       box.className = 'result-box show fail';
@@ -1353,6 +1592,10 @@
   renderProgress();
   setInterval(tickLivesRegen, 1000);
   tickLivesRegen();
+
+  initUsernameField();
+  checkGate();
+  gateInterval = setInterval(checkGate, 1000);
 </script>
 
 </body>
