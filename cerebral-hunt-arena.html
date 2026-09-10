@@ -6,6 +6,9 @@
 <title>Cerebral Hunt Arena — Stage 2</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<!-- Firebase (leaderboard) -->
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
 <style>
   :root{
     --bg: #06111a;
@@ -110,8 +113,64 @@
   .cta-row{ margin-top: 30px; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
 
   /* ---------- Lock overlay (fixed clock time) ---------- */
-  .lock-note{ margin-top: 18px; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--ink-faint); }
-  .lock-timer{ margin-top: 10px; font-family: 'JetBrains Mono', monospace; font-size: 1.6rem; color: var(--cyan); letter-spacing: 0.05em; text-shadow: var(--glow); }
+  .lock-note{
+    margin-top: 22px; font-family: 'JetBrains Mono', monospace; font-size: 0.78rem;
+    letter-spacing: 0.06em; color: var(--ink-faint); text-transform: uppercase;
+  }
+  .lock-timer{
+    margin-top: 14px; font-family: 'JetBrains Mono', monospace; font-weight: 700;
+    font-size: clamp(2.6rem, 12vw, 6rem); color: var(--cyan); letter-spacing: 0.02em;
+    text-shadow: var(--glow); line-height: 1.05; word-break: break-word;
+  }
+
+  /* ---------- Username box ---------- */
+  .username-box{
+    margin-top: 24px; text-align: left; background: var(--bg-panel);
+    border: 1px solid var(--border); border-radius: 4px; padding: 20px 22px;
+  }
+  .username-label{
+    display:block; font-family: 'JetBrains Mono', monospace; font-size: 0.74rem;
+    letter-spacing: 0.08em; color: var(--gold); margin-bottom: 10px; text-transform: uppercase;
+  }
+  .username-input{
+    width: 100%; background: var(--bg-tile); border: 1px solid var(--border); border-radius: 4px;
+    padding: 12px 14px; color: var(--ink); font-family: 'JetBrains Mono', monospace; font-size: 1rem;
+    letter-spacing: 0.02em;
+  }
+  .username-input:focus{ outline:none; border-color: var(--teal); }
+  .username-hint{ margin-top: 8px; color: var(--ink-faint); font-size: 0.76rem; }
+  .username-feedback{ margin-top: 8px; font-size: 0.8rem; min-height: 1.1em; }
+  .username-feedback.warn{ color: var(--struck); }
+  .username-feedback.ok{ color: var(--emerald); }
+
+  /* ---------- Leaderboard ---------- */
+  .leaderboard-link{
+    margin-top: 4px; background: transparent; border: none; color: var(--ink-faint);
+    font-family: 'Manrope', sans-serif; font-size: 0.82rem; text-decoration: underline;
+    cursor: pointer; letter-spacing: 0.02em;
+  }
+  .leaderboard-link:hover{ color: var(--teal); }
+  .leaderboard-overlay{
+    position: fixed; inset: 0; background: rgba(6,17,26,0.94); z-index: 60;
+    display: none; align-items: center; justify-content: center; padding: 24px;
+  }
+  .leaderboard-overlay.show{ display: flex; }
+  .leaderboard-box{
+    max-width: min(480px, 92vw); width: 100%; background: var(--bg-panel);
+    border: 1px solid var(--border); border-radius: 6px; padding: 26px 24px; max-height: 80vh; overflow-y: auto;
+  }
+  .leaderboard-box h3{ font-size: 1.4rem; color: var(--gold); margin-bottom: 4px; }
+  .leaderboard-box .lb-hint{ color: var(--ink-faint); font-size: 0.78rem; margin-bottom: 18px; }
+  .leaderboard-row{
+    display: flex; align-items: center; gap: 10px; padding: 10px 4px;
+    border-bottom: 1px solid var(--border-soft); font-size: 0.92rem;
+  }
+  .leaderboard-row:last-child{ border-bottom: none; }
+  .lb-rank{ width: 34px; color: var(--ink-faint); font-family: 'JetBrains Mono', monospace; }
+  .lb-name{ flex: 1; color: var(--ink); font-weight: 700; overflow-wrap: anywhere; }
+  .lb-score{ color: var(--emerald); font-family: 'JetBrains Mono', monospace; font-size: 0.86rem; }
+  .leaderboard-loading, .leaderboard-empty{ color: var(--ink-faint); font-size: 0.88rem; text-align: center; padding: 12px 0; }
+  .leaderboard-close{ margin-top: 18px; width: 100%; }
 
   /* ---------- Shared arena chrome ---------- */
   .arena-wrap{ max-width: 900px; width: 100%; }
@@ -238,11 +297,29 @@
         </div>
       </div>
 
+      <div class="username-box" id="username-box" style="display:none;">
+        <label class="username-label" for="username-input">Nama Investigator (untuk Leaderboard)</label>
+        <input type="text" id="username-input" class="username-input" placeholder="contoh: erin.larasati" maxlength="20" autocomplete="off">
+        <div class="username-hint">Hanya huruf kecil, titik (.), dan underscore (_) — 3 sampai 20 karakter. Harus sama dengan nama yang dipakai di Game 1 supaya skornya nyambung.</div>
+        <div class="username-feedback" id="username-feedback"></div>
+      </div>
+
       <div class="cta-row">
         <button class="btn btn-primary" id="start-btn" onclick="startArena()" disabled>Masuk Arena</button>
       </div>
       <div class="lock-note" id="lock-note"></div>
       <div class="lock-timer" id="lock-timer"></div>
+      <div><button class="leaderboard-link" onclick="openLeaderboard()">Lihat Leaderboard</button></div>
+    </div>
+  </div>
+
+  <!-- ================= LEADERBOARD OVERLAY ================= -->
+  <div class="leaderboard-overlay" id="leaderboard-overlay">
+    <div class="leaderboard-box">
+      <h3>Leaderboard</h3>
+      <div class="lb-hint">Skor diambil dari total waktu penyelesaian Game 1 + Game 2. Makin cepat, makin tinggi skornya.</div>
+      <div id="leaderboard-list"><div class="leaderboard-loading">Memuat leaderboard…</div></div>
+      <button class="btn btn-secondary leaderboard-close" onclick="closeLeaderboard()">Tutup</button>
     </div>
   </div>
 
@@ -322,12 +399,153 @@
 
 <script>
   // ==================================================================
-  // CONFIG — EDIT INI SEBELUM DIKIRIM KE ERIN
+  // CONFIG
   // ==================================================================
-  const STAGE_UNLOCK_AT = new Date('2020-01-01T00:00:00'); // ganti ke jadwal asli sebelum deploy
+  const STAGE_UNLOCK_AT = new Date('2024-01-01T00:00:00'); // TESTING: dibuka sementara, ganti balik ke 2026-11-17T12:00:00 sebelum hari-H
   const BONUS_START = 200;       // bonus skor maksimum di detik ke-0
   const BONUS_DECAY_EVERY = 2;   // bonus berkurang 1 poin tiap 2 detik berjalan
   const GRID_SIZE = 13;
+
+  // ==================================================================
+  // FIREBASE (LEADERBOARD) — ganti config di bawah dengan milikmu sendiri
+  // HARUS SAMA PERSIS dengan config & keys di index.html (Game 1)
+  // ==================================================================
+  const firebaseConfig = {
+    apiKey: "AIzaSyDyfktOuIxMwtKfoniVHYvMgd55Ml95gP8",
+    authDomain: "erin-game.firebaseapp.com",
+    databaseURL: "https://erin-game-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "erin-game",
+    storageBucket: "erin-game.firebasestorage.app",
+    messagingSenderId: "303866378537",
+    appId: "1:303866378537:web:f3844c701203391f4b5f38"
+  };
+  let db = null;
+  try {
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.database();
+  } catch (e) {
+    console.warn('Firebase belum dikonfigurasi — leaderboard tidak aktif.', e);
+  }
+
+  // Shared storage keys — HARUS SAMA dengan index.html
+  const USERNAME_KEY = 'eg_username_v1';
+  const GAME1_TIME_KEY = 'eg_game1_time_ms_v1';
+  const SCORE_BASE = 100000; // skor = SCORE_BASE - total detik (game1 + game2)
+
+  function isValidUsername(u){
+    return /^[a-z_.]{3,20}$/.test(u);
+  }
+
+  function getStoredUsername(){
+    return localStorage.getItem(USERNAME_KEY);
+  }
+
+  function initUsernameField(){
+    const box = document.getElementById('username-box');
+    const stored = getStoredUsername();
+    if (stored && isValidUsername(stored)){
+      box.style.display = 'none';
+      return;
+    }
+    // No valid username yet (game 2 opened directly) — ask for one here.
+    box.style.display = 'block';
+    const input = document.getElementById('username-input');
+    input.addEventListener('input', () => {
+      input.value = input.value.replace(/[^a-z_.]/g, '');
+      updateUsernameFeedback();
+    });
+    updateUsernameFeedback();
+  }
+
+  function updateUsernameFeedback(){
+    const box = document.getElementById('username-box');
+    if (box.style.display === 'none') return;
+    const input = document.getElementById('username-input');
+    const fb = document.getElementById('username-feedback');
+    const val = input.value.trim();
+    const valid = isValidUsername(val);
+    if (!val){
+      fb.textContent = '';
+      fb.className = 'username-feedback';
+    } else if (!valid){
+      fb.textContent = 'Gunakan 3–20 karakter: huruf kecil a-z, titik (.), underscore (_).';
+      fb.className = 'username-feedback show warn';
+    } else {
+      fb.textContent = 'Nama siap dipakai ✓';
+      fb.className = 'username-feedback show ok';
+    }
+  }
+
+  function escapeHtml(str){
+    return String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  async function openLeaderboard(){
+    const overlay = document.getElementById('leaderboard-overlay');
+    const listEl = document.getElementById('leaderboard-list');
+    overlay.classList.add('show');
+    listEl.innerHTML = '<div class="leaderboard-loading">Memuat leaderboard…</div>';
+    if (!db){
+      listEl.innerHTML = '<div class="leaderboard-empty">Leaderboard belum dikonfigurasi.</div>';
+      return;
+    }
+    try {
+      const snap = await db.ref('leaderboard').orderByChild('score').limitToLast(10).once('value');
+      const rows = [];
+      snap.forEach(child => rows.push(child.val()));
+      rows.reverse();
+      if (rows.length === 0){
+        listEl.innerHTML = '<div class="leaderboard-empty">Belum ada skor masuk. Jadilah yang pertama!</div>';
+        return;
+      }
+      listEl.innerHTML = rows.map((r, i) => `
+        <div class="leaderboard-row">
+          <span class="lb-rank">#${i + 1}</span>
+          <span class="lb-name">${escapeHtml(r.username)}</span>
+          <span class="lb-score">${Number(r.score).toLocaleString('id-ID')} pts</span>
+        </div>
+      `).join('');
+    } catch (e){
+      listEl.innerHTML = '<div class="leaderboard-empty">Gagal memuat leaderboard.</div>';
+      console.error(e);
+    }
+  }
+
+  function closeLeaderboard(){
+    document.getElementById('leaderboard-overlay').classList.remove('show');
+  }
+
+  async function submitLeaderboardScore(game2TimeMs){
+    if (!db) return;
+    const username = getStoredUsername();
+    if (!username || !isValidUsername(username)) return;
+    const game1Raw = localStorage.getItem(GAME1_TIME_KEY);
+    if (!game1Raw){
+      console.warn('Waktu Game 1 tidak ditemukan — skor tidak dikirim ke leaderboard.');
+      return;
+    }
+    const game1TimeMs = parseInt(game1Raw, 10);
+    const totalTimeMs = game1TimeMs + game2TimeMs;
+    const score = Math.max(0, SCORE_BASE - Math.floor(totalTimeMs / 1000));
+
+    const ref = db.ref('leaderboard/' + username);
+    try {
+      const snap = await ref.once('value');
+      const existing = snap.val();
+      if (!existing || score > existing.score){
+        await ref.set({
+          username,
+          game1TimeMs,
+          game2TimeMs,
+          totalTimeMs,
+          score,
+          updatedAt: Date.now()
+        });
+      }
+    } catch (e){
+      console.error('Gagal mengirim skor ke leaderboard:', e);
+    }
+  }
 
   // ==================================================================
   // DATA
@@ -413,21 +631,23 @@
 
     if (now >= STAGE_UNLOCK_AT){
       startBtn.disabled = false;
-      note.textContent = 'Arena sudah terbuka. Selamat berjuang!';
+      note.textContent = 'Game 2 sudah terbuka. Selamat berjuang!';
       timerEl.textContent = '';
       return;
     }
     startBtn.disabled = true;
-    note.textContent = 'Arena terbuka pada ' + STAGE_UNLOCK_AT.toLocaleString('id-ID', { dateStyle: 'full', timeStyle: 'short' });
+    note.textContent = 'Next game will be available in';
     const remain = STAGE_UNLOCK_AT - now;
     const totalSec = Math.max(0, Math.floor(remain / 1000));
-    const hh = String(Math.floor(totalSec / 3600)).padStart(2,'0');
+    const d = Math.floor(totalSec / 86400);
+    const hh = String(Math.floor((totalSec % 86400) / 3600)).padStart(2,'0');
     const mm = String(Math.floor((totalSec % 3600) / 60)).padStart(2,'0');
     const ss = String(totalSec % 60).padStart(2,'0');
-    timerEl.textContent = `${hh}:${mm}:${ss}`;
+    timerEl.textContent = d > 0 ? `${d}h ${hh}:${mm}:${ss}` : `${hh}:${mm}:${ss}`;
   }
   checkLock();
   setInterval(checkLock, 1000);
+  initUsernameField();
 
   // ==================================================================
   // SCREEN NAV
@@ -452,6 +672,19 @@
   // ==================================================================
   function startArena(){
     if (new Date() < STAGE_UNLOCK_AT) return;
+
+    const usernameBox = document.getElementById('username-box');
+    if (usernameBox.style.display !== 'none'){
+      const input = document.getElementById('username-input');
+      const val = input.value.trim();
+      if (!isValidUsername(val)){
+        updateUsernameFeedback();
+        mgShake('#username-box');
+        return;
+      }
+      localStorage.setItem(USERNAME_KEY, val);
+      usernameBox.style.display = 'none';
+    }
 
     baseScore = 0;
     elapsedSec = 0;
@@ -908,6 +1141,7 @@
     showScreen('screen-end');
     const el = document.getElementById('end-content');
     if (won){
+      submitLeaderboardScore(elapsedSec * 1000);
       el.innerHTML = `
         <div class="eyebrow-mark">ARENA CLEARED</div>
         <h1 class="welcome-title">Semua Kata Ditemukan</h1>
@@ -915,13 +1149,17 @@
           <div class="result-time">WAKTU TEMPUH: ${mm}:${ss} · SKOR AKHIR: ${finalScore} POIN</div>
           <h3>The Cerebral Champion</h3>
           <p>Kamu berhasil menemukan seluruh kata di papan. Makin cepat, makin besar bonus waktunya.</p>
+          <p style="font-size:0.82rem;color:var(--ink-faint);">Total waktu Game 1 + Game 2 sudah dikirim ke leaderboard (kalau lebih baik dari rekor lamamu).</p>
         </div>
         <div class="bday-popup">
           <p>Congratulations! You cleared all stages.<br>
           Special Happy Birthday to <span class="bday-name">Erin Larasati Angdika</span>!<br>
           Keep inspiring and communicating science to the world!</p>
         </div>
-        <div class="cta-row"><button class="btn btn-primary" onclick="startArena()">Main Lagi</button></div>
+        <div class="cta-row">
+          <button class="btn btn-primary" onclick="startArena()">Main Lagi</button>
+          <button class="btn btn-secondary" onclick="openLeaderboard()">Lihat Leaderboard</button>
+        </div>
       `;
     } else {
       el.innerHTML = `
@@ -930,9 +1168,12 @@
         <div class="result-box timeup">
           <div class="result-time">WAKTU TEMPUH: ${mm}:${ss} · SKOR AKHIR: ${finalScore} POIN</div>
           <h3>${solvedTotal} dari ${TOTAL_WORDS} kata ditemukan</h3>
-          <p>Bonus waktu terus menyusut selama arena berjalan — main lagi buat coba kejar skor yang lebih tinggi.</p>
+          <p>Belum semua kata ditemukan, jadi sesi ini belum masuk leaderboard. Bonus waktu terus menyusut selama arena berjalan — main lagi buat coba kejar skor yang lebih tinggi.</p>
         </div>
-        <div class="cta-row"><button class="btn btn-primary" onclick="startArena()">Main Lagi</button></div>
+        <div class="cta-row">
+          <button class="btn btn-primary" onclick="startArena()">Main Lagi</button>
+          <button class="btn btn-secondary" onclick="openLeaderboard()">Lihat Leaderboard</button>
+        </div>
       `;
     }
   }
