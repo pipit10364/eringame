@@ -258,8 +258,22 @@
   .result-box.success{ border-color: var(--emerald); }
   .result-box.timeup{ border-color: var(--struck); }
   .result-time{ font-family: 'JetBrains Mono', monospace; color: var(--cyan); font-size: 0.92rem; letter-spacing: 0.08em; margin-bottom: 10px; }
+  .result-score-big{
+    margin: 2px 0 6px; font-family: 'Cormorant Garamond', serif; font-weight: 700;
+    font-size: clamp(2.4rem, 8vw, 3.6rem); color: var(--emerald); text-shadow: var(--glow); line-height: 1.1;
+  }
+  .result-score-unit{
+    font-size: 0.4em; color: var(--ink-dim); font-family: 'Manrope', sans-serif;
+    font-weight: 700; letter-spacing: 0.08em; margin-left: 8px; text-transform: uppercase;
+  }
+  .high-score-badge{
+    display: inline-block; margin: 6px 0 10px; padding: 5px 14px; border-radius: 20px;
+    background: rgba(216,185,121,0.12); border: 1px solid var(--gold); color: var(--gold);
+    font-size: 0.76rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  }
   .result-box h3{ font-size: 1.9rem; margin-bottom: 14px; color: var(--ink); }
   .result-box p{ color: var(--ink-dim); font-size: 0.98rem; margin-bottom: 8px; }
+  .result-box p:last-child{ margin-bottom: 0; }
 
   .bday-popup{ margin-top: 22px; padding: 22px 24px; border: 1px solid var(--gold); border-radius: 6px; background: rgba(216,185,121,0.06); text-align: center; }
   .bday-popup p{ color: var(--ink); font-size: 1.02rem; line-height: 1.7; }
@@ -431,6 +445,39 @@
   const USERNAME_KEY = 'eg_username_v1';
   const GAME1_TIME_KEY = 'eg_game1_time_ms_v1';
   const SCORE_BASE = 100000; // skor = SCORE_BASE - total detik (game1 + game2)
+  const GAME2_BEST_SCORE_KEY = 'eg_game2_best_score_v1';
+
+  function checkAndUpdateBestScore(key, score){
+    const prevRaw = localStorage.getItem(key);
+    const prev = prevRaw ? parseInt(prevRaw, 10) : null;
+    const isNewBest = prev === null || score > prev;
+    if (isNewBest) localStorage.setItem(key, String(score));
+    return isNewBest;
+  }
+
+  function game2ScoreCategory(score){
+    if (score >= 150){
+      return {
+        title: "The Word Hunt Prodigy ⚡",
+        msg: "Mata dan otakmu jalan bareng dalam kecepatan penuh — soal logika kejawab kilat, kata di papan langsung kesorot begitu muncul di kepala. Bonus waktu setebal ini cuma didapat kalau ritme mikir dan nyarinya nggak pernah putus."
+      };
+    } else if (score >= 100){
+      return {
+        title: "The Pattern Chaser 🔎",
+        msg: "Kamu gesit bolak-balik antara soal logika dan papan huruf tanpa banyak buang waktu, dan hasilnya kelihatan dari bonus yang masih tebal. Koordinasi antara mikir cepat dan menyisir cermat ini yang bikin skormu naik."
+      };
+    } else if (score >= 60){
+      return {
+        title: "The Steady Hunter 🧩",
+        msg: "Satu per satu kata berhasil kamu bongkar sampai papan penuh coretan hijau. Kecepatan boleh santai, tapi ketuntasan dan kegigihanmu menyisir tiap sudut papan ini yang paling menonjol."
+      };
+    } else {
+      return {
+        title: "The Persistent Finder 🕵️",
+        msg: "Papan ini nggak kecil dan soalnya nggak sedikit, tapi kamu nggak berhenti sampai semua kata ketemu. Ketuntasan kayak gini butuh kesabaran ekstra, dan kamu baru saja membuktikannya."
+      };
+    }
+  }
 
   function isValidUsername(u){
     return /^[a-z_.]{3,20}$/.test(u);
@@ -1142,14 +1189,18 @@
     const el = document.getElementById('end-content');
     if (won){
       submitLeaderboardScore(elapsedSec * 1000);
+      const isBest = checkAndUpdateBestScore(GAME2_BEST_SCORE_KEY, finalScore);
+      const cat = game2ScoreCategory(finalScore);
       el.innerHTML = `
         <div class="eyebrow-mark">ARENA CLEARED</div>
         <h1 class="welcome-title">Semua Kata Ditemukan</h1>
         <div class="result-box success">
-          <div class="result-time">WAKTU TEMPUH: ${mm}:${ss} · SKOR AKHIR: ${finalScore} POIN</div>
-          <h3>The Cerebral Champion</h3>
-          <p>Kamu berhasil menemukan seluruh kata di papan. Makin cepat, makin besar bonus waktunya.</p>
-          <p style="font-size:0.82rem;color:var(--ink-faint);">Total waktu Game 1 + Game 2 sudah dikirim ke leaderboard (kalau lebih baik dari rekor lamamu).</p>
+          <div class="result-time">WAKTU TEMPUH: ${mm}:${ss}</div>
+          <div class="result-score-big">${finalScore}<span class="result-score-unit">Poin</span></div>
+          ${isBest ? '<div class="high-score-badge">🏆 Rekor Pribadi Baru</div>' : ''}
+          <h3>${cat.title}</h3>
+          <p>${cat.msg}</p>
+          <p style="font-size:0.8rem;color:var(--ink-faint);margin-top:14px;">Total waktu Game 1 + Game 2 sudah dikirim ke leaderboard (kalau lebih baik dari rekor lamamu).</p>
         </div>
         <div class="bday-popup">
           <p>Congratulations! You cleared all stages.<br>
