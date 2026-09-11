@@ -191,18 +191,19 @@
   .roster-list-item:last-child{ border-bottom: none; }
 
   /* ---------- Exhibit Cards (investigation evidence) ---------- */
-  .exhibit-card{ border: 1px solid var(--border); border-radius: 6px; margin-bottom: 14px; background: var(--bg-card); overflow: hidden; }
-  .exhibit-card:last-child{ margin-bottom: 0; }
-  .exhibit-header{ display: flex; align-items: center; gap: 12px; padding: 14px 16px; cursor: pointer; }
+  .exhibit-grid{ display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; align-items: start; }
+  @media (max-width: 560px){ .exhibit-grid{ grid-template-columns: 1fr; } }
+  .exhibit-card{ border: 1px solid var(--border); border-radius: 6px; background: var(--bg-card); overflow: hidden; }
+  .exhibit-header{ display: flex; align-items: center; gap: 10px; padding: 11px 13px; cursor: pointer; }
   .exhibit-header:hover{ background: rgba(255,255,255,0.02); }
-  .exhibit-icon{ font-size: 1.3rem; flex-shrink: 0; }
+  .exhibit-icon{ font-size: 1.05rem; flex-shrink: 0; }
   .exhibit-heading{ flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-  .exhibit-type{ font-size: 0.66rem; letter-spacing: 0.1em; color: var(--gold); }
-  .exhibit-title{ font-size: 0.95rem; color: var(--ink); font-weight: 600; }
-  .exhibit-chevron{ color: var(--ink-faint); transition: transform 0.2s ease; flex-shrink: 0; }
+  .exhibit-type{ font-size: 0.6rem; letter-spacing: 0.1em; color: var(--gold); }
+  .exhibit-title{ font-size: 0.84rem; color: var(--ink); font-weight: 600; line-height: 1.3; }
+  .exhibit-chevron{ color: var(--ink-faint); transition: transform 0.2s ease; flex-shrink: 0; font-size: 0.8rem; }
   .exhibit-card.open .exhibit-chevron{ transform: rotate(90deg); }
-  .exhibit-body{ display: none; padding: 0 16px 16px; border-top: 1px solid var(--border-soft); }
-  .exhibit-card.open .exhibit-body{ display: block; padding-top: 14px; }
+  .exhibit-body{ display: none; padding: 0 13px 13px; border-top: 1px solid var(--border-soft); }
+  .exhibit-card.open .exhibit-body{ display: block; padding-top: 11px; }
   .exhibit-table{ width: 100%; border-collapse: collapse; margin-bottom: 12px; }
   .exhibit-table td{ padding: 8px 10px; font-size: 0.86rem; color: var(--ink-dim); border-bottom: 1px solid var(--border-soft); }
   .exhibit-table td:first-child{ color: var(--ink); font-weight: 600; white-space: nowrap; }
@@ -815,6 +816,26 @@
                 { name: "Persona Room", value: "Tinggi" },
                 { name: "Magpie Observatory", value: "Rendah" }
               ]
+            },
+            {
+              type: "log",
+              title: "Jadwal Ronde Malam",
+              rows: [
+                { name: "Cellular Theatre", value: "Dipatroli 21:00" },
+                { name: "Witch's Lab", value: "Tidak dipatroli" },
+                { name: "Persona Room", value: "Dipatroli 21:15" },
+                { name: "Magpie Observatory", value: "Dipatroli 21:30" }
+              ]
+            },
+            {
+              type: "laporan",
+              title: "Hasil Sampel Serat Kain",
+              rows: [
+                { name: "Cellular Theatre", value: "Tidak ada temuan" },
+                { name: "Witch's Lab", value: "Serat cocok" },
+                { name: "Persona Room", value: "Tidak ada temuan" },
+                { name: "Magpie Observatory", value: "Tidak ada temuan" }
+              ]
             }
           ]
         }
@@ -1274,6 +1295,7 @@
     document.getElementById('round-clue-text').innerHTML = `
       <p class="clue-narrative">${block.narrative}</p>
       <p class="exhibit-hint">Klik tiap berkas di bawah untuk membukanya, lalu gabungkan semua isinya dengan cerita di atas sebelum menentukan pilihan.</p>
+      <div class="exhibit-grid">
       ${accumulatedExhibits.map((ex, i) => {
         const meta = EXHIBIT_META[ex.type] || { icon: "📄", label: "BERKAS" };
         return `
@@ -1293,6 +1315,7 @@
           </div>
         </div>`;
       }).join('')}
+      </div>
     `;
     document.getElementById('lock-panel-title').textContent = `Kunci Jawaban — ${CATEGORY_LABEL[block.category]}`;
     lockSelection = null;
