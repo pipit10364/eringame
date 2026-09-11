@@ -191,19 +191,20 @@
   .roster-list-item:last-child{ border-bottom: none; }
 
   /* ---------- Exhibit Cards (investigation evidence) ---------- */
-  .exhibit-grid{ display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; align-items: start; }
-  @media (max-width: 680px){ .exhibit-grid{ grid-template-columns: 1fr; } }
-  .exhibit-card{ border: 1px solid var(--border); border-radius: 6px; background: var(--bg-card); overflow: hidden; }
-  .exhibit-header{ display: flex; align-items: center; gap: 10px; padding: 10px 12px; cursor: pointer; background: rgba(255,255,255,0.01); transition: background 0.15s ease; }
-  .exhibit-header:hover{ background: rgba(255,255,255,0.04); }
-  .exhibit-icon{ font-size: 1rem; flex-shrink: 0; }
-  .exhibit-heading{ flex: 1; display: flex; flex-direction: column; gap: 1px; min-width: 0; }
-  .exhibit-type{ font-size: 0.6rem; letter-spacing: 0.1em; color: var(--gold); font-weight: 700; }
-  .exhibit-title{ font-size: 0.82rem; color: var(--ink); font-weight: 600; line-height: 1.2; }
-  .exhibit-chevron{ color: var(--ink-faint); transition: transform 0.2s ease; flex-shrink: 0; font-size: 0.75rem; }
-  .exhibit-card.open .exhibit-chevron{ transform: rotate(90deg); }
-  .exhibit-body{ display: none; padding: 8px 10px 10px; border-top: 1px solid var(--border-soft); background: rgba(0,0,0,0.15); }
-  .exhibit-card.open .exhibit-body{ display: block; }
+  .exhibit-tabs{ display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+  .exhibit-tab{
+    padding: 8px 14px; border: 1px solid var(--border); border-radius: 20px; font-size: 0.82rem;
+    color: var(--ink-dim); cursor: pointer; background: var(--bg-card); transition: all 0.15s ease;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .exhibit-tab:hover{ border-color: var(--teal); color: var(--ink); }
+  .exhibit-tab.active{ border-color: var(--teal); color: #04141a; background: linear-gradient(120deg, var(--teal), var(--cyan)); font-weight: 700; }
+  .exhibit-panel{
+    border: 1px solid var(--border); border-radius: 6px; background: var(--bg-card);
+    padding: 14px 16px; min-height: 64px;
+  }
+  .exhibit-panel-empty{ color: var(--ink-faint); font-size: 0.86rem; text-align: center; padding: 14px 0; }
+  .exhibit-panel-title{ font-size: 0.88rem; color: var(--ink); font-weight: 700; margin-bottom: 10px; }
   .exhibit-compact-list{ display: flex; flex-direction: column; gap: 6px; }
   .exhibit-compact-item{ display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 6px 8px; background: var(--bg-tile); border: 1px solid var(--border-soft); border-radius: 4px; font-size: 0.8rem; }
   .exhibit-compact-item .item-name{ color: var(--ink); font-weight: 600; }
@@ -1298,34 +1299,17 @@
     document.getElementById('round-title-label').textContent = block.title;
     document.getElementById('round-clue-text').innerHTML = `
       <p class="clue-narrative">${block.narrative}</p>
-      <p class="exhibit-hint">Klik tiap berkas di bawah untuk membukanya, lalu gabungkan semua isinya dengan cerita di atas sebelum menentukan pilihan.</p>
-      <div class="exhibit-grid">
-      ${accumulatedExhibits.map((ex, i) => {
-        const meta = EXHIBIT_META[ex.type] || { icon: "📄", label: "BERKAS" };
-        return `
-        <div class="exhibit-card" id="exhibit-${i}">
-          <div class="exhibit-header" onclick="toggleExhibit(${i})">
-            <span class="exhibit-icon">${meta.icon}</span>
-            <div class="exhibit-heading">
-              <span class="exhibit-type">${meta.label}</span>
-              <span class="exhibit-title">${ex.title}</span>
-            </div>
-            <span class="exhibit-chevron">▸</span>
-          </div>
-          <div class="exhibit-body">
-            <div class="exhibit-compact-list">
-              ${ex.rows.map(row => `
-                <div class="exhibit-compact-item">
-                  <span class="item-name">${row.name}</span>
-                  <span class="item-val">${row.value}</span>
-                </div>
-              `).join('')}
-            </div>
-          </div>
-        </div>`;
-      }).join('')}
+      <p class="exhibit-hint">Lihat clue di bawah ini, lalu cocokkan dengan cerita di atas sebelum menentukan pilihan.</p>
+      <div class="exhibit-tabs" id="exhibit-tabs">
+        ${accumulatedExhibits.map((ex, i) => `
+          <div class="exhibit-tab" id="exhibit-tab-${i}" onclick="selectExhibit(${i})">Clue ${i + 1}</div>
+        `).join('')}
+      </div>
+      <div class="exhibit-panel" id="exhibit-panel">
+        <div class="exhibit-panel-empty">Pilih salah satu clue di atas untuk melihat isinya.</div>
       </div>
     `;
+    activeExhibitIndex = null;
     document.getElementById('lock-panel-title').textContent = `Kunci Jawaban — ${CATEGORY_LABEL[block.category]}`;
     lockSelection = null;
     renderLockChips();
@@ -1335,9 +1319,30 @@
     document.getElementById('round-submit-btn').textContent = 'Kunci Jawaban';
   }
 
-  function toggleExhibit(i){
-    const card = document.getElementById(`exhibit-${i}`);
-    if (card) card.classList.toggle('open');
+  let activeExhibitIndex = null;
+
+  function selectExhibit(i){
+    const ex = accumulatedExhibits[i];
+    if (!ex) return;
+    if (activeExhibitIndex !== null){
+      const prevTab = document.getElementById(`exhibit-tab-${activeExhibitIndex}`);
+      if (prevTab) prevTab.classList.remove('active');
+    }
+    activeExhibitIndex = i;
+    const tab = document.getElementById(`exhibit-tab-${i}`);
+    if (tab) tab.classList.add('active');
+    const meta = EXHIBIT_META[ex.type] || { icon: "📄", label: "BERKAS" };
+    document.getElementById('exhibit-panel').innerHTML = `
+      <div class="exhibit-panel-title">${meta.icon} ${ex.title}</div>
+      <div class="exhibit-compact-list">
+        ${ex.rows.map(row => `
+          <div class="exhibit-compact-item">
+            <span class="item-name">${row.name}</span>
+            <span class="item-val">${row.value}</span>
+          </div>
+        `).join('')}
+      </div>
+    `;
   }
 
   function renderLockChips(){
