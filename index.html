@@ -177,6 +177,41 @@
   .progress-line{ flex: 1; height: 1px; background: var(--border); min-width: 12px; }
 
   .clue-card{ background: var(--bg-panel); border: 1px solid var(--border); border-radius: 6px; padding: 30px; }
+
+  /* ---------- Case Roster ---------- */
+  .roster-grid{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; margin-bottom: 10px; }
+  .roster-category{ background: var(--bg-panel); border: 1px solid var(--border); border-radius: 6px; padding: 20px; text-align: center; }
+  .roster-icon{ font-size: 1.6rem; margin-bottom: 8px; }
+  .roster-category .grid-category-label{ margin-bottom: 12px; }
+  .roster-list{ text-align: left; }
+  .roster-list-item{
+    padding: 8px 10px; border-radius: 4px; font-size: 0.88rem; color: var(--ink);
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .roster-list-item:last-child{ border-bottom: none; }
+
+  /* ---------- Exhibit Cards (investigation evidence) ---------- */
+  .exhibit-card{ border: 1px solid var(--border); border-radius: 6px; margin-bottom: 14px; background: var(--bg-card); overflow: hidden; }
+  .exhibit-card:last-child{ margin-bottom: 0; }
+  .exhibit-header{ display: flex; align-items: center; gap: 12px; padding: 14px 16px; cursor: pointer; }
+  .exhibit-header:hover{ background: rgba(255,255,255,0.02); }
+  .exhibit-icon{ font-size: 1.3rem; flex-shrink: 0; }
+  .exhibit-heading{ flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .exhibit-type{ font-size: 0.66rem; letter-spacing: 0.1em; color: var(--gold); }
+  .exhibit-title{ font-size: 0.95rem; color: var(--ink); font-weight: 600; }
+  .exhibit-chevron{ color: var(--ink-faint); transition: transform 0.2s ease; flex-shrink: 0; }
+  .exhibit-card.open .exhibit-chevron{ transform: rotate(90deg); }
+  .exhibit-body{ display: none; padding: 0 16px 16px; border-top: 1px solid var(--border-soft); }
+  .exhibit-card.open .exhibit-body{ display: block; padding-top: 14px; }
+  .exhibit-table{ width: 100%; border-collapse: collapse; margin-bottom: 12px; }
+  .exhibit-table td{ padding: 8px 10px; font-size: 0.86rem; color: var(--ink-dim); border-bottom: 1px solid var(--border-soft); }
+  .exhibit-table td:first-child{ color: var(--ink); font-weight: 600; white-space: nowrap; }
+  .exhibit-table tr:last-child td{ border-bottom: none; }
+  .exhibit-note{
+    font-size: 0.86rem; color: var(--cyan); font-style: italic; padding: 10px 12px;
+    background: rgba(56,189,248,0.06); border-left: 2px solid var(--cyan); border-radius: 3px;
+  }
+  .exhibit-hint{ color: var(--ink-faint); font-size: 0.82rem; margin-bottom: 16px; }
   .round-tag{ color: var(--gold); font-size: 0.78rem; letter-spacing: 0.12em; margin-bottom: 10px; }
   .round-title{ font-size: 1.7rem; color: var(--ink); margin-bottom: 18px; }
   .clue-text{
@@ -405,6 +440,7 @@
     .final-card{ padding: 22px; }
     .deduction-panel{ padding: 20px; }
     .deduction-categories{ grid-template-columns: 1fr; gap: 18px; }
+    .roster-grid{ grid-template-columns: 1fr; }
     .mr-options{ grid-template-columns: repeat(2, 1fr); }
     .pipe-grid{ grid-template-columns: repeat(4, minmax(30px, 48px)); grid-template-rows: repeat(4, minmax(30px, 48px)); }
     .cip-digit{ width: 48px; height: 58px; font-size: 1.4rem; }
@@ -473,6 +509,37 @@
     <button class="btn btn-secondary leaderboard-close" onclick="closeLeaderboard()">Tutup</button>
   </div>
 </div>
+
+<!-- ===================== CASE ROSTER SCREEN ===================== -->
+<section class="screen" id="screen-roster">
+  <div class="welcome-wrap" style="max-width:min(820px,92vw);">
+    <div class="eyebrow-mark">Case File</div>
+    <h2 class="round-title" style="font-size:2rem; text-align:center;">Daftar Kandidat</h2>
+    <p style="color:var(--ink-dim); text-align:center; margin-bottom:28px; font-size:0.94rem; line-height:1.7;">
+      Berikut seluruh kemungkinan yang tercatat di sistem museum. Satu dari tiap kategori adalah kunci sebenarnya — sisanya harus kamu gugurkan lewat investigasi di tiap ronde.
+    </p>
+    <div class="roster-grid">
+      <div class="roster-category">
+        <div class="roster-icon">🚪</div>
+        <div class="grid-category-label">RUANGAN MUSEUM</div>
+        <div class="roster-list" id="roster-rooms"></div>
+      </div>
+      <div class="roster-category">
+        <div class="roster-icon">🔮</div>
+        <div class="grid-category-label">ELEMEN KUNCI</div>
+        <div class="roster-list" id="roster-elements"></div>
+      </div>
+      <div class="roster-category">
+        <div class="roster-icon">🔑</div>
+        <div class="grid-category-label">KODE AKSES</div>
+        <div class="roster-list" id="roster-codes"></div>
+      </div>
+    </div>
+    <div class="cta-row">
+      <button class="btn btn-primary" onclick="enterInvestigation()">Mulai Investigasi Ronde 1</button>
+    </div>
+  </div>
+</section>
 
 <!-- ===================== MINI-GAME SCREEN ===================== -->
 <section class="screen" id="screen-minigame">
@@ -741,7 +808,30 @@
       location: "Cellular Theatre",
       miniGameName: "Rhythm Sequence Memory",
       miniGameIntro: "Ingat urutan not yang menyala — makin panjang lagunya, makin cepat temponya.",
-      clue: "📜 Catatan investigator: 'Ruang yang menyimpan Peta selalu gelap dan senyap, dipenuhi bau logam dan formalin — sangat jauh dari satu ruangan yang tiap malam riuh oleh tepuk tangan penonton dan sorot lampu panggung.' Laporan forensik lain menyebutkan elemen kunci yang dicari bukanlah benda berukir kayu bermotif kotak-kotak hitam-putih dengan total 64 petak.",
+      exhibits: [
+        {
+          type: "log",
+          title: "Log Sensor Cahaya — Intensitas per Ruangan",
+          rows: [
+            { name: "Cellular Theatre", value: "TINGGI (lampu panggung menyala)" },
+            { name: "Witch's Lab", value: "RENDAH" },
+            { name: "Persona Room", value: "RENDAH" },
+            { name: "Magpie Observatory", value: "RENDAH" }
+          ],
+          note: "Peta hanya mungkin disimpan di ruangan dengan intensitas cahaya RENDAH."
+        },
+        {
+          type: "jejak",
+          title: "Analisis Material — Elemen Kunci",
+          rows: [
+            { name: "Grandmaster Chessboard", value: "Kayu ek berukir" },
+            { name: "Glowing Mask", value: "Logam campuran" },
+            { name: "Magical Paintbrush", value: "Bulu unggas & resin sintetis" },
+            { name: "Anomalous Core", value: "Kristal tak stabil" }
+          ],
+          note: "Elemen yang dicari BUKAN benda berbahan kayu."
+        }
+      ],
       required: [ {cat:"rooms", name:"Cellular Theatre"}, {cat:"elements", name:"Grandmaster Chessboard"} ]
     },
     {
@@ -750,7 +840,19 @@
       location: "Magpie Observatory",
       miniGameName: "Molecule Logic Switch",
       miniGameIntro: "Putar tiap potongan sirkuit — hati-hati pipa buntu — hingga arus tersambung dari Start ke Finish.",
-      clue: "📜 Fragmen log terminal keamanan: 'Setiap kode akses yang dua karakter pembukanya sama-sama huruf konsonan tanpa vokal di antaranya, telah ditandai sistem sebagai kode uji coba lama dan otomatis gagal autentikasi.'",
+      exhibits: [
+        {
+          type: "laporan",
+          title: "Laporan Sistem — Karakter Pembuka Kode Akses",
+          rows: [
+            { name: "R&M-44", value: "R kemudian simbol &" },
+            { name: "CS-01", value: "C kemudian S (konsonan-konsonan)" },
+            { name: "D/N/A-01", value: "D kemudian simbol /" },
+            { name: "BS-D1", value: "B kemudian S (konsonan-konsonan)" }
+          ],
+          note: "Kode yang dua karakter pembukanya sama-sama huruf konsonan (tanpa vokal di antaranya) ditandai sistem sebagai kode uji coba lama dan otomatis gagal autentikasi."
+        }
+      ],
       required: [ {cat:"codes", name:"CS-01"}, {cat:"codes", name:"BS-D1"} ]
     },
     {
@@ -759,7 +861,30 @@
       location: "Persona Room",
       miniGameName: "Mental Rotation Pattern Match",
       miniGameIntro: "Kenali struktur rantai molekul yang benar-benar identik jika diputar — 3 soal berturut-turut tanpa salah.",
-      clue: "📜 Dua sektor melaporkan 'nihil' pada waktu yang sama persis: satu sektor bernama seekor burung yang menurut folklor gemar mencuri benda berkilau, satu lagi bernama sebuah istilah dalam psikologi Jung untuk topeng sosial yang kita pakai di depan orang lain. Sementara itu, satu elemen dinyatakan aman total karena masih tersegel utuh sejak awal di ruang penyimpanannya — bentuknya menyerupai inti reaktor yang tidak beraturan.",
+      exhibits: [
+        {
+          type: "log",
+          title: "Log Penggeledahan — Status per Ruangan",
+          rows: [
+            { name: "Cellular Theatre", value: "Sudah gugur (Ronde 1)" },
+            { name: "Witch's Lab", value: "Belum digeledah" },
+            { name: "Persona Room", value: "NIHIL — tidak ditemukan apa pun" },
+            { name: "Magpie Observatory", value: "NIHIL — tidak ditemukan apa pun" }
+          ],
+          note: "Ruangan berstatus NIHIL dipastikan gugur dari kemungkinan."
+        },
+        {
+          type: "jejak",
+          title: "Status Penyimpanan — Elemen Kunci",
+          rows: [
+            { name: "Grandmaster Chessboard", value: "Sudah gugur (Ronde 1)" },
+            { name: "Glowing Mask", value: "Belum diperiksa" },
+            { name: "Magical Paintbrush", value: "Belum diperiksa" },
+            { name: "Anomalous Core", value: "Tersegel utuh sejak awal, tidak pernah berpindah" }
+          ],
+          note: "Peta terbukti telah berpindah tangan — elemen yang tersegel utuh sejak awal dan tidak pernah berpindah dipastikan bukan yang dicari."
+        }
+      ],
       required: [ {cat:"rooms", name:"Magpie Observatory"}, {cat:"rooms", name:"Persona Room"}, {cat:"elements", name:"Anomalous Core"} ]
     },
     {
@@ -768,7 +893,26 @@
       location: "Witch's Lab",
       miniGameName: "Molecular Substitution Cipher",
       miniGameIntro: "Pecahkan nilai A, B, dan C dari persamaan kuadrat &amp; akar berikut, lalu buka vault dengan kode 3 digitnya.",
-      clue: "📜 Sensor di ruangan terakhir mendeteksi Peta berdekatan dengan sebuah objek yang memancarkan pendarnya sendiri dalam gelap — bukan alat yang justru menyerap warna dari palet dan kanvas saat dipakai. Sementara itu, satu kode akses ditolak sistem karena rangkaian hurufnya diselingi simbol ampersand (&amp;), bukan garis miring atau tanda hubung biasa.",
+      exhibits: [
+        {
+          type: "jejak",
+          title: "Sifat Cahaya — Elemen Tersisa",
+          rows: [
+            { name: "Glowing Mask", value: "Memancarkan cahaya sendiri dalam gelap" },
+            { name: "Magical Paintbrush", value: "Menyerap warna dari palet, tidak memancarkan cahaya" }
+          ],
+          note: "Elemen yang dicari memancarkan cahayanya sendiri, bukan menyerap warna."
+        },
+        {
+          type: "log",
+          title: "Hasil Percobaan — Kode Tersisa",
+          rows: [
+            { name: "R&M-44", value: "Sinyal ERROR" },
+            { name: "D/N/A-01", value: "Belum dicoba" }
+          ],
+          note: "Kode yang menghasilkan sinyal ERROR dipastikan tidak sah."
+        }
+      ],
       required: [ {cat:"elements", name:"Magical Paintbrush"}, {cat:"codes", name:"R&M-44"} ]
     }
   ];
@@ -967,6 +1111,20 @@
       return;
     }
     localStorage.setItem(USERNAME_KEY, val);
+    renderRoster();
+    showScreen('screen-roster');
+  }
+
+  function renderRoster(){
+    const build = (cat) => CATEGORIES[cat].map(name =>
+      `<div class="roster-list-item">${name}</div>`
+    ).join('');
+    document.getElementById('roster-rooms').innerHTML = build('rooms');
+    document.getElementById('roster-elements').innerHTML = build('elements');
+    document.getElementById('roster-codes').innerHTML = build('codes');
+  }
+
+  function enterInvestigation(){
     showScreen('screen-minigame');
     startTimer();
   }
@@ -1095,16 +1253,49 @@
     document.getElementById('minigame-reset-wrap').innerHTML = '';
   }
 
+  const EXHIBIT_META = {
+    log:     { icon: "🕐", label: "LOG AKSES" },
+    jejak:   { icon: "🔍", label: "JEJAK FISIK" },
+    laporan: { icon: "📋", label: "LAPORAN PETUGAS" }
+  };
+
   function renderClue(){
     const r = ROUNDS[currentRound];
     document.getElementById('round-tag-label').textContent = r.tag;
     document.getElementById('round-title-label').textContent = r.title;
-    document.getElementById('round-clue-text').innerHTML = r.clue;
+    document.getElementById('round-clue-text').innerHTML = `
+      <p class="exhibit-hint">Klik tiap berkas di bawah untuk membukanya, lalu cocokkan hasilnya dengan Logic Grid.</p>
+      ${r.exhibits.map((ex, i) => {
+        const meta = EXHIBIT_META[ex.type] || { icon: "📄", label: "BERKAS" };
+        return `
+        <div class="exhibit-card" id="exhibit-${i}">
+          <div class="exhibit-header" onclick="toggleExhibit(${i})">
+            <span class="exhibit-icon">${meta.icon}</span>
+            <div class="exhibit-heading">
+              <span class="exhibit-type">${meta.label}</span>
+              <span class="exhibit-title">${ex.title}</span>
+            </div>
+            <span class="exhibit-chevron">▸</span>
+          </div>
+          <div class="exhibit-body">
+            <table class="exhibit-table">
+              ${ex.rows.map(row => `<tr><td>${row.name}</td><td>${row.value}</td></tr>`).join('')}
+            </table>
+            <div class="exhibit-note">${ex.note}</div>
+          </div>
+        </div>`;
+      }).join('')}
+    `;
     const fb = document.getElementById('round-feedback');
     fb.className = 'feedback';
     fb.textContent = '';
     document.getElementById('round-submit-btn').textContent =
       currentRound === ROUNDS.length - 1 ? 'Kirim Jawaban & Lanjut ke Final' : `Kirim Jawaban Ronde ${currentRound + 1}`;
+  }
+
+  function toggleExhibit(i){
+    const card = document.getElementById(`exhibit-${i}`);
+    if (card) card.classList.toggle('open');
   }
 
   function getCumulativeRequired(uptoRoundIdx){
@@ -1190,9 +1381,9 @@
     setTimeout(() => btn.classList.remove('active'), 320);
   }
 
-  // Accelerando: each note lands faster than the last (600ms down to a 260ms floor)
+  // Accelerando: each note lands faster than the last (800ms down to a 420ms floor)
   function rhyDelay(stepIndex){
-    return Math.max(260, 620 - stepIndex * 48);
+    return Math.max(420, 800 - stepIndex * 45);
   }
 
   function rhyPlaySequence(){
