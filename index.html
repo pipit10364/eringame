@@ -11,18 +11,18 @@
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
 <style>
   :root{
-    --bg: #06111a;
-    --bg-panel: #0c1e29;
-    --bg-card: #102838;
-    --bg-tile: #0d222e;
-    --border: #1d3d49;
-    --border-soft: #16303b;
+    --bg: #061a15;
+    --bg-panel: #0c2721;
+    --bg-card: #123830;
+    --bg-tile: #0d2a24;
+    --border: #1e4a3f;
+    --border-soft: #17392f;
     --teal: #2dd4bf;
     --emerald: #34d399;
-    --cyan: #38bdf8;
+    --cyan: #5eead4;
     --ink: #eaf6f3;
-    --ink-dim: #85a4ae;
-    --ink-faint: #4d707c;
+    --ink-dim: #83ab9d;
+    --ink-faint: #4c7669;
     --struck: #e8827a;
     --gold: #d8b979;
     --glow: 0 0 40px rgba(45, 212, 191, 0.15);
@@ -37,7 +37,7 @@
   body{
     background:
       radial-gradient(circle at 15% 10%, rgba(45,212,191,0.08), transparent 45%),
-      radial-gradient(circle at 85% 90%, rgba(56,189,248,0.08), transparent 45%),
+      radial-gradient(circle at 85% 90%, rgba(94,234,212,0.08), transparent 45%),
       var(--bg);
     color: var(--ink);
     font-family: 'Manrope', sans-serif;
@@ -173,7 +173,7 @@
     color: var(--ink-faint); font-weight: 700; background: var(--bg-panel);
   }
   .progress-dot.done{ border-color: var(--emerald); color: var(--emerald); background: rgba(52,211,153,0.08); }
-  .progress-dot.current{ border-color: var(--cyan); color: var(--cyan); box-shadow: 0 0 0 3px rgba(56,189,248,0.12); }
+  .progress-dot.current{ border-color: var(--cyan); color: var(--cyan); box-shadow: 0 0 0 3px rgba(94,234,212,0.12); }
   .progress-line{ flex: 1; height: 1px; background: var(--border); min-width: 12px; }
 
   .clue-card{ background: var(--bg-panel); border: 1px solid var(--border); border-radius: 6px; padding: 30px; }
@@ -1364,7 +1364,7 @@
   // ==================================================================
   // MINI-GAME 3 — Mental Rotation Pattern Match (streak of 3, molecule chains)
   // ==================================================================
-  const MOL_COLORS = { teal: '#2dd4bf', cyan: '#38bdf8', gold: '#d8b979', emerald: '#34d399' };
+  const MOL_COLORS = { teal: '#2dd4bf', cyan: '#5eead4', gold: '#d8b979', emerald: '#34d399' };
 
   const MR_SHAPES = [
     {
@@ -1413,10 +1413,10 @@
     const minX = Math.min(...xs) - pad, maxX = Math.max(...xs) + pad;
     const minY = Math.min(...ys) - pad, maxY = Math.max(...ys) + pad;
     const bondsHtml = bonds.map(([i,j]) =>
-      `<line x1="${atoms[i].x*unit}" y1="${atoms[i].y*unit}" x2="${atoms[j].x*unit}" y2="${atoms[j].y*unit}" stroke="#3a5c68" stroke-width="6" stroke-linecap="round"/>`
+      `<line x1="${atoms[i].x*unit}" y1="${atoms[i].y*unit}" x2="${atoms[j].x*unit}" y2="${atoms[j].y*unit}" stroke="#2e5a4f" stroke-width="6" stroke-linecap="round"/>`
     ).join('');
     const atomsHtml = atoms.map(a =>
-      `<circle cx="${a.x*unit}" cy="${a.y*unit}" r="12" fill="${MOL_COLORS[a.c]}" stroke="#06111a" stroke-width="2"/>`
+      `<circle cx="${a.x*unit}" cy="${a.y*unit}" r="12" fill="${MOL_COLORS[a.c]}" stroke="#061a15" stroke-width="2"/>`
     ).join('');
     return `<svg viewBox="${minX} ${minY} ${maxX-minX} ${maxY-minY}" width="${size}" height="${size}">${bondsHtml}${atomsHtml}</svg>`;
   }
