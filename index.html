@@ -191,7 +191,7 @@
   .roster-list-item:last-child{ border-bottom: none; }
 
   /* ---------- Exhibit Cards (investigation evidence) ---------- */
-  .exhibit-tabs{ display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+  .exhibit-tabs{ display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 14px; }
   .exhibit-tab{
     padding: 8px 14px; border: 1px solid var(--border); border-radius: 20px; font-size: 0.82rem;
     color: var(--ink-dim); cursor: pointer; background: var(--bg-card); transition: all 0.15s ease;
@@ -199,11 +199,12 @@
   }
   .exhibit-tab:hover{ border-color: var(--teal); color: var(--ink); }
   .exhibit-tab.active{ border-color: var(--teal); color: #04141a; background: linear-gradient(120deg, var(--teal), var(--cyan)); font-weight: 700; }
-  .exhibit-panel{
+  .exhibit-tab-close{ padding: 8px 12px; color: var(--ink-faint); }
+  .exhibit-tab-close:hover{ border-color: var(--struck); color: var(--struck); }
+  .exhibit-panel-box{
     border: 1px solid var(--border); border-radius: 6px; background: var(--bg-card);
-    padding: 14px 16px; min-height: 64px;
+    padding: 14px 16px; margin-bottom: 4px;
   }
-  .exhibit-panel-empty{ color: var(--ink-faint); font-size: 0.86rem; text-align: center; padding: 14px 0; }
   .exhibit-panel-title{ font-size: 0.88rem; color: var(--ink); font-weight: 700; margin-bottom: 10px; }
   .exhibit-compact-list{ display: flex; flex-direction: column; gap: 6px; }
   .exhibit-compact-item{ display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 6px 8px; background: var(--bg-tile); border: 1px solid var(--border-soft); border-radius: 4px; font-size: 0.8rem; }
@@ -806,10 +807,10 @@
               type: "log",
               title: "Log Sensor Cahaya",
               rows: [
-                { name: "Cellular Theatre", value: "TINGGI (lampu panggung menyala)" },
+                { name: "Cellular Theatre", value: "TINGGI" },
                 { name: "Witch's Lab", value: "RENDAH" },
                 { name: "Persona Room", value: "RENDAH" },
-                { name: "Magpie Observatory", value: "RENDAH" }
+                { name: "Magpie Observatory", value: "TINGGI" }
               ]
             },
             {
@@ -826,20 +827,20 @@
               type: "log",
               title: "Jadwal Ronde Malam",
               rows: [
-                { name: "Cellular Theatre", value: "Dipatroli 21:00" },
-                { name: "Witch's Lab", value: "Tidak dipatroli" },
-                { name: "Persona Room", value: "Dipatroli 21:15" },
-                { name: "Magpie Observatory", value: "Dipatroli 21:30" }
+                { name: "Cellular Theatre", value: "Tidak dipatroli malam itu" },
+                { name: "Witch's Lab", value: "Tidak dipatroli malam itu" },
+                { name: "Persona Room", value: "Dipatroli sesuai jadwal" },
+                { name: "Magpie Observatory", value: "Dipatroli sesuai jadwal" }
               ]
             },
             {
               type: "laporan",
               title: "Hasil Sampel Serat Kain",
               rows: [
-                { name: "Cellular Theatre", value: "Tidak ada temuan" },
+                { name: "Cellular Theatre", value: "Material tidak cocok" },
                 { name: "Witch's Lab", value: "Serat cocok" },
-                { name: "Persona Room", value: "Tidak ada temuan" },
-                { name: "Magpie Observatory", value: "Tidak ada temuan" }
+                { name: "Persona Room", value: "Serat cocok" },
+                { name: "Magpie Observatory", value: "Material tidak cocok" }
               ]
             }
           ]
@@ -850,7 +851,7 @@
       tag: "BLOK ELEMEN",
       title: "Mengidentifikasi Elemen Kunci",
       category: "elements",
-      narrative: "Tim investigasi mencatat berat semua elemen yang hilang dari daftar case, dan satu di antaranya jauh lebih berat dari batas angkut normal manusia tanpa alat bantu. Sistem alarm radiasi di pintu keluar juga jadi acuan, sebab barang berbahan isotop biasanya memicu alarm otomatis, sementara log keluar masuk malam itu tercatat bersih tanpa satu pun alarm berbunyi. Kamera thermal di koridor sempat menangkap satu elemen yang meninggalkan jejak suhu jauh di atas suhu ruangan saat dipindahkan, berbeda dari elemen lain yang tercatat netral. Dan dari laci penyimpanan yang dipaksa terbuka, tim forensik menemukan serpihan residu yang kemudian dicocokkan ke permukaan tiap elemen.",
+      narrative: "Tim investigasi mencatat berat semua elemen yang hilang dari daftar case, sebab elemen yang dicari tergolong tidak terlalu berat untuk dibawa tanpa alat bantu. Sistem juga mencatat status stabilitas material tiap elemen, sebab barang berbahan isotop tidak stabil rawan memicu alarm otomatis saat dibawa keluar. Kamera thermal di koridor turut merekam jejak suhu tiap elemen saat dipindahkan, sebagian tercatat jauh di atas suhu ruangan sementara sebagian lain netral. Dan dari laci penyimpanan yang dipaksa terbuka, tim forensik menemukan serpihan residu yang kemudian dicocokkan ke permukaan tiap elemen.",
       steps: [
         {
           miniGameId: 1,
@@ -861,19 +862,19 @@
               type: "jejak",
               title: "Analisis Berat Elemen",
               rows: [
-                { name: "Grandmaster Chessboard", value: "2,1 kg" },
-                { name: "Glowing Mask", value: "340 g" },
-                { name: "Magical Paintbrush", value: "210 g" },
-                { name: "Anomalous Core", value: "890 g" }
+                { name: "Grandmaster Chessboard", value: "Berat, di atas 1 kg" },
+                { name: "Glowing Mask", value: "Ringan, di bawah 500 g" },
+                { name: "Magical Paintbrush", value: "Ringan, di bawah 500 g" },
+                { name: "Anomalous Core", value: "Berat, di atas 1 kg" }
               ]
             },
             {
               type: "log",
-              title: "Log Alarm Radiasi Pintu Keluar",
+              title: "Log Stabilitas Material",
               rows: [
                 { name: "Grandmaster Chessboard", value: "Material stabil" },
                 { name: "Glowing Mask", value: "Material stabil" },
-                { name: "Magical Paintbrush", value: "Material stabil" },
+                { name: "Magical Paintbrush", value: "Isotop tidak stabil" },
                 { name: "Anomalous Core", value: "Isotop tidak stabil" }
               ]
             }
@@ -888,7 +889,7 @@
               type: "log",
               title: "Rekam Kamera Thermal Koridor",
               rows: [
-                { name: "Grandmaster Chessboard", value: "Netral, sama suhu ruangan" },
+                { name: "Grandmaster Chessboard", value: "+14°C dari suhu ruangan" },
                 { name: "Glowing Mask", value: "Netral, sama suhu ruangan" },
                 { name: "Magical Paintbrush", value: "+14°C dari suhu ruangan" },
                 { name: "Anomalous Core", value: "Netral, sama suhu ruangan" }
@@ -900,7 +901,7 @@
               rows: [
                 { name: "Grandmaster Chessboard", value: "Tidak ada temuan" },
                 { name: "Glowing Mask", value: "Residu cocok" },
-                { name: "Magical Paintbrush", value: "Tidak ada temuan" },
+                { name: "Magical Paintbrush", value: "Residu cocok" },
                 { name: "Anomalous Core", value: "Tidak ada temuan" }
               ]
             }
@@ -912,7 +913,7 @@
       tag: "BLOK KODE",
       title: "Membuka Kode Akses",
       category: "codes",
-      narrative: "Setiap vault museum diberi nomor berdasarkan tahun instalasinya, tercatat di buku maintenance gedung. Log akses terakhir menunjukkan satu nomor vault sempat diakses di luar jam kerja resmi kurator, sesuatu yang seharusnya memicu laporan insiden, namun laporan itu ternyata tidak pernah ada. Petugas kebersihan malam itu juga mengaku hanya membersihkan area yang lampunya menyala, sementara satu koridor vault tercatat gelap total sepanjang malam. Dan dari daftar suku cadang yang diganti bulan itu, hanya satu vault yang kuncinya baru saja diservis ulang, cocok dengan jenis kerusakan gembok yang ditemukan di TKP.",
+      narrative: "Setiap vault museum diberi nomor berdasarkan tahun instalasinya, tercatat di buku maintenance gedung, dan sistem sensor akses baru mulai berfungsi sejak sekitar tahun 2010. Log malam hari juga jadi acuan, sebab akses di luar jam kerja resmi kurator seharusnya memicu laporan insiden meski kadang laporan itu tidak pernah dibuat. Petugas kebersihan malam itu mengaku hanya membersihkan area yang lampunya menyala, sementara sejumlah koridor vault tercatat gelap total sepanjang malam. Dan dari daftar suku cadang yang diganti bulan itu, sebagian vault tercatat baru menjalani servis darurat pada gemboknya, sesuatu yang bisa dicocokkan dengan jenis kerusakan yang ditemukan di TKP.",
       steps: [
         {
           miniGameId: 3,
@@ -923,40 +924,40 @@
               type: "laporan",
               title: "Buku Maintenance Gedung",
               rows: [
-                { name: "VLT-114", value: "Instalasi 1998, sebelum sistem sensor akses dipasang" },
-                { name: "VLT-207", value: "Instalasi 2005" },
-                { name: "VLT-330", value: "Instalasi 2011" },
-                { name: "VLT-452", value: "Instalasi 2019" }
+                { name: "VLT-114", value: "Sebelum 2010, tanpa sensor akses" },
+                { name: "VLT-207", value: "Sebelum 2010, tanpa sensor akses" },
+                { name: "VLT-330", value: "Setelah 2010, tercatat sensor akses" },
+                { name: "VLT-452", value: "Setelah 2010, tercatat sensor akses" }
               ]
             },
             {
               type: "log",
               title: "Log Akses Malam Hari",
               rows: [
-                { name: "VLT-114", value: "Tidak tercatat (belum ada sensor)" },
-                { name: "VLT-207", value: "Diakses 23:40, tanpa laporan insiden" },
+                { name: "VLT-114", value: "Tidak ada akses malam" },
+                { name: "VLT-207", value: "Diakses di luar jam kerja, tanpa laporan" },
                 { name: "VLT-330", value: "Tidak ada akses malam" },
-                { name: "VLT-452", value: "Tidak ada akses malam" }
+                { name: "VLT-452", value: "Diakses di luar jam kerja, tanpa laporan" }
               ]
             },
             {
               type: "jejak",
               title: "Jalur Petugas Kebersihan",
               rows: [
-                { name: "VLT-114", value: "Dibersihkan normal" },
+                { name: "VLT-114", value: "Koridor gelap total, dilewati" },
                 { name: "VLT-207", value: "Dibersihkan normal" },
-                { name: "VLT-330", value: "Koridor gelap total, dilewati" },
-                { name: "VLT-452", value: "Dibersihkan normal" }
+                { name: "VLT-330", value: "Dibersihkan normal" },
+                { name: "VLT-452", value: "Koridor gelap total, dilewati" }
               ]
             },
             {
               type: "laporan",
               title: "Riwayat Servis Kunci Vault",
               rows: [
-                { name: "VLT-114", value: "Tidak ada riwayat servis" },
-                { name: "VLT-207", value: "Tidak ada riwayat servis" },
-                { name: "VLT-330", value: "Tidak ada riwayat servis" },
-                { name: "VLT-452", value: "Kunci baru diservis, cocok jenis gembok TKP" }
+                { name: "VLT-114", value: "Servis rutin terjadwal" },
+                { name: "VLT-207", value: "Servis rutin terjadwal" },
+                { name: "VLT-330", value: "Servis darurat, cocok jenis kerusakan TKP" },
+                { name: "VLT-452", value: "Servis darurat, cocok jenis kerusakan TKP" }
               ]
             }
           ]
@@ -1304,10 +1305,9 @@
         ${accumulatedExhibits.map((ex, i) => `
           <div class="exhibit-tab" id="exhibit-tab-${i}" onclick="selectExhibit(${i})">Clue ${i + 1}</div>
         `).join('')}
+        <div class="exhibit-tab exhibit-tab-close" onclick="closeExhibit()" title="Tutup clue">✕</div>
       </div>
-      <div class="exhibit-panel" id="exhibit-panel">
-        <div class="exhibit-panel-empty">Pilih salah satu clue di atas untuk melihat isinya.</div>
-      </div>
+      <div id="exhibit-panel"></div>
     `;
     activeExhibitIndex = null;
     document.getElementById('lock-panel-title').textContent = `Kunci Jawaban — ${CATEGORY_LABEL[block.category]}`;
@@ -1333,16 +1333,27 @@
     if (tab) tab.classList.add('active');
     const meta = EXHIBIT_META[ex.type] || { icon: "📄", label: "BERKAS" };
     document.getElementById('exhibit-panel').innerHTML = `
-      <div class="exhibit-panel-title">${meta.icon} ${ex.title}</div>
-      <div class="exhibit-compact-list">
-        ${ex.rows.map(row => `
-          <div class="exhibit-compact-item">
-            <span class="item-name">${row.name}</span>
-            <span class="item-val">${row.value}</span>
-          </div>
-        `).join('')}
+      <div class="exhibit-panel-box">
+        <div class="exhibit-panel-title">${meta.icon} ${ex.title}</div>
+        <div class="exhibit-compact-list">
+          ${ex.rows.map(row => `
+            <div class="exhibit-compact-item">
+              <span class="item-name">${row.name}</span>
+              <span class="item-val">${row.value}</span>
+            </div>
+          `).join('')}
+        </div>
       </div>
     `;
+  }
+
+  function closeExhibit(){
+    if (activeExhibitIndex !== null){
+      const prevTab = document.getElementById(`exhibit-tab-${activeExhibitIndex}`);
+      if (prevTab) prevTab.classList.remove('active');
+    }
+    activeExhibitIndex = null;
+    document.getElementById('exhibit-panel').innerHTML = '';
   }
 
   function renderLockChips(){
