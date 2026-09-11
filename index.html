@@ -212,6 +212,11 @@
     background: rgba(56,189,248,0.06); border-left: 2px solid var(--cyan); border-radius: 3px;
   }
   .exhibit-hint{ color: var(--ink-faint); font-size: 0.82rem; margin-bottom: 16px; }
+  .clue-narrative{
+    background: rgba(45,212,191,0.05); border-left: 2px solid var(--teal);
+    padding: 16px 18px; margin-bottom: 20px; color: var(--ink); font-size: 0.92rem;
+    line-height: 1.75; font-style: italic;
+  }
   .round-tag{ color: var(--gold); font-size: 0.78rem; letter-spacing: 0.12em; margin-bottom: 10px; }
   .round-title{ font-size: 1.7rem; color: var(--ink); margin-bottom: 18px; }
   .clue-text{
@@ -774,43 +779,42 @@
   const CATEGORIES = {
     rooms: ["Cellular Theatre", "Witch's Lab", "Persona Room", "Magpie Observatory"],
     elements: ["Glowing Mask", "Magical Paintbrush", "Anomalous Core", "Grandmaster Chessboard"],
-    codes: ["R&M-44", "CS-01", "D/N/A-01", "BS-D1"]
+    codes: ["VLT-114", "VLT-207", "VLT-330", "VLT-452"]
   };
 
-  const ANSWER = { rooms: "Witch's Lab", elements: "Glowing Mask", codes: "D/N/A-01" };
+  const ANSWER = { rooms: "Witch's Lab", elements: "Glowing Mask", codes: "VLT-452" };
 
   const BLOCKS = [
     {
       tag: "BLOK RUANGAN",
       title: "Menelusuri Ruangan Museum",
       category: "rooms",
+      narrative: "Laporan kurator menyebut ruangan penyimpanan idealnya minim cahaya, sebab CCTV di area terang otomatis merekam dengan jelas tanpa celah. Barang yang dicari juga tercatat sensitif terhadap kelembapan tinggi menurut catatan preservasi. Log satpam malam itu pun menunjukkan tidak semua ruangan sempat dilewati sebelum insiden dilaporkan. Dan dari lokasi kejadian, tim forensik menemukan serat kain yang kemudian dicocokkan ke sampel di tiap ruangan.",
       steps: [
         {
           miniGameId: 0,
           miniGameName: "Rhythm Sequence Memory",
-          miniGameIntro: "Ingat urutan not yang menyala — makin panjang lagunya, makin cepat temponya.",
+          miniGameIntro: "Ingat urutan not yang menyala. Makin panjang lagunya, makin cepat temponya.",
           exhibits: [
             {
               type: "log",
-              title: "Log Sensor Cahaya — Intensitas per Ruangan",
+              title: "Log Sensor Cahaya",
               rows: [
                 { name: "Cellular Theatre", value: "TINGGI (lampu panggung menyala)" },
                 { name: "Witch's Lab", value: "RENDAH" },
                 { name: "Persona Room", value: "RENDAH" },
                 { name: "Magpie Observatory", value: "RENDAH" }
-              ],
-              note: "Peta hanya mungkin disimpan di ruangan dengan intensitas cahaya RENDAH."
+              ]
             },
             {
-              type: "log",
-              title: "Log Penggeledahan — Status per Ruangan",
+              type: "jejak",
+              title: "Catatan Preservasi Kelembapan",
               rows: [
-                { name: "Cellular Theatre", value: "Tidak digeledah (area publik, selalu terang)" },
-                { name: "Witch's Lab", value: "Digeledah — belum ada temuan pasti" },
-                { name: "Persona Room", value: "NIHIL — tidak ditemukan apa pun" },
-                { name: "Magpie Observatory", value: "NIHIL — tidak ditemukan apa pun" }
-              ],
-              note: "Ruangan berstatus NIHIL dipastikan gugur dari kemungkinan."
+                { name: "Cellular Theatre", value: "Tinggi" },
+                { name: "Witch's Lab", value: "Rendah" },
+                { name: "Persona Room", value: "Tinggi" },
+                { name: "Magpie Observatory", value: "Rendah" }
+              ]
             }
           ]
         }
@@ -820,38 +824,59 @@
       tag: "BLOK ELEMEN",
       title: "Mengidentifikasi Elemen Kunci",
       category: "elements",
+      narrative: "Tim investigasi mencatat berat semua elemen yang hilang dari daftar case, dan satu di antaranya jauh lebih berat dari batas angkut normal manusia tanpa alat bantu. Sistem alarm radiasi di pintu keluar juga jadi acuan, sebab barang berbahan isotop biasanya memicu alarm otomatis, sementara log keluar masuk malam itu tercatat bersih tanpa satu pun alarm berbunyi. Kamera thermal di koridor sempat menangkap satu elemen yang meninggalkan jejak suhu jauh di atas suhu ruangan saat dipindahkan, berbeda dari elemen lain yang tercatat netral. Dan dari laci penyimpanan yang dipaksa terbuka, tim forensik menemukan serpihan residu yang kemudian dicocokkan ke permukaan tiap elemen.",
       steps: [
         {
           miniGameId: 1,
           miniGameName: "Molecule Logic Switch",
-          miniGameIntro: "Putar tiap potongan sirkuit — hati-hati pipa buntu — hingga arus tersambung dari Start ke Finish.",
+          miniGameIntro: "Putar tiap potongan sirkuit, hati-hati pipa buntu, hingga arus tersambung dari Start ke Finish.",
           exhibits: [
             {
               type: "jejak",
-              title: "Analisis Berat — Elemen Kunci",
+              title: "Analisis Berat Elemen",
               rows: [
-                { name: "Grandmaster Chessboard", value: "Berat (di atas 500g)" },
-                { name: "Glowing Mask", value: "Ringan (di bawah 500g)" },
-                { name: "Magical Paintbrush", value: "Ringan (di bawah 500g)" },
-                { name: "Anomalous Core", value: "Berat (di atas 500g)" }
-              ],
-              note: "Elemen yang dicari tergolong ringan, di bawah 500 gram."
+                { name: "Grandmaster Chessboard", value: "2,1 kg" },
+                { name: "Glowing Mask", value: "340 g" },
+                { name: "Magical Paintbrush", value: "210 g" },
+                { name: "Anomalous Core", value: "890 g" }
+              ]
+            },
+            {
+              type: "log",
+              title: "Log Alarm Radiasi Pintu Keluar",
+              rows: [
+                { name: "Grandmaster Chessboard", value: "Material stabil" },
+                { name: "Glowing Mask", value: "Material stabil" },
+                { name: "Magical Paintbrush", value: "Material stabil" },
+                { name: "Anomalous Core", value: "Isotop tidak stabil" }
+              ]
             }
           ]
         },
         {
           miniGameId: 2,
           miniGameName: "Mental Rotation Pattern Match",
-          miniGameIntro: "Kenali struktur rantai molekul yang benar-benar identik jika diputar — 3 soal berturut-turut tanpa salah.",
+          miniGameIntro: "Kenali struktur rantai molekul yang identik jika diputar. Tiga soal berturut turut tanpa salah.",
           exhibits: [
             {
               type: "log",
-              title: "Log Luminositas — Kandidat Tersisa",
+              title: "Rekam Kamera Thermal Koridor",
               rows: [
-                { name: "Glowing Mask", value: "42 lux (memancarkan cahaya sendiri)" },
-                { name: "Magical Paintbrush", value: "0 lux" }
-              ],
-              note: "Elemen yang dicari memancarkan cahaya sendiri tanpa sumber energi eksternal."
+                { name: "Grandmaster Chessboard", value: "Netral, sama suhu ruangan" },
+                { name: "Glowing Mask", value: "Netral, sama suhu ruangan" },
+                { name: "Magical Paintbrush", value: "+14°C dari suhu ruangan" },
+                { name: "Anomalous Core", value: "Netral, sama suhu ruangan" }
+              ]
+            },
+            {
+              type: "laporan",
+              title: "Hasil Residu Forensik Laci",
+              rows: [
+                { name: "Grandmaster Chessboard", value: "Tidak ada temuan" },
+                { name: "Glowing Mask", value: "Residu cocok" },
+                { name: "Magical Paintbrush", value: "Tidak ada temuan" },
+                { name: "Anomalous Core", value: "Tidak ada temuan" }
+              ]
             }
           ]
         }
@@ -861,31 +886,52 @@
       tag: "BLOK KODE",
       title: "Membuka Kode Akses",
       category: "codes",
+      narrative: "Setiap vault museum diberi nomor berdasarkan tahun instalasinya, tercatat di buku maintenance gedung. Log akses terakhir menunjukkan satu nomor vault sempat diakses di luar jam kerja resmi kurator, sesuatu yang seharusnya memicu laporan insiden, namun laporan itu ternyata tidak pernah ada. Petugas kebersihan malam itu juga mengaku hanya membersihkan area yang lampunya menyala, sementara satu koridor vault tercatat gelap total sepanjang malam. Dan dari daftar suku cadang yang diganti bulan itu, hanya satu vault yang kuncinya baru saja diservis ulang, cocok dengan jenis kerusakan gembok yang ditemukan di TKP.",
       steps: [
         {
           miniGameId: 3,
           miniGameName: "Molecular Substitution Cipher",
-          miniGameIntro: "Pecahkan nilai A, B, dan C dari persamaan kuadrat &amp; akar berikut, lalu buka vault dengan kode 3 digitnya.",
+          miniGameIntro: "Pecahkan nilai A, B, dan C dari persamaan kuadrat dan akar berikut, lalu buka vault dengan kode 3 digitnya.",
           exhibits: [
             {
               type: "laporan",
-              title: "Laporan Sistem — Karakter Pembuka Kode Akses",
+              title: "Buku Maintenance Gedung",
               rows: [
-                { name: "R&M-44", value: "R kemudian simbol &" },
-                { name: "CS-01", value: "C kemudian S (konsonan-konsonan)" },
-                { name: "D/N/A-01", value: "D kemudian simbol /" },
-                { name: "BS-D1", value: "B kemudian S (konsonan-konsonan)" }
-              ],
-              note: "Kode yang dua karakter pembukanya sama-sama huruf konsonan (tanpa vokal di antaranya) ditandai sistem sebagai kode uji coba lama dan otomatis gagal autentikasi."
+                { name: "VLT-114", value: "Instalasi 1998, sebelum sistem sensor akses dipasang" },
+                { name: "VLT-207", value: "Instalasi 2005" },
+                { name: "VLT-330", value: "Instalasi 2011" },
+                { name: "VLT-452", value: "Instalasi 2019" }
+              ]
             },
             {
               type: "log",
-              title: "Hasil Percobaan — Kandidat Tersisa",
+              title: "Log Akses Malam Hari",
               rows: [
-                { name: "R&M-44", value: "Sinyal ERROR" },
-                { name: "D/N/A-01", value: "Belum dicoba" }
-              ],
-              note: "Kode yang menghasilkan sinyal ERROR dipastikan tidak sah."
+                { name: "VLT-114", value: "Tidak tercatat (belum ada sensor)" },
+                { name: "VLT-207", value: "Diakses 23:40, tanpa laporan insiden" },
+                { name: "VLT-330", value: "Tidak ada akses malam" },
+                { name: "VLT-452", value: "Tidak ada akses malam" }
+              ]
+            },
+            {
+              type: "jejak",
+              title: "Jalur Petugas Kebersihan",
+              rows: [
+                { name: "VLT-114", value: "Dibersihkan normal" },
+                { name: "VLT-207", value: "Dibersihkan normal" },
+                { name: "VLT-330", value: "Koridor gelap total, dilewati" },
+                { name: "VLT-452", value: "Dibersihkan normal" }
+              ]
+            },
+            {
+              type: "laporan",
+              title: "Riwayat Servis Kunci Vault",
+              rows: [
+                { name: "VLT-114", value: "Tidak ada riwayat servis" },
+                { name: "VLT-207", value: "Tidak ada riwayat servis" },
+                { name: "VLT-330", value: "Tidak ada riwayat servis" },
+                { name: "VLT-452", value: "Kunci baru diservis, cocok jenis gembok TKP" }
+              ]
             }
           ]
         }
@@ -1226,7 +1272,8 @@
     document.getElementById('round-tag-label').textContent = block.tag;
     document.getElementById('round-title-label').textContent = block.title;
     document.getElementById('round-clue-text').innerHTML = `
-      <p class="exhibit-hint">Klik tiap berkas di bawah untuk membukanya, lalu gabungkan semua isinya sebelum menentukan pilihan.</p>
+      <p class="clue-narrative">${block.narrative}</p>
+      <p class="exhibit-hint">Klik tiap berkas di bawah untuk membukanya, lalu gabungkan semua isinya dengan cerita di atas sebelum menentukan pilihan.</p>
       ${accumulatedExhibits.map((ex, i) => {
         const meta = EXHIBIT_META[ex.type] || { icon: "📄", label: "BERKAS" };
         return `
@@ -1243,7 +1290,6 @@
             <table class="exhibit-table">
               ${ex.rows.map(row => `<tr><td>${row.name}</td><td>${row.value}</td></tr>`).join('')}
             </table>
-            <div class="exhibit-note">${ex.note}</div>
           </div>
         </div>`;
       }).join('')}
