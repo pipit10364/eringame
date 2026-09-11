@@ -481,7 +481,7 @@
       </div>
 
       <div class="warning-box">
-        <b>⚠️ Peringatan:</b> Investigasi ini hanya mengizinkan <b>5 nyawa</b>. Setiap mini-game yang gagal, jawaban ronde yang keliru, atau deduksi akhir yang salah akan mengurangi satu nyawa — dan nyawa yang habis hanya terisi kembali satu per satu setiap 10 menit. Pikirkan baik-baik sebelum menjawab.
+        <b>⚠️ Peringatan:</b> Investigasi ini hanya mengizinkan <b>5 nyawa</b>. Setiap mini-game yang gagal atau deduksi akhir yang salah akan mengurangi satu nyawa — dan nyawa yang habis hanya terisi kembali satu per satu setiap 10 menit. Pikirkan baik-baik sebelum mengunci jawaban, karena kamu baru tahu benar atau salah di akhir investigasi.
       </div>
     </div>
 
@@ -516,7 +516,7 @@
     <div class="eyebrow-mark">Case File</div>
     <h2 class="round-title" style="font-size:2rem; text-align:center;">Daftar Kandidat</h2>
     <p style="color:var(--ink-dim); text-align:center; margin-bottom:28px; font-size:0.94rem; line-height:1.7;">
-      Berikut seluruh kemungkinan yang tercatat di sistem museum. Satu dari tiap kategori adalah kunci sebenarnya — sisanya harus kamu gugurkan lewat investigasi di tiap ronde.
+      Berikut seluruh kemungkinan yang tercatat di sistem museum. Satu dari tiap kategori adalah kunci sebenarnya — sisanya harus kamu gugurkan lewat investigasi di tiap blok. Kamu akan mengunci satu jawaban per kategori, dan baru tahu hasilnya di akhir.
     </p>
     <div class="roster-grid">
       <div class="roster-category">
@@ -536,7 +536,7 @@
       </div>
     </div>
     <div class="cta-row">
-      <button class="btn btn-primary" onclick="enterInvestigation()">Mulai Investigasi Ronde 1</button>
+      <button class="btn btn-primary" onclick="enterInvestigation()">Mulai Investigasi</button>
     </div>
   </div>
 </section>
@@ -552,16 +552,7 @@
     <div class="progress-row"></div>
 
     <div class="clue-card">
-      <div id="round-pre-start">
-        <div class="round-tag">RONDE 1 · MENUNGGU</div>
-        <h2 class="round-title">Investigasi dimulai di sini</h2>
-        <p class="clue-text">Setiap ronde diawali dengan sebuah tantangan mini-game. Selesaikan tantangannya untuk membuka Clue di halaman berikutnya, lalu coret kemungkinan yang gugur di Papan Logic Grid.</p>
-        <div class="round-actions">
-          <button class="btn btn-primary" onclick="startRound(0)">Mulai Investigasi Ronde 1</button>
-        </div>
-      </div>
-
-      <div id="minigame-phase" style="display:none;">
+      <div id="minigame-phase">
         <div class="round-tag" id="minigame-round-tag"></div>
         <h2 class="round-title" id="minigame-round-title"></h2>
         <p class="mg-intro" id="minigame-round-intro"></p>
@@ -591,25 +582,12 @@
     </div>
 
     <div class="deduction-panel">
-      <h3>Logic Grid</h3>
-      <div class="hint">Klik item untuk mencoret kemungkinan yang sudah gugur berdasarkan clue di atas.</div>
-      <div class="deduction-categories">
-        <div class="grid-category">
-          <div class="grid-category-label">RUANGAN MUSEUM</div>
-          <div id="grid-rooms"></div>
-        </div>
-        <div class="grid-category">
-          <div class="grid-category-label">ELEMEN KUNCI</div>
-          <div id="grid-elements"></div>
-        </div>
-        <div class="grid-category">
-          <div class="grid-category-label">KODE AKSES</div>
-          <div id="grid-codes"></div>
-        </div>
-      </div>
+      <h3 id="lock-panel-title">Kunci Jawaban</h3>
+      <div class="hint">Pilih satu kandidat berdasarkan bukti di atas. Kamu baru akan tahu benar atau salah di akhir investigasi — jadi pikirkan baik-baik sebelum mengunci.</div>
+      <div class="chip-row" id="lock-chip-row"></div>
       <div class="feedback" id="round-feedback"></div>
       <div class="round-actions">
-        <button class="btn btn-primary" id="round-submit-btn" onclick="checkRound()">Kirim Jawaban</button>
+        <button class="btn btn-primary" id="round-submit-btn" onclick="lockBlockAnswer()">Kunci Jawaban</button>
       </div>
     </div>
   </div>
@@ -619,8 +597,8 @@
 <section class="screen" id="screen-final">
   <div class="final-card">
     <div class="round-tag">FINAL VERIFICATION</div>
-    <h2 class="round-title" style="margin-bottom:6px;">Susun Kesimpulan Akhirmu</h2>
-    <p style="color:var(--ink-dim); font-size:0.92rem; margin-bottom:26px;">Pilih satu jawaban dari tiap kategori berdasarkan hasil eliminasi di Logic Grid.</p>
+    <h2 class="round-title" style="margin-bottom:6px;">Kesimpulan Akhirmu</h2>
+    <p style="color:var(--ink-dim); font-size:0.92rem; margin-bottom:26px;">Ini kombinasi yang sudah kamu kunci di tiap blok investigasi. Saatnya buka vault dan lihat hasilnya.</p>
 
     <div class="final-group">
       <div class="final-group-label">RUANGAN</div>
@@ -635,7 +613,7 @@
       <div class="chip-row" id="final-codes"></div>
     </div>
 
-    <button class="btn btn-primary" style="width:100%;" onclick="checkFinal()">Submit Final Deduction</button>
+    <button class="btn btn-primary" style="width:100%;" onclick="checkFinal()">Buka Vault Utama</button>
 
     <div class="result-box" id="final-result"></div>
 
@@ -801,130 +779,131 @@
 
   const ANSWER = { rooms: "Witch's Lab", elements: "Glowing Mask", codes: "D/N/A-01" };
 
-  const ROUNDS = [
+  const BLOCKS = [
     {
-      tag: "RONDE 1",
-      title: "Jejak Pertama di Museum",
-      location: "Cellular Theatre",
-      miniGameName: "Rhythm Sequence Memory",
-      miniGameIntro: "Ingat urutan not yang menyala — makin panjang lagunya, makin cepat temponya.",
-      exhibits: [
+      tag: "BLOK RUANGAN",
+      title: "Menelusuri Ruangan Museum",
+      category: "rooms",
+      steps: [
         {
-          type: "log",
-          title: "Log Sensor Cahaya — Intensitas per Ruangan",
-          rows: [
-            { name: "Cellular Theatre", value: "TINGGI (lampu panggung menyala)" },
-            { name: "Witch's Lab", value: "RENDAH" },
-            { name: "Persona Room", value: "RENDAH" },
-            { name: "Magpie Observatory", value: "RENDAH" }
-          ],
-          note: "Peta hanya mungkin disimpan di ruangan dengan intensitas cahaya RENDAH."
-        },
-        {
-          type: "jejak",
-          title: "Analisis Material — Elemen Kunci",
-          rows: [
-            { name: "Grandmaster Chessboard", value: "Kayu ek berukir" },
-            { name: "Glowing Mask", value: "Logam campuran" },
-            { name: "Magical Paintbrush", value: "Bulu unggas & resin sintetis" },
-            { name: "Anomalous Core", value: "Kristal tak stabil" }
-          ],
-          note: "Elemen yang dicari BUKAN benda berbahan kayu."
+          miniGameId: 0,
+          miniGameName: "Rhythm Sequence Memory",
+          miniGameIntro: "Ingat urutan not yang menyala — makin panjang lagunya, makin cepat temponya.",
+          exhibits: [
+            {
+              type: "log",
+              title: "Log Sensor Cahaya — Intensitas per Ruangan",
+              rows: [
+                { name: "Cellular Theatre", value: "TINGGI (lampu panggung menyala)" },
+                { name: "Witch's Lab", value: "RENDAH" },
+                { name: "Persona Room", value: "RENDAH" },
+                { name: "Magpie Observatory", value: "RENDAH" }
+              ],
+              note: "Peta hanya mungkin disimpan di ruangan dengan intensitas cahaya RENDAH."
+            },
+            {
+              type: "log",
+              title: "Log Penggeledahan — Status per Ruangan",
+              rows: [
+                { name: "Cellular Theatre", value: "Tidak digeledah (area publik, selalu terang)" },
+                { name: "Witch's Lab", value: "Digeledah — belum ada temuan pasti" },
+                { name: "Persona Room", value: "NIHIL — tidak ditemukan apa pun" },
+                { name: "Magpie Observatory", value: "NIHIL — tidak ditemukan apa pun" }
+              ],
+              note: "Ruangan berstatus NIHIL dipastikan gugur dari kemungkinan."
+            }
+          ]
         }
-      ],
-      required: [ {cat:"rooms", name:"Cellular Theatre"}, {cat:"elements", name:"Grandmaster Chessboard"} ]
+      ]
     },
     {
-      tag: "RONDE 2",
-      title: "Menelusuri Kode Akses",
-      location: "Magpie Observatory",
-      miniGameName: "Molecule Logic Switch",
-      miniGameIntro: "Putar tiap potongan sirkuit — hati-hati pipa buntu — hingga arus tersambung dari Start ke Finish.",
-      exhibits: [
+      tag: "BLOK ELEMEN",
+      title: "Mengidentifikasi Elemen Kunci",
+      category: "elements",
+      steps: [
         {
-          type: "laporan",
-          title: "Laporan Sistem — Karakter Pembuka Kode Akses",
-          rows: [
-            { name: "R&M-44", value: "R kemudian simbol &" },
-            { name: "CS-01", value: "C kemudian S (konsonan-konsonan)" },
-            { name: "D/N/A-01", value: "D kemudian simbol /" },
-            { name: "BS-D1", value: "B kemudian S (konsonan-konsonan)" }
-          ],
-          note: "Kode yang dua karakter pembukanya sama-sama huruf konsonan (tanpa vokal di antaranya) ditandai sistem sebagai kode uji coba lama dan otomatis gagal autentikasi."
-        }
-      ],
-      required: [ {cat:"codes", name:"CS-01"}, {cat:"codes", name:"BS-D1"} ]
-    },
-    {
-      tag: "RONDE 3",
-      title: "Ruangan yang Gugur",
-      location: "Persona Room",
-      miniGameName: "Mental Rotation Pattern Match",
-      miniGameIntro: "Kenali struktur rantai molekul yang benar-benar identik jika diputar — 3 soal berturut-turut tanpa salah.",
-      exhibits: [
-        {
-          type: "log",
-          title: "Log Penggeledahan — Status per Ruangan",
-          rows: [
-            { name: "Cellular Theatre", value: "Sudah gugur (Ronde 1)" },
-            { name: "Witch's Lab", value: "Belum digeledah" },
-            { name: "Persona Room", value: "NIHIL — tidak ditemukan apa pun" },
-            { name: "Magpie Observatory", value: "NIHIL — tidak ditemukan apa pun" }
-          ],
-          note: "Ruangan berstatus NIHIL dipastikan gugur dari kemungkinan."
+          miniGameId: 1,
+          miniGameName: "Molecule Logic Switch",
+          miniGameIntro: "Putar tiap potongan sirkuit — hati-hati pipa buntu — hingga arus tersambung dari Start ke Finish.",
+          exhibits: [
+            {
+              type: "jejak",
+              title: "Analisis Berat — Elemen Kunci",
+              rows: [
+                { name: "Grandmaster Chessboard", value: "Berat (di atas 500g)" },
+                { name: "Glowing Mask", value: "Ringan (di bawah 500g)" },
+                { name: "Magical Paintbrush", value: "Ringan (di bawah 500g)" },
+                { name: "Anomalous Core", value: "Berat (di atas 500g)" }
+              ],
+              note: "Elemen yang dicari tergolong ringan, di bawah 500 gram."
+            }
+          ]
         },
         {
-          type: "jejak",
-          title: "Status Penyimpanan — Elemen Kunci",
-          rows: [
-            { name: "Grandmaster Chessboard", value: "Sudah gugur (Ronde 1)" },
-            { name: "Glowing Mask", value: "Belum diperiksa" },
-            { name: "Magical Paintbrush", value: "Belum diperiksa" },
-            { name: "Anomalous Core", value: "Tersegel utuh sejak awal, tidak pernah berpindah" }
-          ],
-          note: "Peta terbukti telah berpindah tangan — elemen yang tersegel utuh sejak awal dan tidak pernah berpindah dipastikan bukan yang dicari."
+          miniGameId: 2,
+          miniGameName: "Mental Rotation Pattern Match",
+          miniGameIntro: "Kenali struktur rantai molekul yang benar-benar identik jika diputar — 3 soal berturut-turut tanpa salah.",
+          exhibits: [
+            {
+              type: "log",
+              title: "Log Luminositas — Kandidat Tersisa",
+              rows: [
+                { name: "Glowing Mask", value: "42 lux (memancarkan cahaya sendiri)" },
+                { name: "Magical Paintbrush", value: "0 lux" }
+              ],
+              note: "Elemen yang dicari memancarkan cahaya sendiri tanpa sumber energi eksternal."
+            }
+          ]
         }
-      ],
-      required: [ {cat:"rooms", name:"Magpie Observatory"}, {cat:"rooms", name:"Persona Room"}, {cat:"elements", name:"Anomalous Core"} ]
+      ]
     },
     {
-      tag: "RONDE 4",
-      title: "Cahaya di Witch's Lab",
-      location: "Witch's Lab",
-      miniGameName: "Molecular Substitution Cipher",
-      miniGameIntro: "Pecahkan nilai A, B, dan C dari persamaan kuadrat &amp; akar berikut, lalu buka vault dengan kode 3 digitnya.",
-      exhibits: [
+      tag: "BLOK KODE",
+      title: "Membuka Kode Akses",
+      category: "codes",
+      steps: [
         {
-          type: "jejak",
-          title: "Sifat Cahaya — Elemen Tersisa",
-          rows: [
-            { name: "Glowing Mask", value: "Memancarkan cahaya sendiri dalam gelap" },
-            { name: "Magical Paintbrush", value: "Menyerap warna dari palet, tidak memancarkan cahaya" }
-          ],
-          note: "Elemen yang dicari memancarkan cahayanya sendiri, bukan menyerap warna."
-        },
-        {
-          type: "log",
-          title: "Hasil Percobaan — Kode Tersisa",
-          rows: [
-            { name: "R&M-44", value: "Sinyal ERROR" },
-            { name: "D/N/A-01", value: "Belum dicoba" }
-          ],
-          note: "Kode yang menghasilkan sinyal ERROR dipastikan tidak sah."
+          miniGameId: 3,
+          miniGameName: "Molecular Substitution Cipher",
+          miniGameIntro: "Pecahkan nilai A, B, dan C dari persamaan kuadrat &amp; akar berikut, lalu buka vault dengan kode 3 digitnya.",
+          exhibits: [
+            {
+              type: "laporan",
+              title: "Laporan Sistem — Karakter Pembuka Kode Akses",
+              rows: [
+                { name: "R&M-44", value: "R kemudian simbol &" },
+                { name: "CS-01", value: "C kemudian S (konsonan-konsonan)" },
+                { name: "D/N/A-01", value: "D kemudian simbol /" },
+                { name: "BS-D1", value: "B kemudian S (konsonan-konsonan)" }
+              ],
+              note: "Kode yang dua karakter pembukanya sama-sama huruf konsonan (tanpa vokal di antaranya) ditandai sistem sebagai kode uji coba lama dan otomatis gagal autentikasi."
+            },
+            {
+              type: "log",
+              title: "Hasil Percobaan — Kandidat Tersisa",
+              rows: [
+                { name: "R&M-44", value: "Sinyal ERROR" },
+                { name: "D/N/A-01", value: "Belum dicoba" }
+              ],
+              note: "Kode yang menghasilkan sinyal ERROR dipastikan tidak sah."
+            }
+          ]
         }
-      ],
-      required: [ {cat:"elements", name:"Magical Paintbrush"}, {cat:"codes", name:"R&M-44"} ]
+      ]
     }
   ];
+
+  const CATEGORY_LABEL = { rooms: "Ruangan", elements: "Elemen Kunci", codes: "Kode Akses" };
 
   // ==================================================================
   // GLOBAL STATE
   // ==================================================================
-  let struck = new Set();
-  let currentRound = -1;
+  let currentBlock = -1;
+  let currentStep = 0;
+  let currentMiniGameId = -1;
+  let accumulatedExhibits = [];
+  let lockSelection = null;
   let finalSelection = { rooms: null, elements: null, codes: null };
-
-  const key = (cat, name) => cat + "::" + name;
 
   // ==================================================================
   // LIVES SYSTEM (5 lives, +1 regen every 15 minutes, persisted locally)
@@ -1125,52 +1104,26 @@
   }
 
   function enterInvestigation(){
-    showScreen('screen-minigame');
     startTimer();
-  }
-
-  // ==================================================================
-  // LOGIC GRID
-  // ==================================================================
-  function renderGrid(){
-    renderCategory('grid-rooms', 'rooms');
-    renderCategory('grid-elements', 'elements');
-    renderCategory('grid-codes', 'codes');
-  }
-  function renderCategory(containerId, cat){
-    const container = document.getElementById(containerId);
-    container.innerHTML = '';
-    CATEGORIES[cat].forEach(name => {
-      const isStruck = struck.has(key(cat, name));
-      const item = document.createElement('div');
-      item.className = 'grid-item' + (isStruck ? ' struck' : '');
-      item.innerHTML = `<span class="mark"></span><span class="label">${name}</span>`;
-      item.onclick = () => toggleStrike(cat, name);
-      container.appendChild(item);
-    });
-  }
-  function toggleStrike(cat, name){
-    const k = key(cat, name);
-    if (struck.has(k)) struck.delete(k); else struck.add(k);
-    renderGrid();
+    startBlock(0);
   }
 
   // ==================================================================
   // PROGRESS BAR (duplicated on the mini-game & clue screens)
   // ==================================================================
   function renderProgress(){
-    let html = '<span class="progress-label">RONDE</span>';
-    ROUNDS.forEach((r, i) => {
-      const state = i < currentRound ? ' done' : (i === currentRound ? ' current' : '');
+    let html = '<span class="progress-label">TAHAP</span>';
+    BLOCKS.forEach((b, i) => {
+      const state = i < currentBlock ? ' done' : (i === currentBlock ? ' current' : '');
       html += `<div class="progress-dot${state}">${i + 1}</div>`;
-      if (i < ROUNDS.length - 1) html += '<div class="progress-line"></div>';
+      if (i < BLOCKS.length - 1) html += '<div class="progress-line"></div>';
     });
     document.querySelectorAll('.progress-row').forEach(row => row.innerHTML = html);
   }
 
   // ==================================================================
   // READY COUNTDOWN — a short "brace yourself" beat before the
-  // memorize-heavy (Round 1) and streak-heavy (Round 3) mini-games
+  // memorize-heavy (rhythm) and streak-heavy (rotation) mini-games
   // ==================================================================
   function mgReadyCountdown(seconds, label, onDone){
     const container = document.getElementById('minigame-container');
@@ -1196,37 +1149,46 @@
   }
 
   // ==================================================================
-  // ROUND FLOW: pre-start -> [minigame screen] -> [clue+deduction screen] -> submit
+  // BLOCK FLOW: [minigame(s)] -> [exhibits + lock-in] -> next block -> final reveal
   // ==================================================================
-  function startRound(idx){
-    currentRound = idx;
-    document.getElementById('round-pre-start').style.display = 'none';
+  function startBlock(idx){
+    currentBlock = idx;
+    currentStep = 0;
+    accumulatedExhibits = [];
+    lockSelection = null;
     renderProgress();
     startMiniGamePhase();
   }
 
   function startMiniGamePhase(){
     showScreen('screen-minigame');
-    document.getElementById('minigame-phase').style.display = 'block';
-    const r = ROUNDS[currentRound];
-    document.getElementById('minigame-round-tag').textContent = `${r.tag} · ${r.location}`;
-    document.getElementById('minigame-round-title').textContent = r.miniGameName;
-    document.getElementById('minigame-round-intro').innerHTML = r.miniGameIntro;
+    const block = BLOCKS[currentBlock];
+    const step = block.steps[currentStep];
+    currentMiniGameId = step.miniGameId;
+    document.getElementById('minigame-round-tag').textContent = `${block.tag} · Tahap ${currentStep + 1}/${block.steps.length}`;
+    document.getElementById('minigame-round-title').textContent = step.miniGameName;
+    document.getElementById('minigame-round-intro').innerHTML = step.miniGameIntro;
     document.getElementById('minigame-status').textContent = '';
     document.getElementById('minigame-reset-wrap').innerHTML = '';
     const prog = document.getElementById('minigame-progress');
     prog.style.display = 'none';
     prog.textContent = '';
-    [initMiniGame1, initMiniGame2, initMiniGame3, initMiniGame4][currentRound]();
+    [initMiniGame1, initMiniGame2, initMiniGame3, initMiniGame4][currentMiniGameId]();
   }
 
   function miniGameSuccess(){
-    document.getElementById('minigame-status').textContent = 'Berhasil! Membuka clue…';
+    accumulatedExhibits = accumulatedExhibits.concat(BLOCKS[currentBlock].steps[currentStep].exhibits);
+    document.getElementById('minigame-status').textContent = 'Berhasil!';
     document.getElementById('minigame-reset-wrap').innerHTML = '';
+    currentStep++;
     setTimeout(() => {
-      showScreen('screen-clue');
-      renderClue();
-      renderGrid();
+      const block = BLOCKS[currentBlock];
+      if (currentStep < block.steps.length){
+        startMiniGamePhase();
+      } else {
+        showScreen('screen-clue');
+        renderBlockDeduction();
+      }
     }, 550);
   }
 
@@ -1259,13 +1221,13 @@
     laporan: { icon: "📋", label: "LAPORAN PETUGAS" }
   };
 
-  function renderClue(){
-    const r = ROUNDS[currentRound];
-    document.getElementById('round-tag-label').textContent = r.tag;
-    document.getElementById('round-title-label').textContent = r.title;
+  function renderBlockDeduction(){
+    const block = BLOCKS[currentBlock];
+    document.getElementById('round-tag-label').textContent = block.tag;
+    document.getElementById('round-title-label').textContent = block.title;
     document.getElementById('round-clue-text').innerHTML = `
-      <p class="exhibit-hint">Klik tiap berkas di bawah untuk membukanya, lalu cocokkan hasilnya dengan Logic Grid.</p>
-      ${r.exhibits.map((ex, i) => {
+      <p class="exhibit-hint">Klik tiap berkas di bawah untuk membukanya, lalu gabungkan semua isinya sebelum menentukan pilihan.</p>
+      ${accumulatedExhibits.map((ex, i) => {
         const meta = EXHIBIT_META[ex.type] || { icon: "📄", label: "BERKAS" };
         return `
         <div class="exhibit-card" id="exhibit-${i}">
@@ -1286,11 +1248,13 @@
         </div>`;
       }).join('')}
     `;
+    document.getElementById('lock-panel-title').textContent = `Kunci Jawaban — ${CATEGORY_LABEL[block.category]}`;
+    lockSelection = null;
+    renderLockChips();
     const fb = document.getElementById('round-feedback');
     fb.className = 'feedback';
     fb.textContent = '';
-    document.getElementById('round-submit-btn').textContent =
-      currentRound === ROUNDS.length - 1 ? 'Kirim Jawaban & Lanjut ke Final' : `Kirim Jawaban Ronde ${currentRound + 1}`;
+    document.getElementById('round-submit-btn').textContent = 'Kunci Jawaban';
   }
 
   function toggleExhibit(i){
@@ -1298,39 +1262,37 @@
     if (card) card.classList.toggle('open');
   }
 
-  function getCumulativeRequired(uptoRoundIdx){
-    const set = new Set();
-    for (let i = 0; i <= uptoRoundIdx; i++){
-      ROUNDS[i].required.forEach(req => set.add(key(req.cat, req.name)));
-    }
-    return set;
+  function renderLockChips(){
+    const block = BLOCKS[currentBlock];
+    const container = document.getElementById('lock-chip-row');
+    container.innerHTML = '';
+    CATEGORIES[block.category].forEach(name => {
+      const chip = document.createElement('div');
+      chip.className = 'chip' + (lockSelection === name ? ' selected' : '');
+      chip.textContent = name;
+      chip.onclick = () => { lockSelection = name; renderLockChips(); };
+      container.appendChild(chip);
+    });
   }
 
-  function checkRound(){
-    const cumulative = getCumulativeRequired(currentRound);
-    const missing = [...cumulative].filter(k => !struck.has(k));
-    const extra = [...struck].filter(k => !cumulative.has(k));
+  function lockBlockAnswer(){
     const fb = document.getElementById('round-feedback');
-
-    if (missing.length > 0 || extra.length > 0){
+    if (!lockSelection){
       fb.className = 'feedback show warn';
-      fb.textContent = extra.length > 0
-        ? 'Belum tepat. Ada kemungkinan yang kamu coret padahal belum benar-benar terbukti gugur oleh clue — jangan asal coret semua, tinjau ulang satu per satu.'
-        : 'Belum tepat. Coba baca ulang clue di atas, lalu coret kemungkinan yang sudah jelas gugur di Logic Grid.';
-      loseLife();
+      fb.textContent = 'Pilih salah satu kandidat dulu sebelum mengunci jawaban.';
       return;
     }
+    const block = BLOCKS[currentBlock];
+    finalSelection[block.category] = lockSelection;
 
     fb.className = 'feedback show ok';
-    fb.textContent = 'Deduksi tepat! Melangkah ke tahap berikutnya…';
+    fb.textContent = 'Jawaban terkunci. Melangkah ke blok berikutnya…';
 
     setTimeout(() => {
-      if (currentRound < ROUNDS.length - 1){
-        currentRound++;
-        renderProgress();
-        startMiniGamePhase();
+      if (currentBlock < BLOCKS.length - 1){
+        startBlock(currentBlock + 1);
       } else {
-        currentRound = ROUNDS.length;
+        currentBlock = BLOCKS.length;
         renderProgress();
         goToFinal();
       }
@@ -1406,7 +1368,7 @@
   }
 
   function rhyPress(color){
-    if (rhyPlaying || currentRound !== 0) return;
+    if (rhyPlaying || currentMiniGameId !== 0) return;
     rhyFlash(color);
     if (color === rhySequence[rhyPlayerIdx]){
       rhyPlayerIdx++;
@@ -1533,7 +1495,7 @@
   }
 
   function pipeRotate(col, row){
-    if (currentRound !== 1) return;
+    if (currentMiniGameId !== 1) return;
     const k = `${col},${row}`;
     pipeState[k] = (pipeState[k] + 90) % 360;
     const cell = document.querySelector(`.pipe-cell[data-col="${col}"][data-row="${row}"] .pipe-shape`);
@@ -1665,7 +1627,7 @@
   }
 
   function mrPick(idx){
-    if (currentRound !== 2) return;
+    if (currentMiniGameId !== 2) return;
     if (idx === mrCorrectIndex){
       mrStreak++;
       if (mrStreak === MR_TOTAL){
@@ -1734,7 +1696,7 @@
   }
 
   function cipherCheck(){
-    if (currentRound !== 3) return;
+    if (currentMiniGameId !== 3) return;
     const code = ['cip-0','cip-1','cip-2'].map(id => document.getElementById(id).value).join('');
     const correctCode = `${cipherSet.A}${cipherSet.B}${cipherSet.C}`;
     if (code === correctCode){
@@ -1768,11 +1730,8 @@
     CATEGORIES[cat].forEach(name => {
       const chip = document.createElement('div');
       chip.className = 'chip' + (finalSelection[cat] === name ? ' selected' : '');
+      chip.style.cursor = 'default';
       chip.textContent = name;
-      chip.onclick = () => {
-        finalSelection[cat] = name;
-        renderFinalChips(containerId, cat);
-      };
       container.appendChild(chip);
     });
   }
