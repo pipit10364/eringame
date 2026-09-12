@@ -158,17 +158,37 @@
     cursor: pointer; letter-spacing: 0.02em;
   }
   .leaderboard-link:hover{ color: var(--teal); }
-  .leaderboard-overlay{
-    position: fixed; inset: 0; background: rgba(6,17,26,0.94); z-index: 60;
-    display: none; align-items: center; justify-content: center; padding: 24px;
+
+  /* ---------- Leaderboard Page ---------- */
+  .leaderboard-page-wrap{ max-width: 640px; width: 100%; text-align: center; }
+  .leaderboard-sub{ color: var(--ink-dim); font-size: 0.9rem; margin: 10px 0 28px; line-height: 1.6; }
+
+  .podium{ display: flex; align-items: flex-end; justify-content: center; gap: 14px; margin: 0 auto 32px; }
+  .podium-slot{ display: flex; flex-direction: column; align-items: center; width: 108px; }
+  .podium-medal{ font-size: 1.7rem; margin-bottom: 4px; }
+  .podium-name{
+    font-size: 0.82rem; font-weight: 700; color: var(--ink); margin-bottom: 2px;
+    max-width: 108px; overflow-wrap: anywhere; text-align: center; line-height: 1.25;
   }
-  .leaderboard-overlay.show{ display: flex; }
-  .leaderboard-box{
-    max-width: min(480px, 92vw); width: 100%; background: var(--bg-panel);
-    border: 1px solid var(--border); border-radius: 6px; padding: 26px 24px; max-height: 80vh; overflow-y: auto;
+  .podium-score{ font-size: 0.76rem; color: var(--emerald); font-family: 'JetBrains Mono', monospace; margin-bottom: 8px; }
+  .podium-bar{
+    width: 100%; border-radius: 8px 8px 0 0; background: var(--bg-card);
+    border: 1px solid var(--border); border-bottom: none; box-sizing: border-box;
   }
-  .leaderboard-box h3{ font-size: 1.4rem; color: var(--gold); margin-bottom: 4px; }
-  .leaderboard-box .lb-hint{ color: var(--ink-faint); font-size: 0.78rem; margin-bottom: 18px; }
+  .podium-slot.place-1{ order: 2; }
+  .podium-slot.place-2{ order: 1; }
+  .podium-slot.place-3{ order: 3; }
+  .podium-slot.place-1 .podium-bar{ height: 96px; border-color: var(--gold); background: rgba(216,185,121,0.12); }
+  .podium-slot.place-2 .podium-bar{ height: 68px; }
+  .podium-slot.place-3 .podium-bar{ height: 46px; }
+  .podium-slot.me .podium-name{ color: var(--teal); }
+  .podium-slot.me .podium-bar{ border-color: var(--teal); box-shadow: 0 0 14px rgba(45,212,191,0.35); }
+
+  .lb-list-wrap{
+    max-width: 560px; width: 100%; margin: 0 auto 28px; max-height: 46vh; overflow-y: auto;
+    background: var(--bg-panel); border: 1px solid var(--border); border-radius: 6px;
+    padding: 8px 18px; text-align: left; box-sizing: border-box;
+  }
   .leaderboard-row{
     display: flex; align-items: center; gap: 10px; padding: 10px 4px;
     border-bottom: 1px solid var(--border-soft); font-size: 0.92rem;
@@ -178,7 +198,13 @@
   .lb-name{ flex: 1; color: var(--ink); font-weight: 700; overflow-wrap: anywhere; }
   .lb-score{ color: var(--emerald); font-family: 'JetBrains Mono', monospace; font-size: 0.86rem; }
   .leaderboard-loading, .leaderboard-empty{ color: var(--ink-faint); font-size: 0.88rem; text-align: center; padding: 12px 0; }
-  .leaderboard-close{ margin-top: 18px; width: 100%; }
+  .leaderboard-row.me{
+    background: rgba(45,212,191,0.1); border-radius: 4px; margin: 2px -8px; padding: 10px 8px;
+  }
+  .leaderboard-row.me .lb-name{ color: var(--teal); }
+  .leaderboard-row.me .lb-rank{ color: var(--teal); }
+  .score-redirect-note{ margin-top: 14px; font-size: 0.78rem; color: var(--ink-faint); }
+  .result-box p.score-redirect-note{ font-size: 0.78rem; color: var(--ink-faint); margin-bottom: 0; }
 
   /* ---------- Shared arena chrome ---------- */
   .arena-wrap{ max-width: 900px; width: 100%; }
@@ -261,7 +287,7 @@
   .ws-cell.found{ background: rgba(52,211,153,0.2); border-color: var(--emerald); color: var(--emerald); }
 
   /* ---------- End screens ---------- */
-  .result-box{ margin-top: 34px; text-align: center; background: var(--bg-panel); border: 1px solid var(--border); border-radius: 6px; padding: 34px 28px 27px; max-width: 560px; width: 100%; box-sizing: border-box; }
+  .result-box{ margin: 34px auto 0; text-align: center; background: var(--bg-panel); border: 1px solid var(--border); border-radius: 6px; padding: 34px 28px 27px; max-width: 560px; width: 100%; box-sizing: border-box; }
   .result-box.success{ border-color: var(--emerald); }
   .result-box.timeup{ border-color: var(--struck); }
   .result-time{ font-family: 'JetBrains Mono', monospace; color: var(--cyan); font-size: 0.92rem; letter-spacing: 0.08em; margin-bottom: 10px; }
@@ -345,13 +371,23 @@
     </div>
   </div>
 
-  <!-- ================= LEADERBOARD OVERLAY ================= -->
-  <div class="leaderboard-overlay" id="leaderboard-overlay">
-    <div class="leaderboard-box">
-      <h3>Leaderboard</h3>
-      <div class="lb-hint">Skor diambil dari total waktu penyelesaian Game 1 + Game 2. Makin cepat, makin tinggi skornya.</div>
-      <div id="leaderboard-list"><div class="leaderboard-loading">Memuat leaderboard…</div></div>
-      <button class="btn btn-secondary leaderboard-close" onclick="closeLeaderboard()">Tutup</button>
+  <!-- ================= LEADERBOARD SCREEN ================= -->
+  <div class="screen" id="screen-leaderboard">
+    <div class="leaderboard-page-wrap">
+      <div class="eyebrow-mark">LEADERBOARD</div>
+      <h1 class="welcome-title">Papan Peringkat</h1>
+      <p class="leaderboard-sub">Skor diambil dari total waktu penyelesaian Game 1 + Game 2. Makin cepat, makin tinggi skornya.</p>
+
+      <div class="podium" id="lb-podium"></div>
+
+      <div class="lb-list-wrap">
+        <div id="leaderboard-list"><div class="leaderboard-loading">Memuat leaderboard…</div></div>
+      </div>
+
+      <div class="cta-row">
+        <button class="btn btn-secondary" onclick="showScreen('screen-end')">Kembali ke Skor</button>
+        <button class="btn btn-primary" onclick="startArena()">Main Lagi</button>
+      </div>
     </div>
   </div>
 
@@ -429,8 +465,10 @@
   // CONFIG
   // ==================================================================
   const STAGE_UNLOCK_AT = new Date('2024-01-01T00:00:00'); // TESTING: dibuka sementara, ganti balik ke 2026-11-17T12:00:00 sebelum hari-H
-  const BONUS_START = 200;       // bonus skor maksimum di detik ke-0
-  const BONUS_DECAY_EVERY = 2;   // bonus berkurang 1 poin tiap 2 detik berjalan
+  // Skor disamakan skalanya dengan Game 1: mulai dari 1000, berkurang 1 poin tiap 3 detik.
+  // Supaya "39 POIN" di Game 2 nggak keliatan njomplang jauh dari skor Game 1 yang biasanya 700-900-an.
+  const GAME2_SCORE_BASE = 1000;
+  const GAME2_SCORE_DECAY_EVERY = 3;
   const GRID_SIZE = 13;
 
   // ==================================================================
@@ -469,17 +507,17 @@
   }
 
   function game2ScoreCategory(score){
-    if (score >= 150){
+    if (score >= 900){
       return {
         title: "The Word Hunt Prodigy ⚡",
-        msg: "Mata dan otakmu jalan bareng dalam kecepatan penuh — soal logika kejawab kilat, kata di papan langsung kesorot begitu muncul di kepala. Bonus waktu setebal ini cuma didapat kalau ritme mikir dan nyarinya nggak pernah putus."
+        msg: "Mata dan otakmu jalan bareng dalam kecepatan penuh — soal logika kejawab kilat, kata di papan langsung kesorot begitu muncul di kepala. Ritme mikir dan nyari secepat ini jarang ketemu dalam satu orang."
       };
-    } else if (score >= 100){
+    } else if (score >= 800){
       return {
         title: "The Pattern Chaser 🔎",
-        msg: "Kamu gesit bolak-balik antara soal logika dan papan huruf tanpa banyak buang waktu, dan hasilnya kelihatan dari bonus yang masih tebal. Koordinasi antara mikir cepat dan menyisir cermat ini yang bikin skormu naik."
+        msg: "Kamu gesit bolak-balik antara soal logika dan papan huruf tanpa banyak buang waktu. Koordinasi antara mikir cepat dan menyisir cermat ini yang bikin waktu tempuhmu tetap kencang."
       };
-    } else if (score >= 60){
+    } else if (score >= 700){
       return {
         title: "The Steady Hunter 🧩",
         msg: "Satu per satu kata berhasil kamu bongkar sampai papan penuh coretan hijau. Kecepatan boleh santai, tapi ketuntasan dan kegigihanmu menyisir tiap sudut papan ini yang paling menonjol."
@@ -540,39 +578,87 @@
     return String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   }
 
-  async function openLeaderboard(){
-    const overlay = document.getElementById('leaderboard-overlay');
+  const PODIUM_MEDALS = ['🥇', '🥈', '🥉'];
+
+  async function renderLeaderboardPage(){
+    const podiumEl = document.getElementById('lb-podium');
     const listEl = document.getElementById('leaderboard-list');
-    overlay.classList.add('show');
+    podiumEl.innerHTML = '';
     listEl.innerHTML = '<div class="leaderboard-loading">Memuat leaderboard…</div>';
     if (!db){
       listEl.innerHTML = '<div class="leaderboard-empty">Leaderboard belum dikonfigurasi.</div>';
       return;
     }
     try {
-      const snap = await db.ref('leaderboard').orderByChild('score').limitToLast(10).once('value');
+      const snap = await db.ref('leaderboard').orderByChild('score').limitToLast(100).once('value');
       const rows = [];
       snap.forEach(child => rows.push(child.val()));
-      rows.reverse();
+      rows.reverse(); // skor tertinggi duluan
       if (rows.length === 0){
         listEl.innerHTML = '<div class="leaderboard-empty">Belum ada skor masuk. Jadilah yang pertama!</div>';
         return;
       }
-      listEl.innerHTML = rows.map((r, i) => `
-        <div class="leaderboard-row">
-          <span class="lb-rank">#${i + 1}</span>
-          <span class="lb-name">${escapeHtml(r.username)}</span>
-          <span class="lb-score">${Number(r.score).toLocaleString('id-ID')} pts</span>
-        </div>
-      `).join('');
+      const me = getStoredUsername();
+
+      const top3 = rows.slice(0, 3);
+      podiumEl.innerHTML = top3.map((r, i) => {
+        const place = i + 1;
+        const isMe = me && r.username === me;
+        return `
+          <div class="podium-slot place-${place}${isMe ? ' me' : ''}">
+            <div class="podium-medal">${PODIUM_MEDALS[i]}</div>
+            <div class="podium-name">${escapeHtml(r.username)}</div>
+            <div class="podium-score">${Number(r.score).toLocaleString('id-ID')} pts</div>
+            <div class="podium-bar"></div>
+          </div>
+        `;
+      }).join('');
+
+      listEl.innerHTML = rows.map((r, i) => {
+        const isMe = me && r.username === me;
+        return `
+          <div class="leaderboard-row${isMe ? ' me' : ''}"${isMe ? ' id="lb-my-row"' : ''}>
+            <span class="lb-rank">#${i + 1}</span>
+            <span class="lb-name">${escapeHtml(r.username)}</span>
+            <span class="lb-score">${Number(r.score).toLocaleString('id-ID')} pts</span>
+          </div>
+        `;
+      }).join('');
+
+      const myRow = document.getElementById('lb-my-row');
+      if (myRow) setTimeout(() => myRow.scrollIntoView({ block: 'center', behavior: 'smooth' }), 150);
     } catch (e){
       listEl.innerHTML = '<div class="leaderboard-empty">Gagal memuat leaderboard.</div>';
       console.error(e);
     }
   }
 
-  function closeLeaderboard(){
-    document.getElementById('leaderboard-overlay').classList.remove('show');
+  function openLeaderboard(){
+    clearTimeout(scoreRedirectTimer);
+    clearInterval(scoreRedirectCountdownTimer);
+    showScreen('screen-leaderboard');
+    renderLeaderboardPage();
+  }
+
+  let scoreRedirectTimer = null;
+  let scoreRedirectCountdownTimer = null;
+
+  function scheduleLeaderboardRedirect(){
+    clearTimeout(scoreRedirectTimer);
+    clearInterval(scoreRedirectCountdownTimer);
+    let remaining = 7;
+    const noteEl = document.getElementById('score-redirect-note');
+    if (noteEl) noteEl.textContent = `Menuju leaderboard dalam ${remaining} detik…`;
+    scoreRedirectCountdownTimer = setInterval(() => {
+      remaining--;
+      if (noteEl) noteEl.textContent = remaining > 0 ? `Menuju leaderboard dalam ${remaining} detik…` : 'Membuka leaderboard…';
+      if (remaining <= 0) clearInterval(scoreRedirectCountdownTimer);
+    }, 1000);
+    scoreRedirectTimer = setTimeout(() => {
+      clearInterval(scoreRedirectCountdownTimer);
+      showScreen('screen-leaderboard');
+      renderLeaderboardPage();
+    }, 7000);
   }
 
   async function submitLeaderboardScore(game2TimeMs){
@@ -656,7 +742,6 @@
   // ==================================================================
   // STATE
   // ==================================================================
-  let baseScore = 0;
   let elapsedSec = 0;
   let timerHandle = null;
   let solvedTotal = 0;
@@ -727,6 +812,8 @@
   // ==================================================================
   function startArena(){
     if (new Date() < STAGE_UNLOCK_AT) return;
+    clearTimeout(scoreRedirectTimer);
+    clearInterval(scoreRedirectCountdownTimer);
 
     const usernameBox = document.getElementById('username-box');
     if (usernameBox.style.display !== 'none'){
@@ -741,7 +828,6 @@
       usernameBox.style.display = 'none';
     }
 
-    baseScore = 0;
     elapsedSec = 0;
     solvedTotal = 0;
     revealedWords = new Set();
@@ -784,14 +870,14 @@
     document.querySelectorAll('.js-timer-val').forEach(el => el.textContent = `${mm}:${ss}`);
   }
 
-  function calcBonus(){
-    return Math.max(0, BONUS_START - Math.floor(elapsedSec / BONUS_DECAY_EVERY));
+  function calcLiveScore(){
+    return Math.max(0, GAME2_SCORE_BASE - Math.floor(elapsedSec / GAME2_SCORE_DECAY_EVERY));
   }
 
   function updateStatChips(){
-    const bonus = calcBonus();
-    document.querySelectorAll('.js-score-val').forEach(el => el.textContent = baseScore + bonus);
-    document.querySelectorAll('.js-timer-chip').forEach(el => el.classList.toggle('low', bonus <= 0));
+    const score = calcLiveScore();
+    document.querySelectorAll('.js-score-val').forEach(el => el.textContent = score);
+    document.querySelectorAll('.js-timer-chip').forEach(el => el.classList.toggle('low', score <= 150));
   }
 
   function updateProgress(){
@@ -856,7 +942,6 @@
   }
 
   function handleCorrect(fb){
-    baseScore++;
     updateStatChips();
     const revealed = revealNextWord();
     fb.className = 'feedback show ok';
@@ -1121,7 +1206,6 @@
 
     foundWords.add(matched);
     solvedTotal++;
-    baseScore += 2;
     updateStatChips();
     updateProgress();
     renderWordbank();
@@ -1143,7 +1227,7 @@
 
   function endGame(won){
     clearInterval(timerHandle);
-    const finalScore = baseScore + calcBonus();
+    const finalScore = calcLiveScore();
     const mm = String(Math.floor(elapsedSec / 60)).padStart(2,'0');
     const ss = String(elapsedSec % 60).padStart(2,'0');
     showScreen('screen-end');
@@ -1172,7 +1256,9 @@
           <button class="btn btn-primary" onclick="startArena()">Main Lagi</button>
           <button class="btn btn-secondary" onclick="openLeaderboard()">Lihat Leaderboard</button>
         </div>
+        <p class="score-redirect-note" id="score-redirect-note"></p>
       `;
+      scheduleLeaderboardRedirect();
     } else {
       el.innerHTML = `
         <div class="eyebrow-mark">SESI SELESAI</div>
