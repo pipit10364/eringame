@@ -128,30 +128,6 @@
 
   .cta-row{ margin-top: 34px; }
 
-  /* ---------- Lives ---------- */
-  .lives-bar{ display: flex; align-items: center; justify-content: center; gap: 5px; margin-bottom: 8px; }
-  .life-heart{ font-size: 1.05rem; color: var(--struck); line-height: 1; }
-  .life-heart.empty{ color: var(--border); }
-  .lives-regen-note{
-    text-align: center; font-family: 'JetBrains Mono', monospace; font-size: 0.72rem;
-    color: var(--ink-faint); margin-bottom: 16px; min-height: 1.2em;
-  }
-  .lives-next-timer{ color: var(--cyan); }
-
-  .lives-lock-overlay{
-    position: fixed; inset: 0; background: rgba(6,17,26,0.94); z-index: 50;
-    display: none; align-items: center; justify-content: center; padding: 24px; text-align: center;
-  }
-  .lives-lock-overlay.show{ display: flex; }
-  .lives-lock-box{ max-width: 360px; }
-  .lives-lock-box .lives-bar{ margin-bottom: 18px; }
-  .lives-lock-box h2{ color: var(--struck); font-size: 1.8rem; margin-bottom: 14px; }
-  .lives-lock-box p{ color: var(--ink-dim); margin-bottom: 20px; font-size: 0.94rem; }
-  .lives-lock-timer{
-    font-family: 'JetBrains Mono', monospace; font-size: 2.2rem; color: var(--cyan);
-    letter-spacing: 0.06em; text-shadow: var(--glow);
-  }
-
   /* ---------- Game Screens (shared) ---------- */
   .game-wrap{ max-width: min(840px, 92vw); width: 100%; }
 
@@ -415,6 +391,14 @@
   .username-feedback{ margin-top: 8px; font-size: 0.8rem; min-height: 1.1em; }
   .username-feedback.warn{ color: var(--struck); }
   .username-feedback.ok{ color: var(--emerald); }
+  .username-feedback.checking{ color: var(--ink-faint); }
+  .username-confirm{
+    margin-top: 12px; padding: 14px 16px; border: 1px solid var(--gold); border-radius: 4px;
+    background: rgba(216,185,121,0.08);
+  }
+  .username-confirm-text{ color: var(--ink); font-size: 0.84rem; line-height: 1.55; margin-bottom: 12px; }
+  .username-confirm-actions{ display: flex; gap: 10px; flex-wrap: wrap; }
+  .btn-small{ padding: 8px 16px; font-size: 0.8rem; }
 
   /* ---------- Leaderboard ---------- */
   .leaderboard-link{
@@ -493,7 +477,7 @@
       </div>
 
       <div class="warning-box">
-        <b>⚠️ Peringatan:</b> Investigasi ini hanya mengizinkan <b>5 nyawa</b>. Setiap mini-game yang gagal atau deduksi akhir yang salah akan mengurangi satu nyawa — dan nyawa yang habis hanya terisi kembali satu per satu setiap 10 menit. Pikirkan baik-baik sebelum mengunci jawaban, karena kamu baru tahu benar atau salah di akhir investigasi.
+        <b>⚠️ Peringatan:</b> Begitu kamu mengunci satu jawaban di tiap kategori, pilihan itu tidak bisa diubah lagi. Kamu baru akan tahu benar atau salah di ronde submit terakhir — jadi pastikan sudah yakin sebelum mengunci.
       </div>
     </div>
 
@@ -502,10 +486,16 @@
       <input type="text" id="username-input" class="username-input" placeholder="contoh: erin.larasati" maxlength="20" autocomplete="off">
       <div class="username-hint">Hanya huruf kecil, titik (.), dan underscore (_) — 3 sampai 20 karakter. Nama ini dipakai di kedua game, jadi cukup diisi sekali.</div>
       <div class="username-feedback" id="username-feedback"></div>
+      <div class="username-confirm" id="username-confirm" style="display:none;">
+        <p class="username-confirm-text" id="username-confirm-text"></p>
+        <div class="username-confirm-actions">
+          <button type="button" class="btn btn-secondary btn-small" onclick="confirmUsernameYes()">Ya, ini aku</button>
+          <button type="button" class="btn btn-secondary btn-small" onclick="confirmUsernameNo()">Bukan, ganti nama</button>
+        </div>
+      </div>
     </div>
 
     <div class="cta-row">
-      <div class="lives-bar" id="welcome-lives-bar"></div>
       <button class="btn btn-primary" id="start-game-btn" onclick="goToGame()" disabled>Mulai Petualangan Logika</button>
       <div><button class="leaderboard-link" onclick="openLeaderboard()">Lihat Leaderboard</button></div>
     </div>
@@ -559,8 +549,6 @@
     <div class="timer-wrap">
       <div class="timer-bar"><span class="timer-icon">⏱</span><span class="timer-display">00:00</span></div>
     </div>
-    <div class="lives-bar"></div>
-    <div class="lives-regen-note"></div>
     <div class="progress-row"></div>
 
     <div class="clue-card">
@@ -583,8 +571,6 @@
     <div class="timer-wrap">
       <div class="timer-bar"><span class="timer-icon">⏱</span><span class="timer-display">00:00</span></div>
     </div>
-    <div class="lives-bar"></div>
-    <div class="lives-regen-note"></div>
     <div class="progress-row"></div>
 
     <div class="clue-card">
@@ -636,16 +622,6 @@
   </div>
 </section>
 
-<!-- ===================== LIVES LOCK OVERLAY ===================== -->
-<div class="lives-lock-overlay" id="lives-lock-overlay">
-  <div class="lives-lock-box">
-    <div class="lives-bar" id="lock-lives-bar"></div>
-    <h2>Nyawa Habis</h2>
-    <p>Kamu kehabisan nyawa untuk sementara. Nyawa berikutnya akan terisi otomatis dalam:</p>
-    <div class="lives-lock-timer" id="lives-lock-timer">00:00</div>
-  </div>
-</div>
-
 <script>
   // ==================================================================
   // FIREBASE (LEADERBOARD) — ganti config di bawah dengan milikmu sendiri
@@ -678,15 +654,88 @@
     return /^[a-z_.]{3,20}$/.test(u);
   }
 
+  // Tracks whether the currently-typed username has been checked against the
+  // leaderboard, whether it already exists there, and whether the player has
+  // confirmed "yes, that's me" for it.
+  let usernameCheck = { name: null, exists: false, confirmed: false, checking: false };
+
   function initUsernameField(){
     const input = document.getElementById('username-input');
     const saved = localStorage.getItem(USERNAME_KEY);
     if (saved) input.value = saved;
     input.addEventListener('input', () => {
       input.value = input.value.replace(/[^a-z_.]/g, '');
+      document.getElementById('username-confirm').style.display = 'none';
       updateUsernameFeedback();
     });
+    input.addEventListener('blur', () => { handleUsernameCheck(); });
     updateUsernameFeedback();
+    if (saved && isValidUsername(saved)) handleUsernameCheck();
+  }
+
+  async function checkUsernameExists(username){
+    if (!db) return null; // leaderboard belum dikonfigurasi — jangan blokir pemain
+    try {
+      const snap = await db.ref('leaderboard/' + username).once('value');
+      return snap.exists() ? snap.val() : null;
+    } catch (e){
+      console.error('Gagal cek username ke leaderboard:', e);
+      return null;
+    }
+  }
+
+  async function handleUsernameCheck(){
+    const input = document.getElementById('username-input');
+    const val = input.value.trim();
+    const confirmBox = document.getElementById('username-confirm');
+
+    if (!isValidUsername(val)){
+      confirmBox.style.display = 'none';
+      usernameCheck = { name: null, exists: false, confirmed: false, checking: false };
+      updateUsernameFeedback();
+      return;
+    }
+    // Sudah pernah dicek untuk nama yang sama dan sudah tuntas (confirmed / tidak ada konflik)
+    if (usernameCheck.name === val && !usernameCheck.checking && (usernameCheck.confirmed || !usernameCheck.exists)){
+      updateUsernameFeedback();
+      return;
+    }
+
+    usernameCheck = { name: val, exists: false, confirmed: false, checking: true };
+    updateUsernameFeedback();
+
+    const existing = await checkUsernameExists(val);
+    if (input.value.trim() !== val) return; // nama sudah diganti sebelum hasil cek datang
+
+    usernameCheck.checking = false;
+    if (existing){
+      usernameCheck.exists = true;
+      usernameCheck.confirmed = false;
+      const prevTime = existing.totalTimeMs ? formatMs(existing.totalTimeMs) : '—';
+      document.getElementById('username-confirm-text').textContent =
+        `Nama "${val}" sudah tercatat di leaderboard (rekor waktu sebelumnya: ${prevTime}). Apakah ini kamu?`;
+      confirmBox.style.display = 'block';
+    } else {
+      usernameCheck.exists = false;
+      usernameCheck.confirmed = true;
+      confirmBox.style.display = 'none';
+    }
+    updateUsernameFeedback();
+  }
+
+  function confirmUsernameYes(){
+    usernameCheck.confirmed = true;
+    document.getElementById('username-confirm').style.display = 'none';
+    updateUsernameFeedback();
+  }
+
+  function confirmUsernameNo(){
+    usernameCheck = { name: null, exists: false, confirmed: false, checking: false };
+    const input = document.getElementById('username-input');
+    input.value = '';
+    document.getElementById('username-confirm').style.display = 'none';
+    updateUsernameFeedback();
+    input.focus();
   }
 
   function updateUsernameFeedback(){
@@ -695,13 +744,21 @@
     const fb = document.getElementById('username-feedback');
     const val = input.value.trim();
     const valid = isValidUsername(val);
-    btn.disabled = !valid;
+    const awaitingConfirm = usernameCheck.name === val && usernameCheck.exists && !usernameCheck.confirmed;
+    const checking = usernameCheck.name === val && usernameCheck.checking;
+    btn.disabled = !valid || awaitingConfirm || checking;
     if (!val){
       fb.textContent = '';
       fb.className = 'username-feedback';
     } else if (!valid){
       fb.textContent = 'Gunakan 3–20 karakter: huruf kecil a-z, titik (.), underscore (_).';
       fb.className = 'username-feedback show warn';
+    } else if (checking){
+      fb.textContent = 'Mengecek nama ke leaderboard…';
+      fb.className = 'username-feedback show checking';
+    } else if (awaitingConfirm){
+      fb.textContent = '';
+      fb.className = 'username-feedback';
     } else {
       fb.textContent = 'Nama siap dipakai ✓';
       fb.className = 'username-feedback show ok';
@@ -979,99 +1036,6 @@
   let finalSelection = { rooms: null, elements: null, codes: null };
 
   // ==================================================================
-  // LIVES SYSTEM (5 lives, +1 regen every 15 minutes, persisted locally)
-  // ==================================================================
-  const LIVES_MAX = 5;
-  const LIFE_REGEN_MS = 10 * 60 * 1000;
-  const LIVES_STORAGE_KEY = 'mm_lives_state_v1';
-
-  let lives = LIVES_MAX;
-  let nextLifeAt = null; // timestamp, or null when full
-
-  function loadLivesState(){
-    try {
-      const raw = localStorage.getItem(LIVES_STORAGE_KEY);
-      if (raw){
-        const parsed = JSON.parse(raw);
-        lives = typeof parsed.lives === 'number' ? parsed.lives : LIVES_MAX;
-        nextLifeAt = parsed.nextLifeAt || null;
-      }
-    } catch (e) { /* ignore malformed storage */ }
-    catchUpRegen();
-  }
-
-  function saveLivesState(){
-    try {
-      localStorage.setItem(LIVES_STORAGE_KEY, JSON.stringify({ lives, nextLifeAt }));
-    } catch (e) { /* storage unavailable, continue without persistence */ }
-  }
-
-  function catchUpRegen(){
-    let changed = false;
-    while (nextLifeAt && Date.now() >= nextLifeAt && lives < LIVES_MAX){
-      lives++;
-      nextLifeAt = lives < LIVES_MAX ? nextLifeAt + LIFE_REGEN_MS : null;
-      changed = true;
-    }
-    if (changed) saveLivesState();
-  }
-
-  function loseLife(){
-    if (lives <= 0) return;
-    const wasFull = lives === LIVES_MAX;
-    lives--;
-    if (wasFull) nextLifeAt = Date.now() + LIFE_REGEN_MS;
-    saveLivesState();
-    renderLivesUI();
-    if (lives <= 0){
-      setTimeout(() => showLivesLockOverlay(), 900);
-    }
-  }
-
-  function renderLivesUI(){
-    const heartsHtml = Array.from({ length: LIVES_MAX }, (_, i) =>
-      `<span class="life-heart${i < lives ? '' : ' empty'}">❤</span>`
-    ).join('');
-    document.querySelectorAll('.lives-bar').forEach(el => el.innerHTML = heartsHtml);
-
-    document.querySelectorAll('.lives-regen-note').forEach(el => {
-      el.innerHTML = (lives < LIVES_MAX && nextLifeAt)
-        ? `Nyawa berikutnya dalam <span class="lives-next-timer">--:--</span>`
-        : '';
-    });
-  }
-
-  function tickLivesRegen(){
-    catchUpRegen();
-    if (lives <= 0 && nextLifeAt) {
-      const remain = Math.max(0, nextLifeAt - Date.now());
-      const totalSec = Math.ceil(remain / 1000);
-      const mm = String(Math.floor(totalSec / 60)).padStart(2, '0');
-      const ss = String(totalSec % 60).padStart(2, '0');
-      const lockTimerEl = document.getElementById('lives-lock-timer');
-      if (lockTimerEl) lockTimerEl.textContent = `${mm}:${ss}`;
-      if (lives > 0) hideLivesLockOverlay();
-    } else {
-      hideLivesLockOverlay();
-    }
-    if (lives < LIVES_MAX && nextLifeAt){
-      const remain = Math.max(0, nextLifeAt - Date.now());
-      const totalSec = Math.ceil(remain / 1000);
-      const mm = String(Math.floor(totalSec / 60)).padStart(2, '0');
-      const ss = String(totalSec % 60).padStart(2, '0');
-      document.querySelectorAll('.lives-next-timer').forEach(el => el.textContent = `${mm}:${ss}`);
-    }
-  }
-
-  function showLivesLockOverlay(){
-    if (lives > 0) return;
-    document.getElementById('lives-lock-overlay').classList.add('show');
-  }
-  function hideLivesLockOverlay(){
-    document.getElementById('lives-lock-overlay').classList.remove('show');
-  }
-
-  // ==================================================================
   // TIMER
   // ==================================================================
   let timerInterval = null;
@@ -1155,12 +1119,19 @@
     document.getElementById(id).classList.add('active');
     window.scrollTo(0,0);
   }
-  function goToGame(){
+  async function goToGame(){
     const input = document.getElementById('username-input');
     const val = input.value.trim();
     if (!isValidUsername(val)){
       updateUsernameFeedback();
       return;
+    }
+    const alreadyResolved = usernameCheck.name === val && !usernameCheck.checking && (usernameCheck.confirmed || !usernameCheck.exists);
+    if (!alreadyResolved){
+      await handleUsernameCheck();
+    }
+    if (usernameCheck.exists && !usernameCheck.confirmed){
+      return; // menunggu konfirmasi "ya, ini aku" / "bukan, ganti nama"
     }
     localStorage.setItem(USERNAME_KEY, val);
     renderRoster();
@@ -1473,7 +1444,6 @@
     } else {
       mgShake('#rhy-board');
       mgSetStatus('Pola salah!');
-      loseLife();
       mgShowReset('Ulangi Pola', () => {
         rhyGenerateSequence();
         rhyRenderSteps();
@@ -1734,7 +1704,6 @@
     } else {
       mgShake('#mr-options');
       mgSetStatus('Belum tepat — streak direset, mulai dari Soal 1 lagi.');
-      loseLife();
       mrStreak = 0;
       mrQuestionIndex = 0;
       setTimeout(() => mrNextQuestion(), 850);
@@ -1798,7 +1767,6 @@
     } else {
       mgShake('#cip-vault');
       mgSetStatus('Kode belum tepat. Cek kembali hasil hitunganmu.');
-      loseLife();
       mgShowReset('Reset Kode', () => {
         ['cip-0','cip-1','cip-2'].forEach(id => document.getElementById(id).value = '');
         document.getElementById('cip-0').focus();
@@ -1861,18 +1829,13 @@
     } else {
       box.className = 'result-box show fail';
       box.innerHTML = '<h3>Belum tepat</h3><p>Kombinasi ini belum sesuai dengan hasil deduksi. Cek kembali Logic Grid dan coba lagi.</p>';
-      loseLife();
     }
   }
 
   // ==================================================================
   // INIT
   // ==================================================================
-  loadLivesState();
-  renderLivesUI();
   renderProgress();
-  setInterval(tickLivesRegen, 1000);
-  tickLivesRegen();
 
   initUsernameField();
   checkGate();
