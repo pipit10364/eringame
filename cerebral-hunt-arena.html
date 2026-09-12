@@ -142,6 +142,14 @@
   .username-feedback{ margin-top: 8px; font-size: 0.8rem; min-height: 1.1em; }
   .username-feedback.warn{ color: var(--struck); }
   .username-feedback.ok{ color: var(--emerald); }
+  .username-feedback.checking{ color: var(--ink-faint); }
+  .username-confirm{
+    margin-top: 12px; padding: 14px 16px; border: 1px solid var(--gold); border-radius: 4px;
+    background: rgba(216,185,121,0.08);
+  }
+  .username-confirm-text{ color: var(--ink); font-size: 0.84rem; line-height: 1.55; margin-bottom: 12px; }
+  .username-confirm-actions{ display: flex; gap: 10px; flex-wrap: wrap; }
+  .btn-small{ padding: 8px 16px; font-size: 0.8rem; }
 
   /* ---------- Leaderboard ---------- */
   .leaderboard-link{
@@ -185,7 +193,6 @@
   .stat-chip.timer .stat-val{ color: var(--cyan); }
   .stat-chip.timer.low .stat-val{ color: var(--struck); }
   .stat-chip.score .stat-val{ color: var(--emerald); }
-  .stat-chip.lives .stat-val{ color: var(--gold); }
 
   .progress-wrap{ margin-bottom: 20px; width: 100%; }
   .progress-label{ display: flex; justify-content: space-between; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--ink-dim); margin-bottom: 6px; }
@@ -254,7 +261,7 @@
   .ws-cell.found{ background: rgba(52,211,153,0.2); border-color: var(--emerald); color: var(--emerald); }
 
   /* ---------- End screens ---------- */
-  .result-box{ margin-top: 34px; text-align: center; background: var(--bg-panel); border: 1px solid var(--border); border-radius: 6px; padding: 34px 28px; max-width: 560px; width: 100%; box-sizing: border-box; }
+  .result-box{ margin-top: 34px; text-align: center; background: var(--bg-panel); border: 1px solid var(--border); border-radius: 6px; padding: 34px 28px 27px; max-width: 560px; width: 100%; box-sizing: border-box; }
   .result-box.success{ border-color: var(--emerald); }
   .result-box.timeup{ border-color: var(--struck); }
   .result-time{ font-family: 'JetBrains Mono', monospace; color: var(--cyan); font-size: 0.92rem; letter-spacing: 0.08em; margin-bottom: 10px; }
@@ -272,8 +279,12 @@
     font-size: 0.76rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
   }
   .result-box h3{ font-size: 1.9rem; margin-bottom: 14px; color: var(--ink); }
-  .result-box p{ color: var(--ink-dim); font-size: 0.98rem; margin-bottom: 8px; }
+  .result-box p{ color: var(--ink-dim); font-size: 0.98rem; line-height: 1.55; margin-bottom: 8px; }
   .result-box p:last-child{ margin-bottom: 0; }
+  .result-subnote{
+    margin: 12px auto 0; max-width: 560px; text-align: center;
+    font-size: 0.78rem; line-height: 1.5; color: var(--ink-faint);
+  }
 
   .bday-popup{ margin: 22px auto 0; padding: 22px 24px; border: 1px solid var(--gold); border-radius: 6px; background: rgba(216,185,121,0.06); text-align: center; max-width: 560px; width: 100%; box-sizing: border-box; }
   .bday-popup p{ color: var(--ink); font-size: 1.02rem; line-height: 1.7; }
@@ -316,6 +327,13 @@
         <input type="text" id="username-input" class="username-input" placeholder="contoh: erin.larasati" maxlength="20" autocomplete="off">
         <div class="username-hint">Hanya huruf kecil, titik (.), dan underscore (_) — 3 sampai 20 karakter. Harus sama dengan nama yang dipakai di Game 1 supaya skornya nyambung.</div>
         <div class="username-feedback" id="username-feedback"></div>
+        <div class="username-confirm" id="username-confirm" style="display:none;">
+          <p class="username-confirm-text" id="username-confirm-text"></p>
+          <div class="username-confirm-actions">
+            <button type="button" class="btn btn-secondary btn-small" onclick="confirmUsernameYes()">Ya, ini aku</button>
+            <button type="button" class="btn btn-secondary btn-small" onclick="confirmUsernameNo()">Bukan, ganti nama</button>
+          </div>
+        </div>
       </div>
 
       <div class="cta-row">
@@ -343,7 +361,6 @@
       <div class="arena-stats-row">
         <div class="stat-chip timer js-timer-chip">WAKTU <span class="stat-val js-timer-val">00:00</span></div>
         <div class="stat-chip score">SKOR <span class="stat-val js-score-val">0</span></div>
-        <div class="stat-chip lives">NYAWA <span class="stat-val js-lives-val">3</span>/3</div>
       </div>
       <div class="progress-wrap">
         <div class="progress-label"><span>Kata ditemukan</span><span class="js-progress-text">0 / 12</span></div>
@@ -353,7 +370,7 @@
       <div class="screen-label"><div class="eyebrow-mark">LAYAR LOGIKA</div></div>
 
       <div class="clue-box">
-        Papan menyimpan 12 kata dari 4 tema: Animals, Food &amp; Drinks, Colors, Professions. Jawab benar untuk membongkar nama satu kata, lalu pindah ke Layar Papan untuk mencarinya. Jawaban salah mengurangi nyawa — nyawa yang habis butuh 10 menit untuk pulih.
+        Papan menyimpan 12 kata dari 4 tema: Animals, Food &amp; Drinks, Colors, Professions. Jawab benar untuk membongkar nama satu kata, lalu pindah ke Layar Papan untuk mencarinya. Jawaban salah nggak apa-apa — coba lagi sampai benar, waktu jalan terus jadi tetap usahakan cepat.
       </div>
 
       <div class="logic-card" id="logic-card-active">
@@ -368,9 +385,6 @@
       </div>
 
       <div class="all-revealed-note" id="all-revealed-note" style="display:none;"></div>
-      <div class="all-revealed-note" id="lives-empty-note" style="display:none;">
-        Nyawa habis. Nyawa berikutnya pulih dalam <span id="lives-countdown">10:00</span> — sementara itu, cari kata yang sudah terbongkar di Layar Papan.
-      </div>
 
       <div class="cta-row">
         <button class="btn btn-secondary" onclick="goToBoard()">Ke Layar Papan</button>
@@ -385,7 +399,6 @@
       <div class="arena-stats-row">
         <div class="stat-chip timer js-timer-chip">WAKTU <span class="stat-val js-timer-val">00:00</span></div>
         <div class="stat-chip score">SKOR <span class="stat-val js-score-val">0</span></div>
-        <div class="stat-chip lives">NYAWA <span class="stat-val js-lives-val">3</span>/3</div>
       </div>
       <div class="progress-wrap">
         <div class="progress-label"><span>Kata ditemukan</span><span class="js-progress-text">0 / 12</span></div>
@@ -662,11 +675,6 @@
   let selStart = null;
   let selPath = [];
 
-  const LIVES_MAX = 3;
-  const LIFE_REGEN_MS = 10 * 60 * 1000; // 10 menit
-  let lives = LIVES_MAX;
-  let nextLifeAt = null;
-
   // ==================================================================
   // LOCK SCREEN
   // ==================================================================
@@ -741,14 +749,11 @@
     revealPool = shuffleArray(WORD_LIST.map(w => w.word));
     logicBag = [];
     refillLogicBag();
-    lives = LIVES_MAX;
-    nextLifeAt = null;
 
     buildAndRenderGrid();
     renderWordbank();
     updateProgress();
     updateStatChips();
-    updateLivesDisplay();
     nextLogicQuestion();
     startTimer();
     goToLogic();
@@ -770,43 +775,7 @@
       elapsedSec++;
       updateTimerDisplay();
       updateStatChips();
-      tickLivesRegen();
     }, 1000);
-  }
-
-  function updateLivesDisplay(){
-    document.querySelectorAll('.js-lives-val').forEach(el => el.textContent = lives);
-  }
-
-  function updateLivesCountdown(){
-    const el = document.getElementById('lives-countdown');
-    if (!el || nextLifeAt === null) return;
-    const remain = Math.max(0, nextLifeAt - Date.now());
-    const mm = String(Math.floor(remain / 60000)).padStart(2,'0');
-    const ss = String(Math.floor((remain % 60000) / 1000)).padStart(2,'0');
-    el.textContent = `${mm}:${ss}`;
-  }
-
-  function loseLife(){
-    if (lives <= 0) return;
-    lives--;
-    updateLivesDisplay();
-    if (nextLifeAt === null) nextLifeAt = Date.now() + LIFE_REGEN_MS;
-    refreshLogicScreenState();
-  }
-
-  function tickLivesRegen(){
-    if (lives >= LIVES_MAX || nextLifeAt === null) return;
-    if (Date.now() >= nextLifeAt){
-      const wasLocked = lives <= 0;
-      lives++;
-      updateLivesDisplay();
-      nextLifeAt = lives < LIVES_MAX ? Date.now() + LIFE_REGEN_MS : null;
-      if (wasLocked && lives > 0 && revealPool.length > 0) nextLogicQuestion();
-      else refreshLogicScreenState();
-    } else {
-      updateLivesCountdown();
-    }
   }
 
   function updateTimerDisplay(){
@@ -845,27 +814,20 @@
     const allRevealed = revealPool.length === 0;
     const card = document.getElementById('logic-card-active');
     const revealedNote = document.getElementById('all-revealed-note');
-    const livesNote = document.getElementById('lives-empty-note');
 
     if (allRevealed){
       card.style.display = 'none';
-      livesNote.style.display = 'none';
       revealedNote.style.display = 'block';
       revealedNote.textContent = `Semua ${TOTAL_WORDS} nama kata sudah terbongkar. Baru ditemukan ${solvedTotal} dari ${TOTAL_WORDS} — sisanya cari di Layar Papan.`;
-    } else if (lives <= 0){
-      card.style.display = 'none';
-      revealedNote.style.display = 'none';
-      livesNote.style.display = 'block';
     } else {
       card.style.display = 'block';
       revealedNote.style.display = 'none';
-      livesNote.style.display = 'none';
     }
   }
 
   function nextLogicQuestion(){
     refreshLogicScreenState();
-    if (revealPool.length === 0 || lives <= 0) return;
+    if (revealPool.length === 0) return;
 
     if (logicBag.length === 0) refillLogicBag();
     const idx = logicBag.pop();
@@ -904,9 +866,8 @@
 
   function handleWrong(fb){
     fb.className = 'feedback show warn';
-    fb.textContent = 'Belum tepat, nyawa berkurang 1.';
+    fb.textContent = 'Belum tepat, coba lagi.';
     mgShake('#logic-card-active');
-    loseLife();
   }
 
   function submitLogic(){
@@ -1200,8 +1161,8 @@
           ${isBest ? '<div class="high-score-badge">🏆 Rekor Pribadi Baru</div>' : ''}
           <h3>${cat.title}</h3>
           <p>${cat.msg}</p>
-          <p style="font-size:0.8rem;color:var(--ink-faint);margin-top:14px;">Total waktu Game 1 + Game 2 sudah dikirim ke leaderboard (kalau lebih baik dari rekor lamamu).</p>
         </div>
+        <p class="result-subnote">Total waktu Game 1 + Game 2 sudah dikirim ke leaderboard (kalau lebih baik dari rekor lamamu).</p>
         <div class="bday-popup">
           <p>Congratulations! You cleared all stages.<br>
           Special Happy Birthday to <span class="bday-name">Erin Larasati Angdika</span>!<br>
