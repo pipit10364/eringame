@@ -685,6 +685,7 @@
   // Shared storage keys — HARUS SAMA dengan cerebral-hunt-arena.html
   const USERNAME_KEY = 'eg_username_v1';
   const GAME1_TIME_KEY = 'eg_game1_time_ms_v1';
+  const GAME1_SCORE_KEY = 'eg_game1_score_v1'; // skor total Game 1 (waktu + poin akurasi), dipakai leaderboard gabungan
 
   function isValidUsername(u){
     return /^[a-z_.]{3,20}$/.test(u);
@@ -1126,6 +1127,26 @@
   let finalSelection = { rooms: null, elements: null, codes: null };
 
   // ==================================================================
+  // ACCURACY SCORING — poin dari mini-game & deduksi (di luar poin waktu)
+  // Prinsip: makin sedikit percobaan salah sebelum benar, makin besar poinnya.
+  // Total 7 "checks" (4 mini-game + 3 deduksi blok) x maks 50 poin = 350,
+  // skalanya sengaja disamakan dengan bonus kata di Game 2 (lihat cerebral-hunt-arena.html).
+  // ==================================================================
+  const STRIKE_POINTS = 50;      // didapat kalau langsung benar tanpa salah sama sekali
+  const MISTAKE_PENALTY = 15;    // dikurangi per percobaan salah
+  const MIN_ACCURACY_POINTS = 10; // batas bawah, tetap dapet poin walau banyak salah
+  let mgMistakes = { 0: 0, 1: 0, 2: 0, 3: 0 };
+  let deductionMistakes = { rooms: 0, elements: 0, codes: 0 };
+  let game1AccuracyPoints = 0;
+  let pipeClickCount = 0;
+  let pipeMinRotations = 0;
+
+  function accuracyPointsFor(mistakes){
+    if (mistakes <= 0) return STRIKE_POINTS;
+    return Math.max(MIN_ACCURACY_POINTS, STRIKE_POINTS - mistakes * MISTAKE_PENALTY);
+  }
+
+  // ==================================================================
   // TIMER
   // ==================================================================
   let timerInterval = null;
@@ -1307,10 +1328,12 @@
     const prog = document.getElementById('minigame-progress');
     prog.style.display = 'none';
     prog.textContent = '';
+    mgMistakes[currentMiniGameId] = 0;
     [initMiniGame1, initMiniGame2, initMiniGame3, initMiniGame4][currentMiniGameId]();
   }
 
   function miniGameSuccess(){
+    game1AccuracyPoints += accuracyPointsFor(mgMistakes[currentMiniGameId]);
     accumulatedExhibits = accumulatedExhibits.concat(BLOCKS[currentBlock].steps[currentStep].exhibits);
     document.getElementById('minigame-status').textContent = 'Berhasil!';
     document.getElementById('minigame-reset-wrap').innerHTML = '';
@@ -1373,6 +1396,7 @@
     activeExhibitIndex = null;
     document.getElementById('lock-panel-title').textContent = `Kunci Jawaban — ${CATEGORY_LABEL[block.category]}`;
     lockSelection = null;
+    deductionMistakes[block.category] = 0;
     renderLockChips();
     const fb = document.getElementById('round-feedback');
     fb.className = 'feedback';
@@ -1438,7 +1462,19 @@
       return;
     }
     const block = BLOCKS[currentBlock];
+
+    if (lockSelection !== ANSWER[block.category]){
+      deductionMistakes[block.category]++;
+      mgShake('#lock-chip-row');
+      fb.className = 'feedback show warn';
+      fb.textContent = 'Belum tepat — cek lagi clue-nya, lalu pilih kandidat lain.';
+      lockSelection = null;
+      renderLockChips();
+      return;
+    }
+
     finalSelection[block.category] = lockSelection;
+    game1AccuracyPoints += accuracyPointsFor(deductionMistakes[block.category]);
 
     fb.className = 'feedback show ok';
     fb.textContent = 'Jawaban terkunci. Melangkah ke blok berikutnya…';
@@ -1532,6 +1568,7 @@
         miniGameSuccess();
       }
     } else {
+      mgMistakes[0]++;
       mgShake('#rhy-board');
       mgSetStatus('Pola salah!');
       mgShowReset('Ulangi Pola', () => {
@@ -1605,6 +1642,8 @@
     const funcMap = {};
     PIPE_FUNCTIONAL.forEach(f => funcMap[`${f.col},${f.row}`] = f);
     pipeState = {};
+    pipeClickCount = 0;
+    pipeMinRotations = 0;
 
     const fillerTypes = ['dead','elbow','t','straight','dead','elbow','t','straight','dead'];
     let fillerIdx = 0;
@@ -1619,6 +1658,8 @@
           type = func.type;
           const options = [0, 90, 180, 270].filter(v => !func.accepted.includes(v));
           rotation = options[Math.floor(Math.random() * options.length)];
+          const minClicksForCell = Math.min(...func.accepted.map(acc => ((acc - rotation + 360) % 360) / 90));
+          pipeMinRotations += minClicksForCell;
         } else {
           type = fillerTypes[fillerIdx % fillerTypes.length];
           fillerIdx++;
@@ -1650,6 +1691,7 @@
 
   function pipeRotate(col, row){
     if (currentMiniGameId !== 1) return;
+    pipeClickCount++;
     const k = `${col},${row}`;
     pipeState[k] = (pipeState[k] + 90) % 360;
     const cell = document.querySelector(`.pipe-cell[data-col="${col}"][data-row="${row}"] .pipe-shape`);
@@ -1664,6 +1706,8 @@
         const cellEl = document.querySelector(`.pipe-cell[data-col="${f.col}"][data-row="${f.row}"]`);
         if (cellEl) cellEl.classList.add('solved');
       });
+      // Klik "boros" di luar rotasi minimum yang dibutuhkan dihitung sebagai kesalahan.
+      mgMistakes[1] = Math.max(0, pipeClickCount - pipeMinRotations);
       setTimeout(() => miniGameSuccess(), 300);
     }
   }
@@ -1792,6 +1836,7 @@
       mgSetStatus('Tepat! Lanjut ke soal berikutnya…');
       setTimeout(() => mrNextQuestion(), 500);
     } else {
+      mgMistakes[2]++;
       mgShake('#mr-options');
       mgSetStatus('Belum tepat — streak direset, mulai dari Soal 1 lagi.');
       mrStreak = 0;
@@ -1910,6 +1955,7 @@
     if (code === correctCode){
       miniGameSuccess();
     } else {
+      mgMistakes[3]++;
       mgShake('#cip-vault');
       mgSetStatus('Kode belum tepat. Cek kembali hasil hitunganmu.');
       mgShowReset('Reset Kode', () => {
@@ -1958,12 +2004,15 @@
       localStorage.setItem(GAME1_TIME_KEY, String(timerElapsedMs));
       const minutes = timerElapsedMs / 60000;
       const cat = timeCategory(minutes);
-      const score1 = calcGame1Score(timerElapsedMs);
+      const timeScore1 = calcGame1Score(timerElapsedMs);
+      const score1 = timeScore1 + game1AccuracyPoints;
+      localStorage.setItem(GAME1_SCORE_KEY, String(score1));
       const isBest = checkAndUpdateBestScore(GAME1_BEST_SCORE_KEY, score1);
       box.className = 'result-box show success';
       box.innerHTML = `
         <div class="result-time">WAKTU TEMPUH: ${formatMs(timerElapsedMs)}</div>
         <div class="result-score-big">${score1}<span class="result-score-unit">Poin</span></div>
+        <p class="result-subnote">Waktu: ${timeScore1} poin · Ketepatan deduksi & mini-game: ${game1AccuracyPoints} poin</p>
         ${isBest ? '<div class="high-score-badge">🏆 Rekor Pribadi Baru</div>' : ''}
         <h3>${cat.title}</h3>
         <p>${cat.msg}</p>
