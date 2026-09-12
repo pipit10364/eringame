@@ -646,7 +646,7 @@
   function scheduleLeaderboardRedirect(){
     clearTimeout(scoreRedirectTimer);
     clearInterval(scoreRedirectCountdownTimer);
-    let remaining = 7;
+    let remaining = 3;
     const noteEl = document.getElementById('score-redirect-note');
     if (noteEl) noteEl.textContent = `Menuju leaderboard dalam ${remaining} detik…`;
     scoreRedirectCountdownTimer = setInterval(() => {
@@ -658,7 +658,7 @@
       clearInterval(scoreRedirectCountdownTimer);
       showScreen('screen-leaderboard');
       renderLeaderboardPage();
-    }, 7000);
+    }, 3000);
   }
 
   async function submitLeaderboardScore(game2TimeMs){
