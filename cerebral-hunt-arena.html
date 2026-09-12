@@ -311,6 +311,7 @@
     margin: 12px auto 0; max-width: 560px; text-align: center;
     font-size: 0.78rem; line-height: 1.5; color: var(--ink-faint);
   }
+  .result-subnote.warn{ color: var(--gold); }
 
   .bday-popup{ margin: 22px auto 0; padding: 22px 24px; border: 1px solid var(--gold); border-radius: 6px; background: rgba(216,185,121,0.06); text-align: center; max-width: 560px; width: 100%; box-sizing: border-box; }
   .bday-popup p{ color: var(--ink); font-size: 1.02rem; line-height: 1.7; }
@@ -661,14 +662,22 @@
     }, 3000);
   }
 
+  // Returns { ok, reason, skipped } instead of failing silently, so the UI
+  // can tell the player the truth about whether their score actually landed.
   async function submitLeaderboardScore(game2TimeMs){
-    if (!db) return;
+    if (!db){
+      console.warn('Firebase tidak aktif — skor tidak dikirim ke leaderboard.');
+      return { ok: false, reason: 'no-db' };
+    }
     const username = getStoredUsername();
-    if (!username || !isValidUsername(username)) return;
+    if (!username || !isValidUsername(username)){
+      console.warn('Username tidak valid/tidak ditemukan — skor tidak dikirim ke leaderboard.');
+      return { ok: false, reason: 'no-username' };
+    }
     const game1Raw = localStorage.getItem(GAME1_TIME_KEY);
     if (!game1Raw){
-      console.warn('Waktu Game 1 tidak ditemukan — skor tidak dikirim ke leaderboard.');
-      return;
+      console.warn('Waktu Game 1 tidak ditemukan di browser ini — skor tidak dikirim ke leaderboard.');
+      return { ok: false, reason: 'no-game1-time' };
     }
     const game1TimeMs = parseInt(game1Raw, 10);
     const totalTimeMs = game1TimeMs + game2TimeMs;
@@ -687,9 +696,12 @@
           score,
           updatedAt: Date.now()
         });
+        return { ok: true, reason: 'sent', skipped: false };
       }
+      return { ok: true, reason: 'not-better-than-existing', skipped: true };
     } catch (e){
       console.error('Gagal mengirim skor ke leaderboard:', e);
+      return { ok: false, reason: 'firebase-error', error: e };
     }
   }
 
@@ -1225,7 +1237,7 @@
     endGame(solvedTotal >= TOTAL_WORDS);
   }
 
-  function endGame(won){
+  async function endGame(won){
     clearInterval(timerHandle);
     const finalScore = calcLiveScore();
     const mm = String(Math.floor(elapsedSec / 60)).padStart(2,'0');
@@ -1233,9 +1245,16 @@
     showScreen('screen-end');
     const el = document.getElementById('end-content');
     if (won){
-      submitLeaderboardScore(elapsedSec * 1000);
       const isBest = checkAndUpdateBestScore(GAME2_BEST_SCORE_KEY, finalScore);
       const cat = game2ScoreCategory(finalScore);
+      const SUBMIT_MESSAGES = {
+        'no-db': 'Leaderboard sedang tidak tersambung, jadi skor ini belum tercatat di sana.',
+        'no-username': 'Nama investigator tidak ditemukan di browser ini, jadi skor belum bisa dikirim ke leaderboard.',
+        'no-game1-time': 'Waktu Game 1 tidak ditemukan di browser ini — kamu perlu menyelesaikan Game 1 dulu di browser/device yang sama sebelum Game 2, supaya totalnya bisa dikirim ke leaderboard.',
+        'firebase-error': 'Ada gangguan saat mengirim skor ke leaderboard. Coba lagi sebentar lagi.',
+        'not-better-than-existing': 'Skor kali ini belum melewati rekor terbaikmu yang sudah tercatat, jadi leaderboard tetap pakai rekor lama.',
+        'sent': 'Total waktu Game 1 + Game 2 berhasil dikirim ke leaderboard.'
+      };
       el.innerHTML = `
         <div class="eyebrow-mark">ARENA CLEARED</div>
         <h1 class="welcome-title">Semua Kata Ditemukan</h1>
@@ -1246,7 +1265,7 @@
           <h3>${cat.title}</h3>
           <p>${cat.msg}</p>
         </div>
-        <p class="result-subnote">Total waktu Game 1 + Game 2 sudah dikirim ke leaderboard (kalau lebih baik dari rekor lamamu).</p>
+        <p class="result-subnote" id="result-subnote">Mengirim skor ke leaderboard…</p>
         <div class="bday-popup">
           <p>Congratulations! You cleared all stages.<br>
           Special Happy Birthday to <span class="bday-name">Erin Larasati Angdika</span>!<br>
@@ -1258,7 +1277,13 @@
         </div>
         <p class="score-redirect-note" id="score-redirect-note"></p>
       `;
-      scheduleLeaderboardRedirect();
+      const status = await submitLeaderboardScore(elapsedSec * 1000);
+      const subnoteEl = document.getElementById('result-subnote');
+      if (subnoteEl){
+        subnoteEl.textContent = SUBMIT_MESSAGES[status.reason] || SUBMIT_MESSAGES['firebase-error'];
+        subnoteEl.classList.toggle('warn', !status.ok);
+      }
+      if (status.ok) scheduleLeaderboardRedirect();
     } else {
       el.innerHTML = `
         <div class="eyebrow-mark">SESI SELESAI</div>
