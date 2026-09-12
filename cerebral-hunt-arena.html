@@ -311,7 +311,6 @@
     margin: 12px auto 0; max-width: 560px; text-align: center;
     font-size: 0.78rem; line-height: 1.5; color: var(--ink-faint);
   }
-  .result-subnote.warn{ color: var(--gold); }
 
   .bday-popup{ margin: 22px auto 0; padding: 22px 24px; border: 1px solid var(--gold); border-radius: 6px; background: rgba(216,185,121,0.06); text-align: center; max-width: 560px; width: 100%; box-sizing: border-box; }
   .bday-popup p{ color: var(--ink); font-size: 1.02rem; line-height: 1.7; }
@@ -471,6 +470,9 @@
   const GAME2_SCORE_BASE = 1000;
   const GAME2_SCORE_DECAY_EVERY = 3;
   const GRID_SIZE = 13;
+  // Poin per kata ketemu — total 12 kata x 30 = 360, disamakan skalanya dengan
+  // bonus akurasi Game 1 (7 checks x maks 50 = 350), supaya total Game1 & Game2 nggak njomplang.
+  const WORD_POINTS = 30;
 
   // ==================================================================
   // FIREBASE (LEADERBOARD) — ganti config di bawah dengan milikmu sendiri
@@ -496,7 +498,7 @@
   // Shared storage keys — HARUS SAMA dengan index.html
   const USERNAME_KEY = 'eg_username_v1';
   const GAME1_TIME_KEY = 'eg_game1_time_ms_v1';
-  const SCORE_BASE = 100000; // skor = SCORE_BASE - total detik (game1 + game2)
+  const GAME1_SCORE_KEY = 'eg_game1_score_v1';
   const GAME2_BEST_SCORE_KEY = 'eg_game2_best_score_v1';
 
   function checkAndUpdateBestScore(key, score){
@@ -662,26 +664,23 @@
     }, 3000);
   }
 
-  // Returns { ok, reason, skipped } instead of failing silently, so the UI
-  // can tell the player the truth about whether their score actually landed.
-  async function submitLeaderboardScore(game2TimeMs){
-    if (!db){
-      console.warn('Firebase tidak aktif — skor tidak dikirim ke leaderboard.');
-      return { ok: false, reason: 'no-db' };
-    }
+  async function submitLeaderboardScore(game2TimeMs, wordsFound){
+    if (!db) return;
     const username = getStoredUsername();
-    if (!username || !isValidUsername(username)){
-      console.warn('Username tidak valid/tidak ditemukan — skor tidak dikirim ke leaderboard.');
-      return { ok: false, reason: 'no-username' };
-    }
-    const game1Raw = localStorage.getItem(GAME1_TIME_KEY);
+    if (!username || !isValidUsername(username)) return;
+    const game1Raw = localStorage.getItem(GAME1_SCORE_KEY);
     if (!game1Raw){
-      console.warn('Waktu Game 1 tidak ditemukan di browser ini — skor tidak dikirim ke leaderboard.');
-      return { ok: false, reason: 'no-game1-time' };
+      console.warn('Skor Game 1 tidak ditemukan — main Game 1 sampai selesai dulu supaya skor gabungan bisa dikirim ke leaderboard.');
+      return;
     }
-    const game1TimeMs = parseInt(game1Raw, 10);
-    const totalTimeMs = game1TimeMs + game2TimeMs;
-    const score = Math.max(0, SCORE_BASE - Math.floor(totalTimeMs / 1000));
+    const game1Score = parseInt(game1Raw, 10);
+    const game1TimeMs = parseInt(localStorage.getItem(GAME1_TIME_KEY) || '0', 10);
+    const game2TimeScore = Math.max(0, GAME2_SCORE_BASE - Math.floor(game2TimeMs / 1000 / GAME2_SCORE_DECAY_EVERY));
+    const game2WordBonus = wordsFound * WORD_POINTS;
+    const game2Score = game2TimeScore + game2WordBonus;
+    // Skor gabungan = skor Game 1 (waktu + akurasi deduksi/mini-game) + skor Game 2 (waktu + kata ketemu).
+    // Selalu dikirim, walau belum semua kata ketemu — poin dari kata yang sudah ketemu tetap dihitung.
+    const score = game1Score + game2Score;
 
     const ref = db.ref('leaderboard/' + username);
     try {
@@ -690,18 +689,17 @@
       if (!existing || score > existing.score){
         await ref.set({
           username,
+          game1Score,
           game1TimeMs,
+          game2Score,
           game2TimeMs,
-          totalTimeMs,
+          game2WordsFound: wordsFound,
           score,
           updatedAt: Date.now()
         });
-        return { ok: true, reason: 'sent', skipped: false };
       }
-      return { ok: true, reason: 'not-better-than-existing', skipped: true };
     } catch (e){
       console.error('Gagal mengirim skor ke leaderboard:', e);
-      return { ok: false, reason: 'firebase-error', error: e };
     }
   }
 
@@ -882,8 +880,12 @@
     document.querySelectorAll('.js-timer-val').forEach(el => el.textContent = `${mm}:${ss}`);
   }
 
-  function calcLiveScore(){
+  function calcLiveTimeScore(){
     return Math.max(0, GAME2_SCORE_BASE - Math.floor(elapsedSec / GAME2_SCORE_DECAY_EVERY));
+  }
+
+  function calcLiveScore(){
+    return calcLiveTimeScore() + (solvedTotal * WORD_POINTS);
   }
 
   function updateStatChips(){
@@ -1237,35 +1239,35 @@
     endGame(solvedTotal >= TOTAL_WORDS);
   }
 
-  async function endGame(won){
+  function endGame(won){
     clearInterval(timerHandle);
-    const finalScore = calcLiveScore();
+    const timeScore = calcLiveTimeScore();
+    const wordScore = solvedTotal * WORD_POINTS;
+    const finalScore = timeScore + wordScore;
     const mm = String(Math.floor(elapsedSec / 60)).padStart(2,'0');
     const ss = String(elapsedSec % 60).padStart(2,'0');
     showScreen('screen-end');
     const el = document.getElementById('end-content');
+
+    // Skor selalu dikirim ke leaderboard — poin dari kata yang sudah ketemu tetap dihitung
+    // meski belum semua kata ditemukan.
+    submitLeaderboardScore(elapsedSec * 1000, solvedTotal);
+    const isBest = checkAndUpdateBestScore(GAME2_BEST_SCORE_KEY, finalScore);
+
     if (won){
-      const isBest = checkAndUpdateBestScore(GAME2_BEST_SCORE_KEY, finalScore);
       const cat = game2ScoreCategory(finalScore);
-      const SUBMIT_MESSAGES = {
-        'no-db': 'Leaderboard sedang tidak tersambung, jadi skor ini belum tercatat di sana.',
-        'no-username': 'Nama investigator tidak ditemukan di browser ini, jadi skor belum bisa dikirim ke leaderboard.',
-        'no-game1-time': 'Waktu Game 1 tidak ditemukan di browser ini — kamu perlu menyelesaikan Game 1 dulu di browser/device yang sama sebelum Game 2, supaya totalnya bisa dikirim ke leaderboard.',
-        'firebase-error': 'Ada gangguan saat mengirim skor ke leaderboard. Coba lagi sebentar lagi.',
-        'not-better-than-existing': 'Skor kali ini belum melewati rekor terbaikmu yang sudah tercatat, jadi leaderboard tetap pakai rekor lama.',
-        'sent': 'Total waktu Game 1 + Game 2 berhasil dikirim ke leaderboard.'
-      };
       el.innerHTML = `
         <div class="eyebrow-mark">ARENA CLEARED</div>
         <h1 class="welcome-title">Semua Kata Ditemukan</h1>
         <div class="result-box success">
           <div class="result-time">WAKTU TEMPUH: ${mm}:${ss}</div>
           <div class="result-score-big">${finalScore}<span class="result-score-unit">Poin</span></div>
+          <p class="result-subnote">Waktu: ${timeScore} poin · Kata ketemu (${solvedTotal}/${TOTAL_WORDS}): ${wordScore} poin</p>
           ${isBest ? '<div class="high-score-badge">🏆 Rekor Pribadi Baru</div>' : ''}
           <h3>${cat.title}</h3>
           <p>${cat.msg}</p>
         </div>
-        <p class="result-subnote" id="result-subnote">Mengirim skor ke leaderboard…</p>
+        <p class="result-subnote">Total skor Game 1 + Game 2 sudah dikirim ke leaderboard (kalau lebih baik dari rekor lamamu).</p>
         <div class="bday-popup">
           <p>Congratulations! You cleared all stages.<br>
           Special Happy Birthday to <span class="bday-name">Erin Larasati Angdika</span>!<br>
@@ -1277,27 +1279,25 @@
         </div>
         <p class="score-redirect-note" id="score-redirect-note"></p>
       `;
-      const status = await submitLeaderboardScore(elapsedSec * 1000);
-      const subnoteEl = document.getElementById('result-subnote');
-      if (subnoteEl){
-        subnoteEl.textContent = SUBMIT_MESSAGES[status.reason] || SUBMIT_MESSAGES['firebase-error'];
-        subnoteEl.classList.toggle('warn', !status.ok);
-      }
-      if (status.ok) scheduleLeaderboardRedirect();
+      scheduleLeaderboardRedirect();
     } else {
       el.innerHTML = `
         <div class="eyebrow-mark">SESI SELESAI</div>
         <h1 class="welcome-title">Skor Terkunci</h1>
         <div class="result-box timeup">
-          <div class="result-time">WAKTU TEMPUH: ${mm}:${ss} · SKOR AKHIR: ${finalScore} POIN</div>
+          <div class="result-time">WAKTU TEMPUH: ${mm}:${ss}</div>
+          <div class="result-score-big">${finalScore}<span class="result-score-unit">Poin</span></div>
+          <p class="result-subnote">Waktu: ${timeScore} poin · Kata ketemu (${solvedTotal}/${TOTAL_WORDS}): ${wordScore} poin</p>
           <h3>${solvedTotal} dari ${TOTAL_WORDS} kata ditemukan</h3>
-          <p>Belum semua kata ditemukan, jadi sesi ini belum masuk leaderboard. Bonus waktu terus menyusut selama arena berjalan — main lagi buat coba kejar skor yang lebih tinggi.</p>
+          <p>Belum semua kata ditemukan, tapi poin dari kata yang sudah ketemu tetap dikirim ke leaderboard. Main lagi buat coba kejar skor yang lebih tinggi.</p>
         </div>
         <div class="cta-row">
           <button class="btn btn-primary" onclick="startArena()">Main Lagi</button>
           <button class="btn btn-secondary" onclick="openLeaderboard()">Lihat Leaderboard</button>
         </div>
+        <p class="score-redirect-note" id="score-redirect-note"></p>
       `;
+      scheduleLeaderboardRedirect();
     }
   }
 </script>
