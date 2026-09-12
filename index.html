@@ -810,6 +810,35 @@
     return localStorage.getItem(USERNAME_KEY);
   }
 
+  // Kirim skor sementara (Game 1 doang) ke leaderboard begitu Game 1 selesai.
+  // Nanti kalau Game 2 selesai, cerebral-hunt-arena.html akan menimpa entri ini
+  // dengan skor gabungan final (lihat perbandingan >= di submitLeaderboardScore situ).
+  async function submitPartialLeaderboardScore(game1Score, game1TimeMs){
+    if (!db) return;
+    const username = getStoredUsername();
+    if (!username || !isValidUsername(username)) return;
+    const ref = db.ref('leaderboard/' + username);
+    try {
+      const snap = await ref.once('value');
+      const existing = snap.val();
+      if (!existing || game1Score >= existing.score){
+        await ref.set({
+          username,
+          game1Score,
+          game1TimeMs,
+          game2Score: 0,
+          game2TimeMs: 0,
+          game2WordsFound: 0,
+          score: game1Score,
+          partial: true,
+          updatedAt: Date.now()
+        });
+      }
+    } catch (e){
+      console.error('Gagal mengirim skor sementara Game 1 ke leaderboard:', e);
+    }
+  }
+
   const PODIUM_MEDALS = ['🥇', '🥈', '🥉'];
 
   async function renderLeaderboardPage(){
@@ -2008,6 +2037,7 @@
       const score1 = timeScore1 + game1AccuracyPoints;
       localStorage.setItem(GAME1_SCORE_KEY, String(score1));
       const isBest = checkAndUpdateBestScore(GAME1_BEST_SCORE_KEY, score1);
+      submitPartialLeaderboardScore(score1, timerElapsedMs);
       box.className = 'result-box show success';
       box.innerHTML = `
         <div class="result-time">WAKTU TEMPUH: ${formatMs(timerElapsedMs)}</div>
