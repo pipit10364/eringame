@@ -822,10 +822,10 @@
       return;
     }
     try {
-      const snap = await db.ref('leaderboard').orderByChild('score').limitToLast(100).once('value');
+      const snap = await db.ref('leaderboard').once('value');
       const rows = [];
       snap.forEach(child => rows.push(child.val()));
-      rows.reverse(); // skor tertinggi duluan
+      rows.sort((a, b) => b.score - a.score); // skor tertinggi duluan, disortir di JS (bukan query Firebase)
       if (rows.length === 0){
         listEl.innerHTML = '<div class="leaderboard-empty">Belum ada skor masuk. Jadilah yang pertama!</div>';
         return;
