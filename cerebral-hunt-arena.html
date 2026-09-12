@@ -686,7 +686,7 @@
     try {
       const snap = await ref.once('value');
       const existing = snap.val();
-      if (!existing || score > existing.score){
+      if (!existing || score >= existing.score){
         await ref.set({
           username,
           game1Score,
@@ -695,6 +695,7 @@
           game2TimeMs,
           game2WordsFound: wordsFound,
           score,
+          partial: false,
           updatedAt: Date.now()
         });
       }
