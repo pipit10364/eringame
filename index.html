@@ -117,14 +117,15 @@
   }
   .btn-primary{ background: linear-gradient(120deg, var(--teal), var(--cyan)); color: #04141a; }
   .btn-primary:hover{ transform: translateY(-2px); box-shadow: 0 10px 30px rgba(45,212,191,0.25); }
-  .btn-primary:active{ transform: translateY(0); }
+  .btn-primary:active{ transform: scale(0.97); box-shadow: 0 4px 14px rgba(45,212,191,0.2); }
   .btn-primary:disabled{ opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
   .btn-secondary{
     background: transparent; color: var(--teal); border: 1px solid var(--border);
     font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 0.88rem;
-    border-radius: 3px; padding: 10px 22px; cursor: pointer; transition: border-color 0.15s ease;
+    border-radius: 3px; padding: 10px 22px; cursor: pointer; transition: border-color 0.15s ease, background 0.15s ease, transform 0.1s ease;
   }
   .btn-secondary:hover{ border-color: var(--teal); }
+  .btn-secondary:active{ border-color: var(--teal); background: rgba(94,234,212,0.08); transform: scale(0.97); }
 
   .cta-row{ margin-top: 34px; }
 
@@ -174,6 +175,7 @@
     display: flex; align-items: center; gap: 6px;
   }
   .exhibit-tab:hover{ border-color: var(--teal); color: var(--ink); }
+  .exhibit-tab:active{ transform: scale(0.95); }
   .exhibit-tab.active{ border-color: var(--teal); color: #04141a; background: linear-gradient(120deg, var(--teal), var(--cyan)); font-weight: 700; }
   .exhibit-tab-close{ padding: 8px 12px; color: var(--ink-faint); }
   .exhibit-tab-close:hover{ border-color: var(--struck); color: var(--struck); }
@@ -257,7 +259,8 @@
     display: grid; grid-template-columns: repeat(4, minmax(38px, 62px)); grid-template-rows: repeat(4, minmax(38px, 62px));
     gap: 5px; background: var(--bg-tile); padding: 9px; border-radius: 8px; border: 1px solid var(--border);
   }
-  .pipe-cell{ position: relative; background: var(--bg-card); border-radius: 5px; cursor: pointer; overflow: hidden; }
+  .pipe-cell{ position: relative; background: var(--bg-card); border-radius: 5px; cursor: pointer; overflow: hidden; transition: transform 0.1s ease; }
+  .pipe-cell:active{ transform: scale(0.92); }
   .pipe-shape{ position: absolute; inset: 0; transition: transform 0.25s ease; }
   .pipe-arm{ position: absolute; background: var(--ink-faint); border-radius: 2px; }
   .pipe-cell.solved .pipe-arm{ background: var(--emerald); }
@@ -278,6 +281,7 @@
     transition: border-color 0.15s ease, transform 0.1s ease;
   }
   .mr-option:hover{ border-color: var(--teal); transform: translateY(-2px); }
+  .mr-option:active{ border-color: var(--teal); transform: scale(0.95); }
   .mr-option-label{ font-size: 0.74rem; color: var(--ink-faint); }
 
   /* Cipher vault */
@@ -308,9 +312,10 @@
   .grid-category-label{ font-size: 0.72rem; letter-spacing: 0.1em; color: var(--cyan); margin-bottom: 8px; }
   .grid-item{
     display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 4px; cursor: pointer;
-    font-size: 0.9rem; color: var(--ink); border: 1px solid transparent; transition: background 0.15s ease;
+    font-size: 0.9rem; color: var(--ink); border: 1px solid transparent; transition: background 0.15s ease, transform 0.1s ease;
   }
   .grid-item:hover{ background: rgba(255,255,255,0.03); }
+  .grid-item:active{ background: rgba(94,234,212,0.08); transform: scale(0.98); }
   .grid-item .mark{ width: 15px; height: 15px; border: 1px solid var(--ink-faint); border-radius: 3px; flex-shrink: 0; position: relative; }
   .grid-item.struck{ color: var(--ink-faint); }
   .grid-item.struck span.label{ text-decoration: line-through; text-decoration-color: var(--struck); }
@@ -331,6 +336,7 @@
     color: var(--ink-dim); cursor: pointer; background: var(--bg-card); transition: all 0.15s ease;
   }
   .chip:hover{ border-color: var(--teal); color: var(--ink); }
+  .chip:active{ border-color: var(--teal); color: var(--ink); transform: scale(0.95); }
   .chip.selected{ border-color: var(--teal); color: #04141a; background: linear-gradient(120deg, var(--teal), var(--cyan)); font-weight: 700; }
 
   .result-box{ margin-top: 8px; padding: 22px; border-radius: 6px; display: none; text-align: center; }
