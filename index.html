@@ -153,7 +153,7 @@
   .progress-dot.current{ border-color: var(--cyan); color: var(--cyan); box-shadow: 0 0 0 3px rgba(94,234,212,0.12); }
   .progress-line{ flex: 1; height: 1px; background: var(--border); min-width: 12px; }
 
-  .clue-card{ background: var(--bg-panel); border: 1px solid var(--border); border-radius: 6px; padding: 20px 22px; }
+  .clue-card{ background: var(--bg-panel); border: 1px solid var(--border); border-radius: 6px; padding: 16px 20px; }
 
   /* ---------- Case Roster ---------- */
   .roster-grid{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; margin-bottom: 10px; }
@@ -183,7 +183,16 @@
     border: 1px solid var(--border); border-radius: 6px; background: var(--bg-card);
     padding: 14px 16px; margin-bottom: 4px;
   }
-  .exhibit-panel-title{ font-size: 0.88rem; color: var(--ink); font-weight: 700; margin-bottom: 10px; }
+  .exhibit-panel-head{ display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+  .exhibit-panel-title{ font-size: 0.88rem; color: var(--ink); font-weight: 700; margin-bottom: 0; }
+  .exhibit-panel-close{
+    flex-shrink: 0; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center;
+    background: transparent; border: 1px solid var(--border); color: var(--ink-faint); border-radius: 4px;
+    font-size: 0.8rem; line-height: 1; cursor: pointer; font-family: inherit;
+    transition: border-color 0.15s ease, color 0.15s ease, transform 0.1s ease;
+  }
+  .exhibit-panel-close:hover{ border-color: var(--struck); color: var(--struck); }
+  .exhibit-panel-close:active{ transform: scale(0.9); }
   .exhibit-compact-list{ display: flex; flex-direction: column; gap: 6px; }
   .exhibit-compact-item{ display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 6px 8px; background: var(--bg-tile); border: 1px solid var(--border-soft); border-radius: 4px; font-size: 0.8rem; }
   .exhibit-compact-item .item-name{ color: var(--ink); font-weight: 600; }
@@ -202,11 +211,11 @@
     padding: 12px 14px; margin-bottom: 16px; color: var(--ink); font-size: 0.88rem;
     line-height: 1.6; font-style: italic;
   }
-  .round-tag{ color: var(--gold); font-size: 0.78rem; letter-spacing: 0.12em; margin-bottom: 10px; }
-  .round-title{ font-size: 1.7rem; color: var(--ink); margin-bottom: 18px; }
+  .round-tag{ color: var(--gold); font-size: 0.78rem; letter-spacing: 0.12em; display: inline-block; margin: 0 10px 8px 0; vertical-align: middle; }
+  .round-title{ font-size: 1.7rem; color: var(--ink); margin: 0 0 8px; display: inline-block; vertical-align: middle; }
   .clue-text{
-    color: var(--ink-dim); font-size: 1.02rem; line-height: 1.75;
-    border-top: 1px solid var(--border-soft); padding-top: 18px; white-space: pre-line;
+    color: var(--ink-dim); font-size: 1.02rem; line-height: 1.55;
+    border-top: 1px solid var(--border-soft); padding-top: 10px; white-space: pre-line;
   }
   .clue-text b{ color: var(--teal); font-weight: 700; }
 
@@ -1424,7 +1433,6 @@
         ${accumulatedExhibits.map((ex, i) => `
           <div class="exhibit-tab" id="exhibit-tab-${i}" onclick="selectExhibit(${i})">Clue ${i + 1}</div>
         `).join('')}
-        <div class="exhibit-tab exhibit-tab-close" onclick="closeExhibit()" title="Tutup clue">✕</div>
       </div>
       <div id="exhibit-panel"></div>
     `;
@@ -1454,7 +1462,10 @@
     const meta = EXHIBIT_META[ex.type] || { icon: "📄", label: "BERKAS" };
     document.getElementById('exhibit-panel').innerHTML = `
       <div class="exhibit-panel-box">
-        <div class="exhibit-panel-title">${meta.icon} ${ex.title}</div>
+        <div class="exhibit-panel-head">
+          <div class="exhibit-panel-title">${meta.icon} ${ex.title}</div>
+          <button class="exhibit-panel-close" onclick="closeExhibit()" title="Tutup clue">✕</button>
+        </div>
         <div class="exhibit-compact-list">
           ${ex.rows.map(row => `
             <div class="exhibit-compact-item">
