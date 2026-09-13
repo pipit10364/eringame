@@ -101,14 +101,15 @@
   }
   .btn-primary{ background: linear-gradient(120deg, var(--teal), var(--cyan)); color: #04141a; }
   .btn-primary:hover{ transform: translateY(-2px); box-shadow: 0 10px 30px rgba(45,212,191,0.25); }
-  .btn-primary:active{ transform: translateY(0); }
+  .btn-primary:active{ transform: scale(0.97); box-shadow: 0 4px 14px rgba(45,212,191,0.2); }
   .btn-primary:disabled{ opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
   .btn-secondary{
     background: transparent; color: var(--teal); border: 1px solid var(--border);
     font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 0.85rem;
-    border-radius: 3px; padding: 10px 20px; cursor: pointer; transition: border-color 0.15s ease;
+    border-radius: 3px; padding: 10px 20px; cursor: pointer; transition: border-color 0.15s ease, background 0.15s ease, transform 0.1s ease;
   }
   .btn-secondary:hover{ border-color: var(--teal); }
+  .btn-secondary:active{ border-color: var(--teal); background: rgba(94,234,212,0.08); transform: scale(0.97); }
 
   .cta-row{ margin-top: 30px; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
 
@@ -256,9 +257,10 @@
     background: var(--bg-tile); border: 1px solid var(--border); color: var(--ink);
     font-family: 'Manrope', sans-serif; font-weight: 600; font-size: 0.94rem;
     border-radius: 4px; padding: 13px 16px; cursor: pointer; text-align: left;
-    transition: border-color 0.15s ease, background 0.15s ease;
+    transition: border-color 0.15s ease, background 0.15s ease, transform 0.1s ease;
   }
   .choice-btn:hover{ border-color: var(--teal); background: rgba(45,212,191,0.06); }
+  .choice-btn:active{ border-color: var(--teal); background: rgba(45,212,191,0.1); transform: scale(0.98); }
 
   .all-revealed-note{
     background: var(--bg-panel); border: 1px solid var(--border); border-radius: 6px;
@@ -285,6 +287,17 @@
   }
   .ws-cell.selecting{ background: rgba(94,234,212,0.28); border-color: var(--cyan); color: var(--ink); }
   .ws-cell.found{ background: rgba(52,211,153,0.2); border-color: var(--emerald); color: var(--emerald); }
+
+  /* Perangkat sentuh (HP/tablet) beneran, bukan sekadar layar/jendela sempit:
+     jempol butuh sel lebih besar, laptop dengan mouse ga perlu ini. */
+  @media (hover: none) and (pointer: coarse){
+    #screen-board{ padding-left: 10px; padding-right: 10px; }
+    .ws-grid{ gap: 2px; }
+    .ws-cell{
+      width: clamp(23px, 7.6vw, 34px); height: clamp(23px, 7.6vw, 34px);
+      font-size: clamp(0.74rem, 2.7vw, 0.95rem);
+    }
+  }
 
   /* ---------- End screens ---------- */
   .result-box{ margin: 34px auto 0; text-align: center; background: var(--bg-panel); border: 1px solid var(--border); border-radius: 6px; padding: 34px 28px 27px; max-width: 560px; width: 100%; box-sizing: border-box; }
@@ -1141,9 +1154,16 @@
   }
 
   function cellFromPoint(x, y){
-    const el = document.elementFromPoint(x, y);
-    if (!el || !el.classList.contains('ws-cell')) return null;
-    return { r: parseInt(el.dataset.r), c: parseInt(el.dataset.c) };
+    const wrap = document.getElementById('ws-grid');
+    const rect = wrap.getBoundingClientRect();
+    if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) return null;
+    const cellW = rect.width / GRID_SIZE;
+    const cellH = rect.height / GRID_SIZE;
+    let c = Math.floor((x - rect.left) / cellW);
+    let r = Math.floor((y - rect.top) / cellH);
+    c = Math.min(GRID_SIZE - 1, Math.max(0, c));
+    r = Math.min(GRID_SIZE - 1, Math.max(0, r));
+    return { r, c };
   }
 
   function onCellDown(e){
