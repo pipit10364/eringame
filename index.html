@@ -168,11 +168,11 @@
   .roster-list-item:last-child{ border-bottom: none; }
 
   /* ---------- Exhibit Cards (investigation evidence) ---------- */
-  .exhibit-tabs{ display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 14px; }
+  .exhibit-tabs{ display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-bottom: 8px; }
   .exhibit-tab{
-    padding: 8px 14px; border: 1px solid var(--border); border-radius: 20px; font-size: 0.82rem;
+    padding: 7px 10px; border: 1px solid var(--border); border-radius: 16px; font-size: 0.76rem;
     color: var(--ink-dim); cursor: pointer; background: var(--bg-card); transition: all 0.15s ease;
-    display: flex; align-items: center; gap: 6px;
+    display: flex; align-items: center; gap: 6px; white-space: nowrap;
   }
   .exhibit-tab:hover{ border-color: var(--teal); color: var(--ink); }
   .exhibit-tab:active{ transform: scale(0.95); }
@@ -181,7 +181,7 @@
   .exhibit-tab-close:hover{ border-color: var(--struck); color: var(--struck); }
   .exhibit-panel-box{
     border: 1px solid var(--border); border-radius: 6px; background: var(--bg-card);
-    padding: 14px 16px; margin-bottom: 4px;
+    padding: 14px 16px; margin: 0 0 4px;
   }
   .exhibit-panel-head{ display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
   .exhibit-panel-title{ font-size: 0.88rem; color: var(--ink); font-weight: 700; margin-bottom: 0; }
@@ -205,7 +205,7 @@
     font-size: 0.86rem; color: var(--cyan); font-style: italic; padding: 10px 12px;
     background: rgba(56,189,248,0.06); border-left: 2px solid var(--cyan); border-radius: 3px;
   }
-  .exhibit-hint{ color: var(--ink-faint); font-size: 0.8rem; margin-bottom: 12px; }
+  .exhibit-hint{ color: var(--ink-faint); font-size: 0.8rem; margin-bottom: 8px; }
   .clue-narrative{
     background: rgba(45,212,191,0.05); border-left: 2px solid var(--teal);
     padding: 12px 14px; margin-bottom: 16px; color: var(--ink); font-size: 0.88rem;
