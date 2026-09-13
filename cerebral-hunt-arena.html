@@ -57,7 +57,7 @@
   }
 
   /* ---------- Welcome ---------- */
-  .welcome-wrap{ max-width: 660px; width: 100%; text-align: center; }
+  .welcome-wrap{ max-width: min(860px, 94vw); width: 100%; text-align: center; }
 
   .eyebrow-mark{
     display: inline-flex; align-items: center; gap: 10px;
@@ -293,6 +293,7 @@
     #screen-board{ padding-left: 8px; padding-right: 8px; }
     .ws-board-wrap{ padding: 10px; }
     .ws-grid{ gap: 2px; }
+    .ws-cell{ font-size: clamp(0.72rem, 3.2vw, 1.1rem); }
   }
 
   /* ---------- End screens ---------- */
@@ -478,7 +479,10 @@
   // Supaya "39 POIN" di Game 2 nggak keliatan njomplang jauh dari skor Game 1 yang biasanya 700-900-an.
   const GAME2_SCORE_BASE = 1000;
   const GAME2_SCORE_DECAY_EVERY = 3;
-  const GRID_SIZE = 13;
+  // Papan lebih kecil di HP/tablet (device sentuh) biar hurufnya ga kekecilan,
+  // laptop dengan mouse tetap dapet papan 13x13 yang sekarang.
+  const IS_TOUCH_DEVICE = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+  const GRID_SIZE = IS_TOUCH_DEVICE ? 10 : 13;
   // Poin per kata ketemu — total 12 kata x 30 = 360, disamakan skalanya dengan
   // bonus akurasi Game 1 (7 checks x maks 50 = 350), supaya total Game1 & Game2 nggak njomplang.
   const WORD_POINTS = 30;
