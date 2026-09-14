@@ -722,9 +722,9 @@
   // ==================================================================
   const CATEGORIES = {
     animals:      { label: 'ANIMALS',       words: ['CAT','BIRD','MAGPIE'] },
-    food:         { label: 'FOOD & DRINKS', words: ['EGG','SOUP','COFFEE'] },
+    food:         { label: 'FOOD & DRINKS', words: ['EGG','SOTO','COFFEE'] },
     colors:       { label: 'COLORS',        words: ['BLUE','GREEN','ORANGE'] },
-    professions:  { label: 'PROFESSIONS',   words: ['CASTER','SINGER','DOCTOR'] },
+    professions:  { label: 'PROFESSIONS',   words: ['CASTER','SINGER','RESEARCHER'] },
   };
 
   const WORD_LIST = [];
@@ -735,7 +735,7 @@
 
   const LOGIC_BANK = [
     { type: 'number', q: 'Sebuah kultur diawali dari 3 sel. Setiap 20 detik, jumlah sel berlipat dua (1 sel membelah menjadi 2 sel). Setelah 1 menit (60 detik) berlalu, berapa total sel yang ada?', a: 24 },
-    { type: 'number', q: 'Sebuah mobil menempuh jarak 1,5 km dalam waktu 30 detik dengan kecepatan konstan. Berapa kecepatan mobil tersebut dalam km/jam?', a: 180 },
+    { type: 'choice', q: 'Dalam rhythm game, istilah untuk berhasil menekan semua not dengan benar dari awal sampai akhir lagu tanpa meleset sekali pun disebut apa?', options: ['Full Combo','Perfect Score','High Score','Speed Run'], a: 'Full Combo' },
     { type: 'choice', q: 'Lengkapi analogi ini: Sel : Membran = Rumah : ?', options: ['Dinding','Atap','Lantai','Pintu'], a: 'Dinding' },
     { type: 'choice', q: 'Mana yang paling beda sendiri dari kelompok ini?', options: ['Mikroskop','Teleskop','Termometer','Megafon'], a: 'Megafon' },
     { type: 'text', q: 'Lengkapi pola tangga nada berikut: Do, Re, Mi, ?, Sol', accept: ['fa'] },
@@ -747,7 +747,7 @@
     { type: 'choice', q: 'Lengkapi analogi ini: Oksigen : Manusia = Klorofil : ?', options: ['Tumbuhan','Air','Tanah','Matahari'], a: 'Tumbuhan' },
     { type: 'choice', q: 'Molekul ini membawa cetak biru kehidupan dalam untaian ganda di setiap sel makhluk hidup. Apa namanya?', options: ['DNA','RNA','Protein','Enzim'], a: 'DNA' },
     { type: 'choice', q: 'Mana yang bukan warna bendera balap F1?', options: ['Kotak-kotak','Kuning','Merah','Ungu'], a: 'Ungu' },
-    { type: 'choice', q: 'Lengkapi analogi ini: Pit stop : Ban = Bengkel : ?', options: ['Mobil','Rumah','Toko','Sekolah'], a: 'Mobil' },
+    { type: 'choice', q: 'Bagian pembuka sebuah pertunjukan musikal, biasanya berupa musik instrumental sebelum cerita utama dimulai untuk membangun suasana, disebut apa?', options: ['Overture','Interlude','Finale','Encore'], a: 'Overture' },
     { type: 'number', q: 'Podium balapan F1 terdiri dari juara 1, juara 2, dan juara ke berapa lagi?', a: 3 },
     { type: 'choice', q: 'Bendera ini dikibarkan untuk pembalap yang melewati garis finis lebih dulu. Bendera apa ini?', options: ['Bendera Kotak-kotak','Bendera Kuning','Bendera Merah','Bendera Hijau'], a: 'Bendera Kotak-kotak' },
     { type: 'choice', q: 'Mana yang bukan alat musik gesek?', options: ['Biola','Cello','Gitar','Kontrabas'], a: 'Gitar' },
