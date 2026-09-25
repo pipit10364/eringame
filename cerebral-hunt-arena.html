@@ -513,6 +513,9 @@
   const GAME1_TIME_KEY = 'eg_game1_time_ms_v1';
   const GAME1_SCORE_KEY = 'eg_game1_score_v1';
   const GAME2_BEST_SCORE_KEY = 'eg_game2_best_score_v1';
+  // Dibaca oleh Game 3 (lexicon-vault.html) untuk menggabungkan skor total.
+  const GAME2_TIME_KEY = 'eg_game2_time_ms_v1';
+  const GAME2_SCORE_KEY = 'eg_game2_score_v1';
 
   function checkAndUpdateBestScore(key, score){
     const prevRaw = localStorage.getItem(key);
@@ -691,7 +694,11 @@
     const game2TimeScore = Math.max(0, GAME2_SCORE_BASE - Math.floor(game2TimeMs / 1000 / GAME2_SCORE_DECAY_EVERY));
     const game2WordBonus = wordsFound * WORD_POINTS;
     const game2Score = game2TimeScore + game2WordBonus;
+    // Disimpan lokal supaya Game 3 (lexicon-vault.html) bisa membaca & menggabungkan skor total.
+    localStorage.setItem(GAME2_TIME_KEY, String(game2TimeMs));
+    localStorage.setItem(GAME2_SCORE_KEY, String(game2Score));
     // Skor gabungan = skor Game 1 (waktu + akurasi deduksi/mini-game) + skor Game 2 (waktu + kata ketemu).
+    // Ini masih skor SEMENTARA (partial) karena Game 3 belum dimainkan — akan ditimpa Game 3 dengan skor final.
     // Selalu dikirim, walau belum semua kata ketemu — poin dari kata yang sudah ketemu tetap dihitung.
     const score = game1Score + game2Score;
 
@@ -708,7 +715,7 @@
           game2TimeMs,
           game2WordsFound: wordsFound,
           score,
-          partial: false,
+          partial: true,
           updatedAt: Date.now()
         });
       }
@@ -1288,19 +1295,13 @@
           <h3>${cat.title}</h3>
           <p>${cat.msg}</p>
         </div>
-        <p class="result-subnote">Total skor Game 1 + Game 2 sudah dikirim ke leaderboard (kalau lebih baik dari rekor lamamu).</p>
-        <div class="bday-popup">
-          <p>Congratulations! You cleared all stages.<br>
-          Special Happy Birthday to <span class="bday-name">Erin Larasati Angdika</span>!<br>
-          Keep inspiring and communicating science to the world!</p>
-        </div>
+        <p class="result-subnote">Skor sementara Game 1 + Game 2 sudah dikirim ke leaderboard — masih akan digabung sama Game 3.</p>
         <div class="cta-row">
-          <button class="btn btn-primary" onclick="startArena()">Main Lagi</button>
+          <button class="btn btn-primary" onclick="goToNextGame()">Lanjut ke Game 3 →</button>
+          <button class="btn btn-secondary" onclick="startArena()">Main Lagi</button>
           <button class="btn btn-secondary" onclick="openLeaderboard()">Lihat Leaderboard</button>
         </div>
-        <p class="score-redirect-note" id="score-redirect-note"></p>
       `;
-      scheduleLeaderboardRedirect();
     } else {
       el.innerHTML = `
         <div class="eyebrow-mark">SESI SELESAI</div>
@@ -1310,16 +1311,19 @@
           <div class="result-score-big">${finalScore}<span class="result-score-unit">Poin</span></div>
           <p class="result-subnote">Waktu: ${timeScore} poin · Kata ketemu (${solvedTotal}/${TOTAL_WORDS}): ${wordScore} poin</p>
           <h3>${solvedTotal} dari ${TOTAL_WORDS} kata ditemukan</h3>
-          <p>Belum semua kata ditemukan, tapi poin dari kata yang sudah ketemu tetap dikirim ke leaderboard. Main lagi buat coba kejar skor yang lebih tinggi.</p>
+          <p>Belum semua kata ditemukan, tapi poin dari kata yang sudah ketemu tetap dikirim ke leaderboard. Kamu tetap bisa lanjut ke Game 3, atau main lagi dulu buat kejar skor yang lebih tinggi.</p>
         </div>
         <div class="cta-row">
-          <button class="btn btn-primary" onclick="startArena()">Main Lagi</button>
+          <button class="btn btn-primary" onclick="goToNextGame()">Lanjut ke Game 3 →</button>
+          <button class="btn btn-secondary" onclick="startArena()">Main Lagi</button>
           <button class="btn btn-secondary" onclick="openLeaderboard()">Lihat Leaderboard</button>
         </div>
-        <p class="score-redirect-note" id="score-redirect-note"></p>
       `;
-      scheduleLeaderboardRedirect();
     }
+  }
+
+  function goToNextGame(){
+    window.location.href = 'lexicon-vault.html';
   }
 </script>
 </body>
