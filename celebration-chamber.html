@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Celebration Chamber — Stage 04</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<!-- Firebase (leaderboard finalize only — Game 4 tidak menambah skor) -->
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
+<style>
+  :root{
+    --bg: #061a15;
+    --bg-panel: #0c2721;
+    --bg-card: #123830;
+    --bg-tile: #0d2a24;
+    --border: #1e4a3f;
+    --border-soft: #17392f;
+    --teal: #2dd4bf;
+    --emerald: #34d399;
+    --cyan: #5eead4;
+    --ink: #eaf6f3;
+    --ink-dim: #83ab9d;
+    --ink-faint: #4c7669;
+    --struck: #e8827a;
+    --gold: #d8b979;
+    --pink: #f0a8c0;
+    --glow: 0 0 40px rgba(45, 212, 191, 0.15);
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:
+      radial-gradient(circle at 15% 10%, rgba(45,212,191,0.08), transparent 45%),
+      radial-gradient(circle at 85% 90%, rgba(94,234,212,0.08), transparent 45%),
+      var(--bg);
+    color: var(--ink); font-family: 'Manrope', sans-serif; min-height: 100vh; line-height: 1.5;
+  }
+  .screen{ min-height: 100vh; display: none; flex-direction: column; align-items: center; padding: 40px 20px 60px; }
+  .screen.active{ display: flex; }
+  h1, h2, h3{ font-family: 'Cormorant Garamond', serif; font-weight: 600; letter-spacing: 0.01em; }
+
+  .welcome-wrap{ max-width: min(860px, 94vw); width: 100%; text-align: center; }
+  .eyebrow-mark{
+    display: inline-flex; align-items: center; gap: 10px; color: var(--gold);
+    font-size: 0.8rem; letter-spacing: 0.14em; margin-bottom: 22px;
+  }
+  .eyebrow-mark::before, .eyebrow-mark::after{ content: ""; width: 28px; height: 1px; background: linear-gradient(90deg, transparent, var(--gold)); }
+  .eyebrow-mark::after{ background: linear-gradient(90deg, var(--gold), transparent); }
+  .welcome-title{ font-size: clamp(2.1rem, 6vw, 3.3rem); color: var(--ink); text-shadow: var(--glow); line-height: 1.15; }
+  .welcome-sub{ margin-top: 14px; color: var(--teal); font-weight: 600; font-size: 1.02rem; }
+
+  .plaque{
+    margin-top: 36px; text-align: left; background: var(--bg-panel); border: 1px solid var(--border);
+    border-radius: 4px; padding: 30px 28px; position: relative;
+  }
+  .plaque::before, .plaque::after{ content: ""; position: absolute; width: 16px; height: 16px; border: 1.5px solid var(--gold); opacity: 0.6; }
+  .plaque::before{ top: 10px; left: 10px; border-right: none; border-bottom: none; }
+  .plaque::after{ bottom: 10px; right: 10px; border-left: none; border-top: none; }
+  .cipher-label{ font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; letter-spacing: 0.1em; color: var(--gold); margin-bottom: 16px; }
+  .plaque p{ margin-bottom: 12px; color: var(--ink-dim); font-size: 0.96rem; }
+  .plaque p:last-child{ margin-bottom: 0; }
+  .plaque strong{ color: var(--ink); font-weight: 700; }
+
+  .btn{
+    font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 0.98rem; border: none; border-radius: 3px;
+    padding: 15px 34px; cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease; letter-spacing: 0.01em;
+  }
+  .btn-primary{ background: linear-gradient(120deg, var(--teal), var(--cyan)); color: #04141a; }
+  .btn-primary:hover{ transform: translateY(-2px); box-shadow: 0 10px 30px rgba(45,212,191,0.25); }
+  .btn-primary:active{ transform: scale(0.97); }
+  .btn-primary:disabled{ opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+  .btn-secondary{
+    background: transparent; color: var(--teal); border: 1px solid var(--border); font-family: 'Manrope', sans-serif;
+    font-weight: 700; font-size: 0.85rem; border-radius: 3px; padding: 10px 20px; cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease, transform 0.1s ease;
+  }
+  .btn-secondary:hover{ border-color: var(--teal); }
+  .btn-secondary:active{ transform: scale(0.97); }
+  .cta-row{ margin-top: 30px; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+  .lock-note{ margin-top: 22px; font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; letter-spacing: 0.06em; color: var(--ink-faint); text-transform: uppercase; }
+  .lock-timer{
+    margin-top: 14px; font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: clamp(2.6rem, 12vw, 6rem);
+    color: var(--cyan); letter-spacing: 0.02em; text-shadow: var(--glow); line-height: 1.05; word-break: break-word;
+  }
+
+  .username-box{ margin-top: 24px; text-align: left; background: var(--bg-panel); border: 1px solid var(--border); border-radius: 4px; padding: 20px 22px; }
+  .username-label{ display:block; font-family: 'JetBrains Mono', monospace; font-size: 0.74rem; letter-spacing: 0.08em; color: var(--gold); margin-bottom: 10px; text-transform: uppercase; }
+  .username-input{ width: 100%; background: var(--bg-tile); border: 1px solid var(--border); border-radius: 4px; padding: 12px 14px; color: var(--ink); font-family: 'JetBrains Mono', monospace; font-size: 1rem; letter-spacing: 0.02em; }
+  .username-hint{ margin-top: 8px; color: var(--ink-faint); font-size: 0.8rem; line-height: 1.5; }
+  .username-feedback{ margin-top: 8px; font-size: 0.82rem; display:none; }
+  .username-feedback.show{ display:block; }
+  .username-feedback.warn{ color: var(--struck); }
+  .username-feedback.ok{ color: var(--emerald); }
+  .leaderboard-link{ margin-top: 18px; background:none; border:none; color: var(--ink-faint); font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; letter-spacing:0.05em; text-decoration: underline; cursor: pointer; }
+  .leaderboard-link:hover{ color: var(--teal); }
+
+  /* ---------- Leaderboard page (unchanged pattern, reachable via link only) ---------- */
+  .leaderboard-page-wrap{ max-width: 640px; width: 100%; text-align: center; }
+  .leaderboard-sub{ color: var(--ink-dim); font-size: 0.9rem; margin: 10px 0 28px; line-height: 1.6; }
+  .podium{ display:flex; gap:10px; justify-content:center; align-items:flex-end; margin-bottom:24px; }
+  .podium-slot{ display:flex; flex-direction:column; align-items:center; width:108px; }
+  .podium-medal{ font-size:1.7rem; margin-bottom:4px; }
+  .podium-name{ font-weight:700; font-size:0.82rem; margin-bottom:2px; max-width:108px; overflow-wrap:anywhere; text-align:center; line-height:1.25; }
+  .podium-score{ color: var(--emerald); font-size:0.76rem; margin-bottom:8px; font-family:'JetBrains Mono', monospace; }
+  .podium-bar{ width:100%; border-radius:8px 8px 0 0; background: var(--bg-card); border:1px solid var(--border); border-bottom:none; box-sizing:border-box; }
+  .podium-slot.place-1{ order:2; } .podium-slot.place-2{ order:1; } .podium-slot.place-3{ order:3; }
+  .podium-slot.place-1 .podium-bar{ height:96px; border-color: var(--gold); background: rgba(216,185,121,0.12); }
+  .podium-slot.place-2 .podium-bar{ height:68px; } .podium-slot.place-3 .podium-bar{ height:46px; }
+  .podium-slot.me .podium-name{ color: var(--teal); }
+  .podium-slot.me .podium-bar{ border-color: var(--teal); box-shadow: 0 0 14px rgba(45,212,191,0.35); }
+  .lb-list-wrap{ background: var(--bg-panel); border:1px solid var(--border); border-radius:6px; padding: 8px 4px; max-height: 320px; overflow-y:auto; }
+  .leaderboard-row{ display:flex; align-items:center; gap:12px; padding:10px 14px; border-bottom:1px solid var(--border-soft); font-size: 0.9rem; }
+  .leaderboard-row:last-child{ border-bottom: none; }
+  .lb-rank{ width:32px; color: var(--ink-faint); font-family:'JetBrains Mono', monospace; }
+  .lb-name{ flex:1; text-align:left; font-weight:600; }
+  .lb-score{ color: var(--teal); font-family:'JetBrains Mono', monospace; }
+  .leaderboard-row.me{ background: rgba(45,212,191,0.08); border-radius:4px; }
+  .leaderboard-row.me .lb-name{ color: var(--teal); }
+  .leaderboard-row.me .lb-rank{ color: var(--teal); }
+  .leaderboard-loading, .leaderboard-empty{ color: var(--ink-faint); font-size: 0.88rem; text-align: center; padding: 12px 0; }
+
+  /* ---------- PIN entry ---------- */
+  .pin-hints{ margin-top: 26px; display:flex; flex-direction:column; gap: 10px; text-align:left; }
+  .pin-hint-row{
+    display:flex; align-items:center; gap: 14px; background: var(--bg-panel); border:1px solid var(--border);
+    border-radius: 6px; padding: 12px 16px;
+  }
+  .pin-hint-src{
+    flex:0 0 auto; font-family:'JetBrains Mono', monospace; font-size:0.72rem; letter-spacing:0.08em; color: var(--gold);
+    background: rgba(216,185,121,0.1); border:1px solid rgba(216,185,121,0.3); border-radius: 4px; padding: 4px 8px; text-transform:uppercase;
+  }
+  .pin-hint-text{ flex:1; color: var(--ink-dim); font-size: 0.88rem; }
+
+  .pin-groups{ margin-top: 30px; display:flex; gap: 14px; justify-content:center; flex-wrap:wrap; }
+  .pin-group{ display:flex; gap: 6px; padding: 10px 12px; background: var(--bg-panel); border:1px solid var(--border); border-radius: 8px; }
+  .pin-group.wrong{ animation: shakeX 0.4s ease; border-color: var(--struck); }
+  .pin-digit{
+    width: 42px; height: 52px; text-align:center; font-family:'JetBrains Mono', monospace; font-size: 1.4rem;
+    font-weight: 700; color: var(--ink); background: var(--bg-tile); border: 1px solid var(--border-soft);
+    border-radius: 4px; caret-color: var(--teal);
+  }
+  .pin-digit:focus{ outline: none; border-color: var(--teal); box-shadow: 0 0 0 2px rgba(45,212,191,0.25); }
+  @keyframes shakeX{10%,90%{transform:translateX(-1px);}20%,80%{transform:translateX(2px);}30%,50%,70%{transform:translateX(-4px);}40%,60%{transform:translateX(4px);}}
+  .pin-feedback{ margin-top: 16px; font-size: 0.86rem; min-height: 1.4em; }
+  .pin-feedback.warn{ color: var(--struck); }
+  .pin-feedback.ok{ color: var(--emerald); }
+
+  /* ---------- Cake / birthday moment ---------- */
+  .cake-scene{ margin-top: 10px; display:flex; flex-direction:column; align-items:center; }
+  .cake-svg-wrap{ width: min(320px, 78vw); }
+  .flame{ transform-origin: center bottom; animation: flicker 0.5s ease-in-out infinite alternate; }
+  .flame.out{ opacity: 0; }
+  @keyframes flicker{ from{ transform: scaleY(1) rotate(-2deg); } to{ transform: scaleY(1.12) rotate(2deg); } }
+  .smoke{ opacity: 0; }
+  .smoke.show{ animation: smokeRise 1.6s ease-out forwards; }
+  @keyframes smokeRise{ 0%{ opacity:0.7; transform: translateY(0) scale(1); } 100%{ opacity:0; transform: translateY(-26px) scale(1.8); } }
+
+  .bday-message{ margin-top: 22px; color: var(--ink); font-size: 1.05rem; line-height: 1.7; }
+  .bday-name{ color: var(--gold); font-weight:700; }
+
+  /* ---------- Gift menu ---------- */
+  .gift-grid{ margin-top: 30px; display:grid; grid-template-columns: repeat(3, minmax(180px, 1fr)); gap: 16px; width: 100%; max-width: 780px; }
+  .gift-card{
+    background: var(--bg-panel); border:1px solid var(--border); border-radius: 10px; padding: 26px 18px; text-align:center;
+    cursor:pointer; transition: transform 0.15s ease, border-color 0.15s ease;
+  }
+  .gift-card:hover{ transform: translateY(-4px); border-color: var(--teal); }
+  .gift-icon{ font-size: 2.4rem; margin-bottom: 12px; }
+  .gift-title{ font-family:'Cormorant Garamond', serif; font-weight:700; font-size: 1.3rem; color: var(--ink); }
+  .gift-blurb{ margin-top: 6px; color: var(--ink-faint); font-size: 0.82rem; line-height: 1.5; }
+
+  .gift-overlay{ display:none; position:fixed; inset:0; background: rgba(3,10,8,0.92); z-index:60; padding: 20px 14px; }
+  .gift-overlay.active{ display:flex; flex-direction:column; }
+  .gift-overlay-head{ display:flex; justify-content:space-between; align-items:center; max-width:900px; margin: 0 auto 12px; width:100%; }
+  .gift-overlay-title{ color: var(--gold); font-family:'JetBrains Mono', monospace; font-size:0.8rem; letter-spacing:0.08em; text-transform:uppercase; }
+  .gift-overlay-close{ background:none; border:1px solid var(--border); color: var(--ink-dim); border-radius:4px; padding:8px 14px; cursor:pointer; font-size:0.82rem; }
+  .gift-overlay-frame{ flex:1; max-width:900px; margin:0 auto; width:100%; border:1px solid var(--border); border-radius:8px; overflow:hidden; background: var(--bg-panel); }
+  .gift-overlay-frame iframe{ width:100%; height:100%; border:none; }
+  .gift-overlay-fallback{ text-align:center; color: var(--ink-faint); font-size:0.82rem; margin-top:10px; }
+  .gift-overlay-fallback a{ color: var(--teal); }
+
+  /* ---------- Confetti ---------- */
+  .confetti-piece{ position:fixed; top:-20px; width:8px; height:14px; z-index:70; pointer-events:none; animation: confetti-fall linear forwards; }
+  @keyframes confetti-fall{ to{ transform: translateY(110vh) rotate(540deg); opacity:0.3; } }
+
+  @media (max-width: 640px){
+    .gift-grid{ grid-template-columns: 1fr; }
+    .pin-groups{ gap: 8px; }
+    .pin-digit{ width: 34px; height: 44px; font-size: 1.2rem; }
+  }
+</style>
+</head>
+<body>
+
+  <!-- ================= LOCK / WELCOME SCREEN ================= -->
+  <div class="screen active" id="screen-welcome">
+    <div class="welcome-wrap">
+      <div class="eyebrow-mark">STAGE 04</div>
+      <h1 class="welcome-title">Celebration Chamber</h1>
+      <p class="welcome-sub">Ruang terakhir. Satu kombinasi lagi.</p>
+      <div class="plaque">
+        <div class="cipher-label">BRIEFING</div>
+        <p class="salutation" style="color:var(--ink);font-weight:700;">Selamat, Investigator. Kamu sudah sampai di pintu terakhir.</p>
+        <p>Pintu ini terkunci dengan <strong>kombinasi 6 digit</strong> yang tersusun dari tiga ruang yang sudah kamu lewati. Kumpulkan potongannya, susun jadi satu PIN, dan masuklah.</p>
+      </div>
+      <div class="username-box" id="username-box" style="display:none;">
+        <label class="username-label" for="username-input">Nama Investigator</label>
+        <input type="text" id="username-input" class="username-input" placeholder="contoh: erin.larasati" maxlength="20" autocomplete="off">
+        <div class="username-hint">Hanya huruf kecil, titik (.), dan underscore (_) — 3 sampai 20 karakter.</div>
+        <div class="username-feedback" id="username-feedback"></div>
+      </div>
+      <div class="cta-row">
+        <button class="btn btn-primary" id="start-btn" onclick="enterPinScreen()" disabled>Masuk</button>
+      </div>
+      <div class="lock-note" id="lock-note"></div>
+      <div class="lock-timer" id="lock-timer"></div>
+      <div><button class="leaderboard-link" onclick="openLeaderboard()">Lihat Leaderboard</button></div>
+    </div>
+  </div>
+
+  <!-- ================= LEADERBOARD SCREEN ================= -->
+  <div class="screen" id="screen-leaderboard">
+    <div class="leaderboard-page-wrap">
+      <div class="eyebrow-mark">LEADERBOARD</div>
+      <h1 class="welcome-title">Papan Peringkat</h1>
+      <p class="leaderboard-sub">Skor total dari Game 1, 2, dan 3.</p>
+      <div class="podium" id="lb-podium"></div>
+      <div class="lb-list-wrap"><div id="leaderboard-list"><div class="leaderboard-loading">Memuat leaderboard…</div></div></div>
+      <div class="cta-row"><button class="btn btn-secondary" onclick="showScreen('screen-welcome')">Kembali</button></div>
+    </div>
+  </div>
+
+  <!-- ================= PIN SCREEN ================= -->
+  <div class="screen" id="screen-pin">
+    <div class="welcome-wrap">
+      <div class="eyebrow-mark">KOMBINASI VAULT</div>
+      <h1 class="welcome-title">Susun PIN-nya</h1>
+      <div class="eyebrow-mark" id="pin-set-badge" style="margin-top:6px;">SET —/20</div>
+      <div class="pin-hints" id="pin-hints"></div>
+      <div class="pin-groups" id="pin-groups">
+        <div class="pin-group" data-group="0">
+          <input class="pin-digit" data-idx="0" maxlength="1" inputmode="numeric">
+          <input class="pin-digit" data-idx="1" maxlength="1" inputmode="numeric">
+        </div>
+        <div class="pin-group" data-group="1">
+          <input class="pin-digit" data-idx="2" maxlength="1" inputmode="numeric">
+          <input class="pin-digit" data-idx="3" maxlength="1" inputmode="numeric">
+        </div>
+        <div class="pin-group" data-group="2">
+          <input class="pin-digit" data-idx="4" maxlength="1" inputmode="numeric">
+          <input class="pin-digit" data-idx="5" maxlength="1" inputmode="numeric">
+        </div>
+      </div>
+      <div class="pin-feedback" id="pin-feedback"></div>
+      <div class="cta-row">
+        <button class="btn btn-primary" id="pin-submit-btn" onclick="checkPin()">Buka Pintu</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= CAKE SCREEN ================= -->
+  <div class="screen" id="screen-cake">
+    <div class="welcome-wrap">
+      <div class="eyebrow-mark">SELAMAT ULANG TAHUN</div>
+      <h1 class="welcome-title">Pintu Terbuka</h1>
+      <div class="cake-scene">
+        <div class="cake-svg-wrap">
+          <svg viewBox="0 0 200 180" xmlns="http://www.w3.org/2000/svg">
+            <ellipse cx="100" cy="162" rx="78" ry="10" fill="#04120e"/>
+            <rect x="30" y="120" width="140" height="40" rx="6" fill="#123830" stroke="#1e4a3f"/>
+            <rect x="30" y="120" width="140" height="10" fill="#2dd4bf" opacity="0.5"/>
+            <rect x="45" y="80" width="110" height="42" rx="6" fill="#0d2a24" stroke="#1e4a3f"/>
+            <rect x="45" y="80" width="110" height="9" fill="#5eead4" opacity="0.5"/>
+            <rect x="62" y="45" width="76" height="38" rx="6" fill="#123830" stroke="#1e4a3f"/>
+            <rect x="62" y="45" width="76" height="8" fill="#d8b979" opacity="0.55"/>
+            <g id="candle-1"><rect x="78" y="26" width="6" height="20" rx="2" fill="#eaf6f3"/><path class="flame" d="M81 12 C 85 18, 85 22, 81 26 C 77 22, 77 18, 81 12 Z" fill="#f0a8c0"/><ellipse class="smoke" data-smoke="1" cx="81" cy="10" rx="4" ry="6" fill="#83ab9d"/></g>
+            <g id="candle-2"><rect x="97" y="20" width="6" height="26" rx="2" fill="#eaf6f3"/><path class="flame" d="M100 6 C 104 12, 104 16, 100 20 C 96 16, 96 12, 100 6 Z" fill="#d8b979"/><ellipse class="smoke" data-smoke="2" cx="100" cy="4" rx="4" ry="6" fill="#83ab9d"/></g>
+            <g id="candle-3"><rect x="116" y="26" width="6" height="20" rx="2" fill="#eaf6f3"/><path class="flame" d="M119 12 C 123 18, 123 22, 119 26 C 115 22, 115 18, 119 12 Z" fill="#5eead4"/><ellipse class="smoke" data-smoke="3" cx="119" cy="10" rx="4" ry="6" fill="#83ab9d"/></g>
+          </svg>
+        </div>
+        <button class="btn btn-secondary" id="blow-btn" onclick="blowCandles()" style="margin-top:18px;">🎈 Tiup Lilinnya</button>
+      </div>
+      <div class="bday-message">
+        <p>Happy Birthday, <span class="bday-name">Erin Larasati Angdika</span>! 🎉</p>
+        <p style="color:var(--ink-dim);font-size:0.92rem;margin-top:8px;">Semoga tahun ini penuh cerita baru, semangat riset yang ga pernah padam, dan semua hal baik yang kamu layak dapetin.</p>
+      </div>
+      <audio id="bday-audio" loop>
+        <!-- TODO: ganti src ini dengan file lagu ulang tahun kamu, taruh di folder yang sama -->
+        <source src="assets/birthday-song.mp3" type="audio/mpeg">
+      </audio>
+      <div class="cta-row">
+        <button class="btn btn-primary" onclick="showScreen('screen-gifts')">Lanjut ke Hadiah →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= GIFT MENU SCREEN ================= -->
+  <div class="screen" id="screen-gifts">
+    <div class="welcome-wrap">
+      <div class="eyebrow-mark">UNTUK ERIN</div>
+      <h1 class="welcome-title">Pilih Hadiahmu</h1>
+      <p class="welcome-sub">Buka sesuka hati, urutan bebas.</p>
+      <div class="gift-grid">
+        <div class="gift-card" onclick="openGift('letter')">
+          <div class="gift-icon">💌</div>
+          <div class="gift-title">Surat</div>
+          <div class="gift-blurb">Pesan-pesan dari orang-orang terdekat Erin.</div>
+        </div>
+        <div class="gift-card" onclick="openGift('scrapbook')">
+          <div class="gift-icon">📖</div>
+          <div class="gift-title">Scrapbook</div>
+          <div class="gift-blurb">Kumpulan momen dalam bentuk flipbook.</div>
+        </div>
+        <div class="gift-card" onclick="openGift('video')">
+          <div class="gift-icon">🎬</div>
+          <div class="gift-title">Video</div>
+          <div class="gift-blurb">Video spesial buat Erin.</div>
+        </div>
+      </div>
+      <div class="cta-row">
+        <button class="btn btn-primary" onclick="showScreen('screen-closing')">Lanjut ke Penutup →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= GIFT OVERLAY (iframe) ================= -->
+  <div class="gift-overlay" id="gift-overlay">
+    <div class="gift-overlay-head">
+      <span class="gift-overlay-title" id="gift-overlay-title">Hadiah</span>
+      <button class="gift-overlay-close" onclick="closeGift()">Tutup ✕</button>
+    </div>
+    <div class="gift-overlay-frame"><iframe id="gift-overlay-iframe" src="" title="Hadiah untuk Erin"></iframe></div>
+    <div class="gift-overlay-fallback">Kalau ga muncul, <a id="gift-overlay-link" href="#" target="_blank" rel="noopener">buka di tab baru</a>.</div>
+  </div>
+
+  <!-- ================= CLOSING SCREEN ================= -->
+  <div class="screen" id="screen-closing">
+    <div class="welcome-wrap">
+      <div class="eyebrow-mark">PENUTUP</div>
+      <h1 class="welcome-title">Terima Kasih Sudah Ikut Merayakan</h1>
+      <div class="plaque">
+        <p class="salutation" style="color:var(--ink);font-weight:700;">Untuk Erin,</p>
+        <p>Empat ruang, puluhan teka-teki, dan satu tujuan: bikin hari ini terasa spesial buat kamu. Terima kasih sudah jadi orang yang bikin semua ini layak diperjuangkan.</p>
+        <p>Selamat ulang tahun, semoga tahun ini membawa lebih banyak hal yang kamu perjuangkan dan syukuri. 🎂</p>
+      </div>
+      <div class="cta-row">
+        <button class="btn btn-secondary" onclick="showScreen('screen-gifts')">Kembali ke Hadiah</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+  // ==================================================================
+  // CONFIG
+  // ==================================================================
+  const STAGE_UNLOCK_AT = new Date('2024-01-01T00:00:00'); // TESTING: dibuka sementara, ganti balik ke jadwal aslinya sebelum hari-H
+
+  // 20 set kombinasi PIN, tiap set beda soal & beda kode — supaya orang ga bisa saling contek.
+  // Tiap orang otomatis dapat 1 set berdasarkan username-nya (konsisten tiap dia buka lagi).
+  const QUESTION_SETS = [
+  {
+    "pin": "520306",
+    "hints": [
+      "Dua digit terakhir dari kode akses vault (VLT-xxx) di Molecular Museum.",
+      "Jumlah huruf pada kata kategori Animals yang tersembunyi di Cerebral Hunt Arena: \"CAT\".",
+      "Nomor clue Menurun di Lexicon Vault yang jawabannya adalah fenomena cuaca yang bikin jendela kamar Erin bergetar."
+    ]
+  },
+  {
+    "pin": "120420",
+    "hints": [
+      "Jumlah kandidat per kategori di Case Roster Molecular Museum.",
+      "Jumlah huruf pada kata kategori Animals yang tersembunyi di Cerebral Hunt Arena: \"BIRD\".",
+      "Nomor clue Menurun di Lexicon Vault yang jawabannya adalah salah satu sahabat dekat Erin di CoC."
+    ]
+  },
+  {
+    "pin": "090621",
+    "hints": [
+      "Jumlah huruf pada nama ruangan rahasia di Molecular Museum (tanpa spasi/tanda baca).",
+      "Jumlah huruf pada kata kategori Animals yang tersembunyi di Cerebral Hunt Arena: \"MAGPIE\".",
+      "Nomor clue Mendatar di Lexicon Vault yang jawabannya adalah nama tim yang dipimpin Erin sebagai kapten di CoC."
+    ]
+  },
+  {
+    "pin": "110313",
+    "hints": [
+      "Jumlah huruf pada nama elemen kunci di Molecular Museum (tanpa spasi).",
+      "Jumlah huruf pada kata kategori Food & Drinks yang tersembunyi di Cerebral Hunt Arena: \"EGG\".",
+      "Nomor clue Mendatar di Lexicon Vault yang jawabannya adalah salah satu ungkapan ikonik Erin selama CoC."
+    ]
+  },
+  {
+    "pin": "520425",
+    "hints": [
+      "Dua digit terakhir dari kode akses vault (VLT-xxx) di Molecular Museum.",
+      "Jumlah huruf pada kata kategori Food & Drinks yang tersembunyi di Cerebral Hunt Arena: \"SOTO\".",
+      "Nomor clue Mendatar di Lexicon Vault yang jawabannya adalah tipe kepribadian (MBTI) Erin."
+    ]
+  },
+  {
+    "pin": "120629",
+    "hints": [
+      "Jumlah kandidat per kategori di Case Roster Molecular Museum.",
+      "Jumlah huruf pada kata kategori Food & Drinks yang tersembunyi di Cerebral Hunt Arena: \"COFFEE\".",
+      "Nomor clue Menurun di Lexicon Vault yang jawabannya adalah episode CoC saat Erin pertama kali muncul."
+    ]
+  },
+  {
+    "pin": "090416",
+    "hints": [
+      "Jumlah huruf pada nama ruangan rahasia di Molecular Museum (tanpa spasi/tanda baca).",
+      "Jumlah huruf pada kata kategori Colors yang tersembunyi di Cerebral Hunt Arena: \"BLUE\".",
+      "Nomor clue Mendatar di Lexicon Vault yang jawabannya adalah ujian masuk universitas di Tiongkok yang lebih ketat dari OSN."
+    ]
+  },
+  {
+    "pin": "110511",
+    "hints": [
+      "Jumlah huruf pada nama elemen kunci di Molecular Museum (tanpa spasi).",
+      "Jumlah huruf pada kata kategori Colors yang tersembunyi di Cerebral Hunt Arena: \"GREEN\".",
+      "Nomor clue Mendatar di Lexicon Vault yang jawabannya adalah karakter bias Erin di Ensemble Stars."
+    ]
+  },
+  {
+    "pin": "520617",
+    "hints": [
+      "Dua digit terakhir dari kode akses vault (VLT-xxx) di Molecular Museum.",
+      "Jumlah huruf pada kata kategori Colors yang tersembunyi di Cerebral Hunt Arena: \"ORANGE\".",
+      "Nomor clue Menurun di Lexicon Vault yang jawabannya adalah nama soto favorit Erin."
+    ]
+  },
+  {
+    "pin": "120612",
+    "hints": [
+      "Jumlah kandidat per kategori di Case Roster Molecular Museum.",
+      "Jumlah huruf pada kata kategori Professions yang tersembunyi di Cerebral Hunt Arena: \"CASTER\".",
+      "Nomor clue Menurun di Lexicon Vault yang jawabannya adalah mata kuliah yang paling dibenci Erin."
+    ]
+  },
+  {
+    "pin": "090627",
+    "hints": [
+      "Jumlah huruf pada nama ruangan rahasia di Molecular Museum (tanpa spasi/tanda baca).",
+      "Jumlah huruf pada kata kategori Professions yang tersembunyi di Cerebral Hunt Arena: \"SINGER\".",
+      "Nomor clue Mendatar di Lexicon Vault yang jawabannya adalah medali yang diraih Erin di OSN 2023."
+    ]
+  },
+  {
+    "pin": "111015",
+    "hints": [
+      "Jumlah huruf pada nama elemen kunci di Molecular Museum (tanpa spasi).",
+      "Jumlah huruf pada kata kategori Professions yang tersembunyi di Cerebral Hunt Arena: \"RESEARCHER\".",
+      "Nomor clue Mendatar di Lexicon Vault yang jawabannya adalah emoji favorit Erin."
+    ]
+  },
+  {
+    "pin": "520326",
+    "hints": [
+      "Dua digit terakhir dari kode akses vault (VLT-xxx) di Molecular Museum.",
+      "Jumlah huruf pada kata kategori Animals yang tersembunyi di Cerebral Hunt Arena: \"CAT\".",
+      "Nomor clue Menurun di Lexicon Vault yang jawabannya adalah situs belanja online favorit Erin."
+    ]
+  },
+  {
+    "pin": "120410",
+    "hints": [
+      "Jumlah kandidat per kategori di Case Roster Molecular Museum.",
+      "Jumlah huruf pada kata kategori Animals yang tersembunyi di Cerebral Hunt Arena: \"BIRD\".",
+      "Nomor clue Menurun di Lexicon Vault yang jawabannya adalah nama tengah Erin."
+    ]
+  },
+  {
+    "pin": "090609",
+    "hints": [
+      "Jumlah huruf pada nama ruangan rahasia di Molecular Museum (tanpa spasi/tanda baca).",
+      "Jumlah huruf pada kata kategori Animals yang tersembunyi di Cerebral Hunt Arena: \"MAGPIE\".",
+      "Nomor clue Menurun di Lexicon Vault yang jawabannya adalah akun komunitas alumni medalis OSN Biologi yang pernah diadmini Erin."
+    ]
+  },
+  {
+    "pin": "110330",
+    "hints": [
+      "Jumlah huruf pada nama elemen kunci di Molecular Museum (tanpa spasi).",
+      "Jumlah huruf pada kata kategori Food & Drinks yang tersembunyi di Cerebral Hunt Arena: \"EGG\".",
+      "Nomor clue Mendatar di Lexicon Vault yang jawabannya adalah universitas impian Erin untuk melanjutkan kuliah."
+    ]
+  },
+  {
+    "pin": "520407",
+    "hints": [
+      "Dua digit terakhir dari kode akses vault (VLT-xxx) di Molecular Museum.",
+      "Jumlah huruf pada kata kategori Food & Drinks yang tersembunyi di Cerebral Hunt Arena: \"SOTO\".",
+      "Nomor clue Mendatar di Lexicon Vault yang jawabannya adalah permainan arcade yang disukai Erin."
+    ]
+  },
+  {
+    "pin": "120623",
+    "hints": [
+      "Jumlah kandidat per kategori di Case Roster Molecular Museum.",
+      "Jumlah huruf pada kata kategori Food & Drinks yang tersembunyi di Cerebral Hunt Arena: \"COFFEE\".",
+      "Nomor clue Mendatar di Lexicon Vault yang jawabannya adalah karakter yang menginspirasi bow Erin di CoC."
+    ]
+  },
+  {
+    "pin": "090401",
+    "hints": [
+      "Jumlah huruf pada nama ruangan rahasia di Molecular Museum (tanpa spasi/tanda baca).",
+      "Jumlah huruf pada kata kategori Colors yang tersembunyi di Cerebral Hunt Arena: \"BLUE\".",
+      "Nomor clue Mendatar di Lexicon Vault yang jawabannya adalah musikal yang dibahas Erin waktu live bareng Mike dan Yvonnie."
+    ]
+  },
+  {
+    "pin": "110533",
+    "hints": [
+      "Jumlah huruf pada nama elemen kunci di Molecular Museum (tanpa spasi).",
+      "Jumlah huruf pada kata kategori Colors yang tersembunyi di Cerebral Hunt Arena: \"GREEN\".",
+      "Nomor clue Mendatar di Lexicon Vault yang jawabannya adalah singkatan nama SMA Erin."
+    ]
+  }
+];
+
+  // TODO: ganti tiga URL placeholder ini dengan link asli begitu sudah siap
+  const GIFT_URLS = {
+    letter: 'https://padlet.com/GANTI_DENGAN_LINK_PADLET_KAMU',
+    scrapbook: 'https://heyzine.com/GANTI_DENGAN_LINK_HEYZINE_KAMU',
+    video: 'https://drive.google.com/GANTI_DENGAN_LINK_VIDEO_KAMU',
+  };
+  const GIFT_TITLES = { letter: 'Surat untuk Erin', scrapbook: 'Scrapbook', video: 'Video untuk Erin' };
+
+  // ==================================================================
+  // FIREBASE — HARUS SAMA PERSIS dengan file game lain
+  // ==================================================================
+  const firebaseConfig = {
+    apiKey: "AIzaSyDyfktOuIxMwtKfoniVHYvMgd55Ml95gP8",
+    authDomain: "erin-game.firebaseapp.com",
+    databaseURL: "https://erin-game-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "erin-game",
+    storageBucket: "erin-game.firebasestorage.app",
+    messagingSenderId: "303866378537",
+    appId: "1:303866378537:web:f3844c701203391f4b5f38"
+  };
+  let db = null;
+  try { firebase.initializeApp(firebaseConfig); db = firebase.database(); }
+  catch (e) { console.warn('Firebase belum dikonfigurasi.', e); }
+
+  const USERNAME_KEY = 'eg_username_v1';
+
+  function isValidUsername(u){ return /^[a-z_.]{3,20}$/.test(u); }
+  function getStoredUsername(){ return localStorage.getItem(USERNAME_KEY); }
+  function initUsernameField(){
+    const box = document.getElementById('username-box');
+    const stored = getStoredUsername();
+    if (stored && isValidUsername(stored)){ box.style.display = 'none'; return; }
+    box.style.display = 'block';
+    const input = document.getElementById('username-input');
+    input.addEventListener('input', () => { input.value = input.value.replace(/[^a-z_.]/g, ''); updateUsernameFeedback(); });
+    updateUsernameFeedback();
+  }
+  function updateUsernameFeedback(){
+    const box = document.getElementById('username-box');
+    if (box.style.display === 'none') return;
+    const input = document.getElementById('username-input');
+    const fb = document.getElementById('username-feedback');
+    const val = input.value.trim();
+    const valid = isValidUsername(val);
+    if (!val){ fb.textContent=''; fb.className='username-feedback'; }
+    else if (!valid){ fb.textContent='Gunakan 3–20 karakter: huruf kecil a-z, titik (.), underscore (_).'; fb.className='username-feedback show warn'; }
+    else { fb.textContent='Nama siap dipakai ✓'; fb.className='username-feedback show ok'; }
+  }
+  function escapeHtml(str){ return String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+  function mgShake(selector){
+    const el = document.querySelector(selector);
+    if (!el) return;
+    el.style.animation = 'none'; void el.offsetWidth; el.style.animation = 'shakeX 0.4s ease';
+  }
+
+  // ==================================================================
+  // LOCK SCREEN
+  // ==================================================================
+  function checkLock(){
+    const now = new Date();
+    const startBtn = document.getElementById('start-btn');
+    const note = document.getElementById('lock-note');
+    const timerEl = document.getElementById('lock-timer');
+    if (now >= STAGE_UNLOCK_AT){
+      startBtn.disabled = false; note.textContent = 'Celebration Chamber sudah terbuka.'; timerEl.textContent = '';
+      return;
+    }
+    startBtn.disabled = true;
+    note.textContent = 'Next game will be available in';
+    const remain = STAGE_UNLOCK_AT - now;
+    const totalSec = Math.max(0, Math.floor(remain / 1000));
+    const d = Math.floor(totalSec / 86400);
+    const hh = String(Math.floor((totalSec % 86400) / 3600)).padStart(2,'0');
+    const mm = String(Math.floor((totalSec % 3600) / 60)).padStart(2,'0');
+    const ss = String(totalSec % 60).padStart(2,'0');
+    timerEl.textContent = d > 0 ? `${d}h ${hh}:${mm}:${ss}` : `${hh}:${mm}:${ss}`;
+  }
+  checkLock();
+  setInterval(checkLock, 1000);
+  initUsernameField();
+
+  function showScreen(id){
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0,0);
+  }
+
+  function hashStringToInt(str){
+    let h = 0;
+    for (let i=0;i<str.length;i++){ h = (h * 31 + str.charCodeAt(i)) >>> 0; }
+    return h;
+  }
+  let mySet = null;
+  function assignQuestionSet(){
+    const username = getStoredUsername() || 'guest';
+    const idx = hashStringToInt(username) % QUESTION_SETS.length;
+    mySet = QUESTION_SETS[idx];
+    document.getElementById('pin-set-badge').textContent = `SET ${idx + 1}/${QUESTION_SETS.length}`;
+    const hintsEl = document.getElementById('pin-hints');
+    const labels = ['Ruang 1', 'Ruang 2', 'Ruang 3'];
+    hintsEl.innerHTML = mySet.hints.map((h, i) => `
+      <div class="pin-hint-row"><span class="pin-hint-src">${labels[i]}</span><span class="pin-hint-text">${escapeHtml(h)}</span></div>
+    `).join('');
+  }
+
+  function enterPinScreen(){
+    if (new Date() < STAGE_UNLOCK_AT) return;
+    const usernameBox = document.getElementById('username-box');
+    if (usernameBox.style.display !== 'none'){
+      const input = document.getElementById('username-input');
+      const val = input.value.trim();
+      if (!isValidUsername(val)){ updateUsernameFeedback(); mgShake('#username-box'); return; }
+      localStorage.setItem(USERNAME_KEY, val);
+      usernameBox.style.display = 'none';
+    }
+    assignQuestionSet();
+    showScreen('screen-pin');
+    setTimeout(() => { document.querySelector('.pin-digit[data-idx="0"]').focus(); }, 50);
+  }
+
+  // ==================================================================
+  // PIN ENTRY
+  // ==================================================================
+  const pinInputs = Array.from(document.querySelectorAll('.pin-digit'));
+  pinInputs.forEach((inp, i) => {
+    inp.addEventListener('input', () => {
+      inp.value = inp.value.replace(/[^0-9]/g, '').slice(-1);
+      if (inp.value && i < pinInputs.length - 1) pinInputs[i+1].focus();
+    });
+    inp.addEventListener('keydown', (ev) => {
+      if (ev.key === 'Backspace' && !inp.value && i > 0) pinInputs[i-1].focus();
+      if (ev.key === 'Enter') checkPin();
+    });
+  });
+
+  function checkPin(){
+    const entered = pinInputs.map(i => i.value).join('');
+    const fb = document.getElementById('pin-feedback');
+    if (entered.length < 6){
+      fb.textContent = 'Isi semua 6 digitnya dulu ya.';
+      fb.className = 'pin-feedback warn';
+      return;
+    }
+    if (entered === mySet.pin){
+      fb.textContent = 'PIN benar. Pintu terbuka...';
+      fb.className = 'pin-feedback ok';
+      finalizeLeaderboardEntry();
+      setTimeout(() => {
+        showScreen('screen-cake');
+        const audio = document.getElementById('bday-audio');
+        audio.play().catch(() => {});
+        launchConfetti();
+      }, 500);
+    } else {
+      fb.textContent = 'PIN belum tepat. Coba cek lagi petunjuk tiap ruangnya.';
+      fb.className = 'pin-feedback warn';
+      document.querySelectorAll('.pin-group').forEach(g => {
+        g.classList.add('wrong');
+        setTimeout(() => g.classList.remove('wrong'), 400);
+      });
+      pinInputs.forEach(i => i.value = '');
+      pinInputs[0].focus();
+    }
+  }
+
+  // ==================================================================
+  // CAKE
+  // ==================================================================
+  function blowCandles(){
+    document.querySelectorAll('.flame').forEach(f => f.classList.add('out'));
+    document.querySelectorAll('.smoke').forEach(s => s.classList.add('show'));
+    document.getElementById('blow-btn').disabled = true;
+    launchConfetti();
+  }
+
+  function launchConfetti(){
+    const colors = ['#2dd4bf','#5eead4','#34d399','#d8b979','#f0a8c0'];
+    for (let i=0;i<80;i++){
+      const piece = document.createElement('div');
+      piece.className = 'confetti-piece';
+      piece.style.left = Math.random()*100 + 'vw';
+      piece.style.background = colors[Math.floor(Math.random()*colors.length)];
+      piece.style.animationDuration = (2.5 + Math.random()*2) + 's';
+      piece.style.animationDelay = (Math.random()*0.6) + 's';
+      document.body.appendChild(piece);
+      setTimeout(() => piece.remove(), 5200);
+    }
+  }
+
+  // ==================================================================
+  // GIFTS
+  // ==================================================================
+  function openGift(key){
+    document.getElementById('gift-overlay-title').textContent = GIFT_TITLES[key];
+    document.getElementById('gift-overlay-iframe').src = GIFT_URLS[key];
+    document.getElementById('gift-overlay-link').href = GIFT_URLS[key];
+    document.getElementById('gift-overlay').classList.add('active');
+  }
+  function closeGift(){
+    document.getElementById('gift-overlay').classList.remove('active');
+    document.getElementById('gift-overlay-iframe').src = '';
+  }
+
+  // ==================================================================
+  // LEADERBOARD FINALIZE (Game 4 tidak menambah skor, cuma menandai final)
+  // ==================================================================
+  async function finalizeLeaderboardEntry(){
+    if (!db) return;
+    const username = getStoredUsername();
+    if (!username || !isValidUsername(username)) return;
+    const ref = db.ref('leaderboard/' + username);
+    try {
+      const snap = await ref.once('value');
+      const existing = snap.val();
+      if (existing) await ref.update({ partial: false, finishedAllStages: true, updatedAt: Date.now() });
+    } catch (e){ console.error('Gagal finalisasi leaderboard:', e); }
+  }
+
+  const PODIUM_MEDALS = ['🥇', '🥈', '🥉'];
+  async function renderLeaderboardPage(){
+    const podiumEl = document.getElementById('lb-podium');
+    const listEl = document.getElementById('leaderboard-list');
+    podiumEl.innerHTML = '';
+    listEl.innerHTML = '<div class="leaderboard-loading">Memuat leaderboard…</div>';
+    if (!db){ listEl.innerHTML = '<div class="leaderboard-empty">Leaderboard belum dikonfigurasi.</div>'; return; }
+    try {
+      const snap = await db.ref('leaderboard').once('value');
+      const rows = [];
+      snap.forEach(child => { rows.push(child.val()); });
+      rows.sort((a, b) => b.score - a.score);
+      if (rows.length === 0){ listEl.innerHTML = '<div class="leaderboard-empty">Belum ada skor masuk.</div>'; return; }
+      const me = getStoredUsername();
+      const top3 = rows.slice(0, 3);
+      podiumEl.innerHTML = top3.map((r, i) => {
+        const place = i + 1;
+        const isMe = me && r.username === me;
+        return `<div class="podium-slot place-${place}${isMe ? ' me' : ''}">
+          <div class="podium-medal">${PODIUM_MEDALS[i]}</div>
+          <div class="podium-name">${escapeHtml(r.username)}</div>
+          <div class="podium-score">${Number(r.score).toLocaleString('id-ID')} pts</div>
+          <div class="podium-bar"></div>
+        </div>`;
+      }).join('');
+      listEl.innerHTML = rows.map((r, i) => {
+        const isMe = me && r.username === me;
+        return `<div class="leaderboard-row${isMe ? ' me' : ''}"${isMe ? ' id="lb-my-row"' : ''}>
+          <span class="lb-rank">#${i + 1}</span>
+          <span class="lb-name">${escapeHtml(r.username)}</span>
+          <span class="lb-score">${Number(r.score).toLocaleString('id-ID')} pts</span>
+        </div>`;
+      }).join('');
+      const myRow = document.getElementById('lb-my-row');
+      if (myRow) setTimeout(() => myRow.scrollIntoView({ block: 'center', behavior: 'smooth' }), 150);
+    } catch (e){ listEl.innerHTML = '<div class="leaderboard-empty">Gagal memuat leaderboard.</div>'; console.error(e); }
+  }
+  function openLeaderboard(){ showScreen('screen-leaderboard'); renderLeaderboardPage(); }
+</script>
+</body>
+</html>
