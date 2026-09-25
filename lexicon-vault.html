@@ -156,11 +156,19 @@
   .leaderboard-page-wrap{ max-width: 640px; width: 100%; text-align: center; }
   .leaderboard-sub{ color: var(--ink-dim); font-size: 0.9rem; margin: 10px 0 28px; line-height: 1.6; }
   .podium{ display:flex; gap:10px; justify-content:center; align-items:flex-end; margin-bottom:24px; }
-  .podium-slot{ background: var(--bg-panel); border:1px solid var(--border); border-radius:6px; padding:14px 10px; width:110px; }
-  .podium-slot.me{ border-color: var(--teal); box-shadow: 0 0 0 1px var(--teal) inset; }
-  .podium-medal{ font-size:1.6rem; }
-  .podium-name{ font-weight:700; font-size:0.85rem; margin-top:6px; word-break:break-word; }
-  .podium-score{ color: var(--teal); font-size:0.78rem; margin-top:4px; }
+  .podium-slot{ display:flex; flex-direction:column; align-items:center; width:108px; }
+  .podium-medal{ font-size:1.7rem; margin-bottom:4px; }
+  .podium-name{ font-weight:700; font-size:0.82rem; margin-bottom:2px; max-width:108px; overflow-wrap:anywhere; text-align:center; line-height:1.25; }
+  .podium-score{ color: var(--emerald); font-size:0.76rem; margin-bottom:8px; font-family:'JetBrains Mono', monospace; }
+  .podium-bar{ width:100%; border-radius:8px 8px 0 0; background: var(--bg-card); border:1px solid var(--border); border-bottom:none; box-sizing:border-box; }
+  .podium-slot.place-1{ order:2; }
+  .podium-slot.place-2{ order:1; }
+  .podium-slot.place-3{ order:3; }
+  .podium-slot.place-1 .podium-bar{ height:96px; border-color: var(--gold); background: rgba(216,185,121,0.12); }
+  .podium-slot.place-2 .podium-bar{ height:68px; }
+  .podium-slot.place-3 .podium-bar{ height:46px; }
+  .podium-slot.me .podium-name{ color: var(--teal); }
+  .podium-slot.me .podium-bar{ border-color: var(--teal); box-shadow: 0 0 14px rgba(45,212,191,0.35); }
   .lb-list-wrap{ background: var(--bg-panel); border:1px solid var(--border); border-radius:6px; padding: 8px 4px; max-height: 320px; overflow-y:auto; }
   .leaderboard-row{
     display:flex; align-items:center; gap:12px; padding:10px 14px; border-bottom:1px solid var(--border-soft);
@@ -243,6 +251,8 @@
   .xw-cell.active{ background: rgba(45,212,191,0.22); }
   .xw-cell.inword{ background: rgba(45,212,191,0.09); }
   .xw-cell.filled input{ color: var(--cyan); }
+  .xw-cell.wrong{ background: rgba(232,130,122,0.16); }
+  .xw-cell.wrong input{ color: var(--struck); }
 
   .xw-current-clue-bar{
     display:none; width:100%; max-width:min(700px,92vw); background: var(--bg-panel); border:1px solid var(--border);
@@ -325,7 +335,7 @@
 
       <div class="plaque">
         <div class="cipher-label">BRIEFING</div>
-        <p class="salutation" style="color:var(--ink);font-weight:700;">Ruang ke tiga, Investigator.</p>
+        <p class="salutation" style="color:var(--ink);font-weight:700;">Satu ruang lagi, Investigator.</p>
         <p>Di depanmu ada satu <strong>grid teka-teki silang</strong> berisi 36 kunci — 18 mendatar, 18 menurun. Semua jawabannya tersimpan dalam ingatan tentang satu orang.</p>
         <ul>
           <li>Ketuk kotak atau ketuk soal di daftar untuk memilih kata yang mau kamu isi.</li>
@@ -830,7 +840,10 @@
   function onCellInput(r,c,ev){
     let v = cellInputs[r][c].value.toUpperCase().replace(/[^A-Z0-9]/g,'');
     cellInputs[r][c].value = v.slice(-1);
-    cellInputs[r][c].parentElement.classList.toggle('filled', !!cellInputs[r][c].value);
+    const filled = !!cellInputs[r][c].value;
+    cellInputs[r][c].parentElement.classList.toggle('filled', filled);
+    const isWrong = filled && cellInputs[r][c].value !== PUZZLE_ROWS[r][c];
+    cellInputs[r][c].parentElement.classList.toggle('wrong', isWrong);
     updateClueDots();
     updateProgress();
     if (cellInputs[r][c].value && currentEntryIdx !== null){
@@ -845,7 +858,7 @@
         ev.preventDefault();
         moveToPrevCell(r,c);
         const p = document.activeElement;
-        if (p && p.tagName === 'INPUT'){ p.value=''; p.parentElement.classList.remove('filled'); updateClueDots(); updateProgress(); }
+        if (p && p.tagName === 'INPUT'){ p.value=''; p.parentElement.classList.remove('filled'); p.parentElement.classList.remove('wrong'); updateClueDots(); updateProgress(); }
       }
       return;
     }
@@ -999,14 +1012,10 @@
           <p class="result-subnote">Waktu: ${timeScore} poin · Jawaban benar (${correctWords}/${TOTAL_ENTRIES}): ${wordScore} poin</p>
           ${isBest ? '<div class="high-score-badge">🏆 Rekor Pribadi Baru</div>' : ''}
         </div>
-        <p class="result-subnote">Total skor Game 1 + Game 2 + Game 3 sudah dikirim ke leaderboard (kalau lebih baik dari rekor lamamu).</p>
-        <div class="bday-popup" id="bday-popup">
-          <p>Congratulations! You cleared every stage.<br>
-          Special Happy Birthday to <span class="bday-name">Erin Larasati Angdika</span>!<br>
-          Keep inspiring and communicating science to the world!</p>
-        </div>
+        <p class="result-subnote">Skor sementara Game 1 + Game 2 + Game 3 sudah dikirim ke leaderboard — masih akan digabung sama Game 4.</p>
         <div class="cta-row">
-          <button class="btn btn-primary" onclick="startVault()">Main Lagi</button>
+          <button class="btn btn-primary" onclick="goToNextGame()">Lanjut ke Game 4 →</button>
+          <button class="btn btn-secondary" onclick="startVault()">Main Lagi</button>
           <button class="btn btn-secondary" onclick="openLeaderboard()">Lihat Leaderboard</button>
         </div>
       `;
@@ -1065,13 +1074,17 @@
           game2Score, game2TimeMs,
           game3Score, game3TimeMs, game3CorrectWords: correctWords,
           score,
-          partial: false,
+          partial: true, // masih ada Game 4 setelah ini — skor final baru ditandai partial:false di game terakhir
           updatedAt: Date.now()
         });
       }
     } catch (e){
       console.error('Gagal mengirim skor ke leaderboard:', e);
     }
+  }
+
+  function goToNextGame(){
+    window.location.href = 'game4.html'; // TODO: sesuaikan nama file Game 4 begitu sudah dibuat
   }
 
   function openLeaderboard(){
@@ -1108,6 +1121,7 @@
             <div class="podium-medal">${PODIUM_MEDALS[i]}</div>
             <div class="podium-name">${escapeHtml(r.username)}</div>
             <div class="podium-score">${Number(r.score).toLocaleString('id-ID')} pts</div>
+            <div class="podium-bar"></div>
           </div>
         `;
       }).join('');
