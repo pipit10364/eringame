@@ -1,0 +1,1133 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lexicon Vault — Stage 3</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<!-- Firebase (leaderboard) -->
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
+<style>
+  :root{
+    --bg: #061a15;
+    --bg-panel: #0c2721;
+    --bg-card: #123830;
+    --bg-tile: #0d2a24;
+    --border: #1e4a3f;
+    --border-soft: #17392f;
+    --teal: #2dd4bf;
+    --emerald: #34d399;
+    --cyan: #5eead4;
+    --ink: #eaf6f3;
+    --ink-dim: #83ab9d;
+    --ink-faint: #4c7669;
+    --struck: #e8827a;
+    --gold: #d8b979;
+    --glow: 0 0 40px rgba(45, 212, 191, 0.15);
+  }
+
+  *{box-sizing:border-box; margin:0; padding:0;}
+
+  body{
+    background:
+      radial-gradient(circle at 15% 10%, rgba(45,212,191,0.08), transparent 45%),
+      radial-gradient(circle at 85% 90%, rgba(94,234,212,0.08), transparent 45%),
+      var(--bg);
+    color: var(--ink);
+    font-family: 'Manrope', sans-serif;
+    min-height: 100vh;
+    line-height: 1.5;
+  }
+
+  .screen{
+    min-height: 100vh;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px 60px;
+  }
+  .screen.active{ display: flex; }
+
+  h1, h2, h3, .display{
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+  }
+
+  /* ---------- Welcome ---------- */
+  .welcome-wrap{ max-width: min(860px, 94vw); width: 100%; text-align: center; }
+
+  .eyebrow-mark{
+    display: inline-flex; align-items: center; gap: 10px;
+    color: var(--gold); font-size: 0.8rem; letter-spacing: 0.14em; margin-bottom: 22px;
+  }
+  .eyebrow-mark::before, .eyebrow-mark::after{
+    content: ""; width: 28px; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold));
+  }
+  .eyebrow-mark::after{ background: linear-gradient(90deg, var(--gold), transparent); }
+
+  .welcome-title{ font-size: clamp(2.1rem, 6vw, 3.3rem); color: var(--ink); text-shadow: var(--glow); line-height: 1.15; }
+  .welcome-sub{ margin-top: 14px; color: var(--teal); font-weight: 600; font-size: 1.02rem; }
+
+  .plaque{
+    margin-top: 36px; text-align: left; background: var(--bg-panel);
+    border: 1px solid var(--border); border-radius: 4px; padding: 30px 28px; position: relative;
+  }
+  .plaque::before, .plaque::after{
+    content: ""; position: absolute; width: 16px; height: 16px;
+    border: 1.5px solid var(--gold); opacity: 0.6;
+  }
+  .plaque::before{ top: 10px; left: 10px; border-right: none; border-bottom: none; }
+  .plaque::after{ bottom: 10px; right: 10px; border-left: none; border-top: none; }
+
+  .cipher-label{
+    font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; letter-spacing: 0.1em;
+    color: var(--gold); margin-bottom: 16px;
+  }
+
+  .plaque p{ margin-bottom: 12px; color: var(--ink-dim); font-size: 0.96rem; }
+  .plaque p:last-child{ margin-bottom: 0; }
+  .plaque strong{ color: var(--ink); font-weight: 700; }
+  .plaque ul{ margin: 4px 0 14px 20px; color: var(--ink-dim); font-size: 0.95rem; }
+  .plaque li{ margin-bottom: 6px; }
+
+  .btn{
+    font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 0.98rem;
+    border: none; border-radius: 3px; padding: 15px 34px; cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease; letter-spacing: 0.01em;
+  }
+  .btn-primary{ background: linear-gradient(120deg, var(--teal), var(--cyan)); color: #04141a; }
+  .btn-primary:hover{ transform: translateY(-2px); box-shadow: 0 10px 30px rgba(45,212,191,0.25); }
+  .btn-primary:active{ transform: scale(0.97); box-shadow: 0 4px 14px rgba(45,212,191,0.2); }
+  .btn-primary:disabled{ opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+  .btn-secondary{
+    background: transparent; color: var(--teal); border: 1px solid var(--border);
+    font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 0.85rem;
+    border-radius: 3px; padding: 10px 20px; cursor: pointer; transition: border-color 0.15s ease, background 0.15s ease, transform 0.1s ease;
+  }
+  .btn-secondary:hover{ border-color: var(--teal); }
+  .btn-secondary:active{ border-color: var(--teal); background: rgba(94,234,212,0.08); transform: scale(0.97); }
+  .btn-small{ padding: 8px 14px; font-size: 0.78rem; }
+
+  .cta-row{ margin-top: 30px; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+  /* ---------- Lock overlay ---------- */
+  .lock-note{
+    margin-top: 22px; font-family: 'JetBrains Mono', monospace; font-size: 0.78rem;
+    letter-spacing: 0.06em; color: var(--ink-faint); text-transform: uppercase;
+  }
+  .lock-timer{
+    margin-top: 14px; font-family: 'JetBrains Mono', monospace; font-weight: 700;
+    font-size: clamp(2.6rem, 12vw, 6rem); color: var(--cyan); letter-spacing: 0.02em;
+    text-shadow: var(--glow); line-height: 1.05; word-break: break-word;
+  }
+
+  /* ---------- Username box ---------- */
+  .username-box{
+    margin-top: 24px; text-align: left; background: var(--bg-panel);
+    border: 1px solid var(--border); border-radius: 4px; padding: 20px 22px;
+  }
+  .username-label{
+    display:block; font-family: 'JetBrains Mono', monospace; font-size: 0.74rem;
+    letter-spacing: 0.08em; color: var(--gold); margin-bottom: 10px; text-transform: uppercase;
+  }
+  .username-input{
+    width: 100%; background: var(--bg-tile); border: 1px solid var(--border); border-radius: 4px;
+    padding: 12px 14px; color: var(--ink); font-family: 'JetBrains Mono', monospace; font-size: 1rem;
+    letter-spacing: 0.02em;
+  }
+  .username-hint{ margin-top: 8px; color: var(--ink-faint); font-size: 0.8rem; line-height: 1.5; }
+  .username-feedback{ margin-top: 8px; font-size: 0.82rem; display:none; }
+  .username-feedback.show{ display:block; }
+  .username-feedback.warn{ color: var(--struck); }
+  .username-feedback.ok{ color: var(--emerald); }
+
+  .leaderboard-link{
+    margin-top: 18px; background:none; border:none; color: var(--ink-faint);
+    font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; letter-spacing:0.05em;
+    text-decoration: underline; cursor: pointer;
+  }
+  .leaderboard-link:hover{ color: var(--teal); }
+
+  /* ---------- Leaderboard page ---------- */
+  .leaderboard-page-wrap{ max-width: 640px; width: 100%; text-align: center; }
+  .leaderboard-sub{ color: var(--ink-dim); font-size: 0.9rem; margin: 10px 0 28px; line-height: 1.6; }
+  .podium{ display:flex; gap:10px; justify-content:center; align-items:flex-end; margin-bottom:24px; }
+  .podium-slot{ background: var(--bg-panel); border:1px solid var(--border); border-radius:6px; padding:14px 10px; width:110px; }
+  .podium-slot.me{ border-color: var(--teal); box-shadow: 0 0 0 1px var(--teal) inset; }
+  .podium-medal{ font-size:1.6rem; }
+  .podium-name{ font-weight:700; font-size:0.85rem; margin-top:6px; word-break:break-word; }
+  .podium-score{ color: var(--teal); font-size:0.78rem; margin-top:4px; }
+  .lb-list-wrap{ background: var(--bg-panel); border:1px solid var(--border); border-radius:6px; padding: 8px 4px; max-height: 320px; overflow-y:auto; }
+  .leaderboard-row{
+    display:flex; align-items:center; gap:12px; padding:10px 14px; border-bottom:1px solid var(--border-soft);
+    font-size: 0.9rem;
+  }
+  .leaderboard-row:last-child{ border-bottom: none; }
+  .lb-rank{ width:32px; color: var(--ink-faint); font-family:'JetBrains Mono', monospace; }
+  .lb-name{ flex:1; text-align:left; font-weight:600; }
+  .lb-score{ color: var(--teal); font-family:'JetBrains Mono', monospace; }
+  .leaderboard-row.me{ background: rgba(45,212,191,0.08); border-radius:4px; }
+  .leaderboard-row.me .lb-name{ color: var(--teal); }
+  .leaderboard-row.me .lb-rank{ color: var(--teal); }
+  .leaderboard-loading, .leaderboard-empty{ color: var(--ink-faint); font-size: 0.88rem; text-align: center; padding: 12px 0; }
+
+  /* ---------- Stat chips ---------- */
+  .arena-wrap{ max-width: min(1180px, 96vw); width: 100%; }
+  .arena-stats-row{ display:flex; gap:10px; justify-content:center; margin-bottom:16px; flex-wrap:wrap; }
+  .stat-chip{
+    background: var(--bg-panel); border:1px solid var(--border); border-radius: 20px;
+    padding: 8px 18px; font-family:'JetBrains Mono', monospace; font-size:0.8rem; letter-spacing:0.05em;
+    color: var(--ink-faint);
+  }
+  .stat-chip .stat-val{ color: var(--cyan); font-weight:700; margin-left:6px; }
+  .stat-chip.timer.low .stat-val{ color: var(--struck); }
+  .stat-chip.words .stat-val{ color: var(--emerald); }
+
+  .screen-label{ text-align:center; margin-bottom: 14px; }
+
+  /* ---------- Crossword layout ---------- */
+  .xw-layout{ display:flex; gap: 22px; align-items:flex-start; justify-content:center; width:100%; }
+  .xw-board-col{ flex: 0 0 auto; }
+  .xw-clues-col{
+    flex: 1 1 320px; max-width: 380px; background: var(--bg-panel); border:1px solid var(--border);
+    border-radius: 6px; padding: 14px; max-height: 640px; overflow-y:auto;
+  }
+  .xw-clue-group-title{
+    font-family:'JetBrains Mono', monospace; font-size:0.74rem; letter-spacing:0.12em; color: var(--gold);
+    margin: 14px 0 8px; text-transform:uppercase;
+  }
+  .xw-clue-group-title:first-child{ margin-top:0; }
+  .xw-clue-item{
+    display:flex; gap:8px; align-items:flex-start; padding:7px 8px; border-radius:4px; cursor:pointer;
+    font-size:0.86rem; color: var(--ink-dim); line-height:1.4; transition: background 0.12s ease, color 0.12s ease;
+  }
+  .xw-clue-item:hover{ background: rgba(94,234,212,0.06); }
+  .xw-clue-item.active{ background: rgba(45,212,191,0.14); color: var(--ink); }
+  .xw-clue-num{ font-family:'JetBrains Mono', monospace; color: var(--teal); font-weight:700; flex:0 0 22px; }
+  .xw-clue-text{ flex:1; }
+  .xw-clue-dot{
+    flex:0 0 8px; width:8px; height:8px; border-radius:50%; margin-top:5px;
+    background: transparent; border: 1px solid var(--border);
+  }
+  .xw-clue-item.filled .xw-clue-dot{ background: var(--emerald); border-color: var(--emerald); }
+  .xw-clue-item.filled{ color: var(--ink-dim); }
+
+  .xw-board-scroll{
+    overflow: auto; max-width: min(700px, 92vw); border:1px solid var(--border); border-radius:6px;
+    background: var(--bg-panel); padding: 10px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .xw-grid{
+    display:grid;
+    grid-template-columns: repeat(21, 30px);
+    grid-template-rows: repeat(21, 30px);
+    gap:0;
+  }
+  .xw-cell{ position:relative; width:30px; height:30px; }
+  .xw-cell.blank{ visibility:hidden; }
+  .xw-cell.block{ background: #04120e; border-radius:1px; }
+  .xw-cell.letter{ background: var(--bg-tile); border:1px solid var(--border-soft); }
+  .xw-cell-num{
+    position:absolute; top:1px; left:2px; font-size:0.5rem; color: var(--gold);
+    font-family:'JetBrains Mono', monospace; pointer-events:none; line-height:1;
+  }
+  .xw-cell input{
+    width:100%; height:100%; background:transparent; border:none; outline:none; text-align:center;
+    color: var(--ink); font-family:'Manrope', sans-serif; font-weight:700; font-size:0.95rem;
+    text-transform:uppercase; caret-color: var(--teal); padding:0;
+  }
+  .xw-cell.active{ background: rgba(45,212,191,0.22); }
+  .xw-cell.inword{ background: rgba(45,212,191,0.09); }
+  .xw-cell.filled input{ color: var(--cyan); }
+
+  .xw-current-clue-bar{
+    display:none; width:100%; max-width:min(700px,92vw); background: var(--bg-panel); border:1px solid var(--border);
+    border-radius: 6px; padding: 10px 14px; margin-bottom:10px; font-size:0.86rem; align-items:center; gap:10px;
+  }
+  .xw-current-clue-bar .ccb-num{ color: var(--teal); font-family:'JetBrains Mono', monospace; font-weight:700; flex:0 0 auto; }
+  .xw-current-clue-bar .ccb-text{ flex:1; color: var(--ink); }
+  .xw-current-clue-bar .ccb-dir{
+    flex:0 0 auto; background: var(--bg-tile); border:1px solid var(--border); color: var(--teal);
+    font-family:'JetBrains Mono', monospace; font-size:0.72rem; padding:6px 10px; border-radius:4px; cursor:pointer;
+  }
+
+  .xw-clue-list-btn{ display:none; }
+
+  .xw-clue-overlay{
+    display:none; position:fixed; inset:0; background: rgba(3,10,8,0.88); z-index:50;
+    padding: 20px 16px; overflow-y:auto;
+  }
+  .xw-clue-overlay.active{ display:block; }
+  .xw-clue-overlay-inner{ max-width:520px; margin:0 auto; background: var(--bg-panel); border:1px solid var(--border); border-radius:8px; padding:18px; }
+  .xw-clue-overlay-head{ display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+  .xw-clue-overlay-close{ background:none; border:1px solid var(--border); color: var(--ink-dim); border-radius:4px; padding:6px 12px; cursor:pointer; font-size:0.8rem; }
+
+  /* ---------- Result box ---------- */
+  .result-box{ margin-top: 26px; background: var(--bg-panel); border:1px solid var(--border); border-radius:8px; padding: 28px 24px; text-align:center; }
+  .result-box.success{ border-color: rgba(52,211,153,0.4); }
+  .result-box.timeup{ border-color: rgba(232,130,122,0.4); }
+  .result-time{ font-family:'JetBrains Mono', monospace; color: var(--ink-faint); font-size:0.82rem; letter-spacing:0.06em; margin-bottom:10px; }
+  .result-score-big{ font-family:'Cormorant Garamond', serif; font-weight:700; font-size: clamp(2.6rem, 9vw, 4rem); color: var(--cyan); text-shadow: var(--glow); }
+  .result-score-unit{ font-size:1rem; color: var(--ink-faint); margin-left:8px; }
+  .result-subnote{ color: var(--ink-dim); font-size:0.86rem; margin-top:10px; }
+  .high-score-badge{ display:inline-block; margin-top:12px; background: rgba(216,185,121,0.12); color: var(--gold); border:1px solid rgba(216,185,121,0.4); padding:6px 14px; border-radius:20px; font-size:0.8rem; }
+  .result-box h3{ margin-top:18px; color: var(--ink); }
+  .result-box p{ color: var(--ink-dim); margin-top:8px; font-size:0.92rem; }
+
+  .bday-popup{
+    margin-top:22px; background: linear-gradient(135deg, rgba(45,212,191,0.12), rgba(216,185,121,0.1));
+    border:1px solid rgba(216,185,121,0.4); border-radius:8px; padding:22px; font-size:0.95rem; color: var(--ink);
+    line-height:1.7;
+  }
+  .bday-name{ color: var(--gold); font-weight:700; }
+
+  .score-redirect-note{ margin-top:14px; color: var(--ink-faint); font-size:0.78rem; }
+
+  /* ---------- Confetti ---------- */
+  .confetti-piece{
+    position:fixed; top:-20px; width:8px; height:14px; z-index:60; pointer-events:none;
+    animation: confetti-fall linear forwards;
+  }
+  @keyframes confetti-fall{
+    to{ transform: translateY(110vh) rotate(540deg); opacity:0.3; }
+  }
+
+  /* ================= DESKTOP (min-width:860px) ================= */
+  @media (min-width: 860px){
+    .xw-clue-list-btn{ display:none !important; }
+    .xw-current-clue-bar{ display:none !important; }
+  }
+
+  /* ================= MOBILE (max-width:859px) ================= */
+  @media (max-width: 859px){
+    .xw-clues-col{ display:none; }
+    .xw-layout{ flex-direction:column; align-items:center; }
+    .xw-current-clue-bar{ display:flex; }
+    .xw-clue-list-btn{
+      display:inline-flex; margin-top:10px;
+    }
+    .xw-board-scroll{ max-width: 94vw; }
+  }
+</style>
+</head>
+<body>
+
+  <!-- ================= WELCOME / LOCK SCREEN ================= -->
+  <div class="screen active" id="screen-welcome">
+    <div class="welcome-wrap">
+      <div class="eyebrow-mark">STAGE 03</div>
+      <h1 class="welcome-title">Lexicon Vault</h1>
+      <p class="welcome-sub">Satu grid. 36 kunci. Semuanya tentang Erin.</p>
+
+      <div class="plaque">
+        <div class="cipher-label">BRIEFING</div>
+        <p class="salutation" style="color:var(--ink);font-weight:700;">Ruang terakhir, Investigator.</p>
+        <p>Di depanmu ada satu <strong>grid teka-teki silang</strong> berisi 36 kunci — 18 mendatar, 18 menurun. Semua jawabannya tersimpan dalam ingatan tentang satu orang.</p>
+        <ul>
+          <li>Ketuk kotak atau ketuk soal di daftar untuk memilih kata yang mau kamu isi.</li>
+          <li>Ketuk kotak yang sama sekali lagi untuk gonta-ganti arah (mendatar / menurun) kalau kotak itu dipakai dua kata sekaligus.</li>
+          <li>Ketik langsung dari keyboard — kursor otomatis maju ke kotak berikutnya.</li>
+        </ul>
+        <div class="warning-box" style="margin-top:16px;padding:16px 18px;border:1px solid rgba(216,185,121,0.4);background:rgba(216,185,121,0.06);border-radius:4px;color:var(--gold);font-size:0.9rem;text-align:left;line-height:1.6;">
+          Isi semua 36 jawaban untuk membuka vault. Skormu dari Game 1 + 2 + 3 akan digabung di leaderboard.
+        </div>
+      </div>
+
+      <div class="username-box" id="username-box" style="display:none;">
+        <label class="username-label" for="username-input">Nama Investigator (untuk Leaderboard)</label>
+        <input type="text" id="username-input" class="username-input" placeholder="contoh: erin.larasati" maxlength="20" autocomplete="off">
+        <div class="username-hint">Hanya huruf kecil, titik (.), dan underscore (_) — 3 sampai 20 karakter. Harus sama dengan nama yang dipakai di Game 1 &amp; 2 supaya skornya nyambung.</div>
+        <div class="username-feedback" id="username-feedback"></div>
+      </div>
+
+      <div class="cta-row">
+        <button class="btn btn-primary" id="start-btn" onclick="startVault()" disabled>Buka Vault</button>
+      </div>
+      <div class="lock-note" id="lock-note"></div>
+      <div class="lock-timer" id="lock-timer"></div>
+      <div><button class="leaderboard-link" onclick="openLeaderboard()">Lihat Leaderboard</button></div>
+    </div>
+  </div>
+
+  <!-- ================= LEADERBOARD SCREEN ================= -->
+  <div class="screen" id="screen-leaderboard">
+    <div class="leaderboard-page-wrap">
+      <div class="eyebrow-mark">LEADERBOARD</div>
+      <h1 class="welcome-title">Papan Peringkat</h1>
+      <p class="leaderboard-sub">Skor diambil dari total waktu &amp; ketepatan Game 1 + Game 2 + Game 3.</p>
+
+      <div class="podium" id="lb-podium"></div>
+
+      <div class="lb-list-wrap">
+        <div id="leaderboard-list"><div class="leaderboard-loading">Memuat leaderboard…</div></div>
+      </div>
+
+      <div class="cta-row">
+        <button class="btn btn-secondary" onclick="showScreen('screen-end')">Kembali ke Skor</button>
+        <button class="btn btn-primary" onclick="startVault()">Main Lagi</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= VAULT (CROSSWORD) SCREEN ================= -->
+  <div class="screen" id="screen-vault">
+    <div class="arena-wrap">
+      <div class="arena-stats-row">
+        <div class="stat-chip timer js-timer-chip">WAKTU <span class="stat-val js-timer-val">00:00</span></div>
+        <div class="stat-chip score">SKOR <span class="stat-val js-score-val">0</span></div>
+        <div class="stat-chip words">TERISI <span class="stat-val js-progress-val">0 / 36</span></div>
+      </div>
+      <div class="screen-label"><div class="eyebrow-mark">LEXICON VAULT</div></div>
+
+      <div class="xw-current-clue-bar" id="xw-current-clue-bar">
+        <span class="ccb-num" id="ccb-num">—</span>
+        <span class="ccb-text" id="ccb-text">Ketuk kotak untuk mulai</span>
+        <button type="button" class="ccb-dir" id="ccb-dir-btn" onclick="toggleDirection()">⇄ arah</button>
+      </div>
+
+      <div class="xw-layout">
+        <div class="xw-board-col">
+          <div class="xw-board-scroll">
+            <div class="xw-grid" id="xw-grid"></div>
+          </div>
+          <div class="cta-row" style="margin-top:16px;">
+            <button class="btn btn-secondary xw-clue-list-btn" onclick="openClueOverlay()">📋 Daftar Soal</button>
+            <button class="btn btn-secondary" onclick="manualFinish()">Selesai &amp; Cek Jawaban</button>
+          </div>
+        </div>
+        <div class="xw-clues-col" id="xw-clues-col"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= CLUE OVERLAY (MOBILE) ================= -->
+  <div class="xw-clue-overlay" id="xw-clue-overlay">
+    <div class="xw-clue-overlay-inner">
+      <div class="xw-clue-overlay-head">
+        <div class="eyebrow-mark" style="margin-bottom:0;">DAFTAR SOAL</div>
+        <button class="xw-clue-overlay-close" onclick="closeClueOverlay()">Tutup ✕</button>
+      </div>
+      <div id="xw-clues-col-mobile"></div>
+    </div>
+  </div>
+
+  <!-- ================= END SCREEN ================= -->
+  <div class="screen" id="screen-end">
+    <div class="welcome-wrap" id="end-content"></div>
+  </div>
+
+<script>
+  // ==================================================================
+  // CONFIG
+  // ==================================================================
+  const STAGE_UNLOCK_AT = new Date('2024-01-01T00:00:00'); // TESTING: dibuka sementara, ganti balik ke jadwal aslinya sebelum hari-H
+  const GAME3_SCORE_BASE = 1000;
+  const GAME3_SCORE_DECAY_EVERY = 6; // crossword butuh waktu lebih lama dari game 1/2, decay dibuat lebih pelan
+  const WORD_POINTS = 10; // 36 kata x 10 = 360, disamakan skalanya dengan bonus akurasi Game 1 & 2
+
+  // ==================================================================
+  // FIREBASE (LEADERBOARD) — HARUS SAMA PERSIS dengan config & keys di index.html / cerebral-hunt-arena.html
+  // ==================================================================
+  const firebaseConfig = {
+    apiKey: "AIzaSyDyfktOuIxMwtKfoniVHYvMgd55Ml95gP8",
+    authDomain: "erin-game.firebaseapp.com",
+    databaseURL: "https://erin-game-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "erin-game",
+    storageBucket: "erin-game.firebasestorage.app",
+    messagingSenderId: "303866378537",
+    appId: "1:303866378537:web:f3844c701203391f4b5f38"
+  };
+  let db = null;
+  try {
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.database();
+  } catch (e) {
+    console.warn('Firebase belum dikonfigurasi — leaderboard tidak aktif.', e);
+  }
+
+  // Shared storage keys — HARUS SAMA dengan index.html & cerebral-hunt-arena.html
+  const USERNAME_KEY = 'eg_username_v1';
+  const GAME1_TIME_KEY = 'eg_game1_time_ms_v1';
+  const GAME1_SCORE_KEY = 'eg_game1_score_v1';
+  const GAME2_TIME_KEY = 'eg_game2_time_ms_v1';
+  const GAME2_SCORE_KEY = 'eg_game2_score_v1';
+  const GAME3_BEST_SCORE_KEY = 'eg_game3_best_score_v1';
+
+  function checkAndUpdateBestScore(key, score){
+    const prevRaw = localStorage.getItem(key);
+    const prev = prevRaw ? parseInt(prevRaw, 10) : null;
+    const isNewBest = prev === null || score > prev;
+    if (isNewBest) localStorage.setItem(key, String(score));
+    return isNewBest;
+  }
+
+  function isValidUsername(u){
+    return /^[a-z_.]{3,20}$/.test(u);
+  }
+  function getStoredUsername(){
+    return localStorage.getItem(USERNAME_KEY);
+  }
+  function initUsernameField(){
+    const box = document.getElementById('username-box');
+    const stored = getStoredUsername();
+    if (stored && isValidUsername(stored)){
+      box.style.display = 'none';
+      return;
+    }
+    box.style.display = 'block';
+    const input = document.getElementById('username-input');
+    input.addEventListener('input', () => {
+      input.value = input.value.replace(/[^a-z_.]/g, '');
+      updateUsernameFeedback();
+    });
+    updateUsernameFeedback();
+  }
+  function updateUsernameFeedback(){
+    const box = document.getElementById('username-box');
+    if (box.style.display === 'none') return;
+    const input = document.getElementById('username-input');
+    const fb = document.getElementById('username-feedback');
+    const val = input.value.trim();
+    const valid = isValidUsername(val);
+    if (!val){
+      fb.textContent = ''; fb.className = 'username-feedback';
+    } else if (!valid){
+      fb.textContent = 'Gunakan 3–20 karakter: huruf kecil a-z, titik (.), underscore (_).';
+      fb.className = 'username-feedback show warn';
+    } else {
+      fb.textContent = 'Nama siap dipakai ✓';
+      fb.className = 'username-feedback show ok';
+    }
+  }
+
+  function escapeHtml(str){
+    return String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  function mgShake(selector){
+    const el = document.querySelector(selector);
+    if (!el) return;
+    el.style.animation = 'none';
+    void el.offsetWidth;
+    el.style.animation = 'shakeX 0.4s ease';
+  }
+  const shakeStyle = document.createElement('style');
+  shakeStyle.textContent = `@keyframes shakeX{10%,90%{transform:translateX(-1px);}20%,80%{transform:translateX(2px);}30%,50%,70%{transform:translateX(-4px);}40%,60%{transform:translateX(4px);}}`;
+  document.head.appendChild(shakeStyle);
+
+  // ==================================================================
+  // LOCK SCREEN
+  // ==================================================================
+  function checkLock(){
+    const now = new Date();
+    const startBtn = document.getElementById('start-btn');
+    const note = document.getElementById('lock-note');
+    const timerEl = document.getElementById('lock-timer');
+    if (now >= STAGE_UNLOCK_AT){
+      startBtn.disabled = false;
+      note.textContent = 'Game 3 sudah terbuka. Selamat berjuang!';
+      timerEl.textContent = '';
+      return;
+    }
+    startBtn.disabled = true;
+    note.textContent = 'Next game will be available in';
+    const remain = STAGE_UNLOCK_AT - now;
+    const totalSec = Math.max(0, Math.floor(remain / 1000));
+    const d = Math.floor(totalSec / 86400);
+    const hh = String(Math.floor((totalSec % 86400) / 3600)).padStart(2,'0');
+    const mm = String(Math.floor((totalSec % 3600) / 60)).padStart(2,'0');
+    const ss = String(totalSec % 60).padStart(2,'0');
+    timerEl.textContent = d > 0 ? `${d}h ${hh}:${mm}:${ss}` : `${hh}:${mm}:${ss}`;
+  }
+  checkLock();
+  setInterval(checkLock, 1000);
+  initUsernameField();
+
+  function showScreen(id){
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0,0);
+  }
+
+  // ==================================================================
+  // PUZZLE DATA
+  // ==================================================================
+  const PUZZLE_ROWS = [
+  ['D','E','A','R','E','V','A','N','H','A','N','S','E','N',null,null,null,null,null,'C',null],
+  [null,null,null,null,null,null,null,null,null,null,null,'E',null,'E',null,null,null,null,null,'U',null],
+  [null,null,null,null,null,null,null,null,null,null,null,'V',null,'K',null,'W',null,'T',null,'H',null],
+  [null,null,'C','H','U','N','I','T','H','M',null,'E',null,'O',null,'O',null,'Y','U','K','I'],
+  [null,null,'A',null,null,null,null,null,null,null,null,'N',null,'M',null,'L',null,'P',null,null,null],
+  [null,null,'S',null,null,null,'M',null,null,null,null,'T',null,'I',null,'F',null,'H',null,null,'L'],
+  ['N','A','T','S','U','M','E',null,'B',null,'L','E','T','M','E','C','O','O','K',null,'A'],
+  [null,null,'E',null,null,null,'N',null,'I',null,null,'E','#','I',null,'U',null,'O',null,null,'R'],
+  [null,null,'R',null,null,'V','A','L','O','R','A','N','T',null,null,'T',null,'N','A','G','A'],
+  [null,null,null,null,null,null,'D',null,'C',null,null,null,null,null,null,null,null,null,null,null,'S'],
+  [null,'G','A','O','K','A','O',null,'H',null,null,null,'P',null,'J','A','K','A','R','T','A'],
+  [null,null,null,null,'A',null,'E',null,'E',null,null,'L','I','M','A',null,'A',null,null,null,'T'],
+  [null,'4',null,null,'D',null,'N',null,'M',null,null,null,'Z',null,'M',null,'I',null,null,null,'I'],
+  ['K','A','T','N','I','S','S',null,null,null,null,null,'Z',null,'E',null,'T',null,'T',null,null],
+  [null,'G',null,null,'P',null,'I','N','T','P',null,null,'A',null,'S','I','L','V','E','R',null],
+  [null,'U',null,null,'I',null,'S','#','A',null,null,null,null,null,null,null,'Y',null,'A',null,null],
+  [null,'S',null,null,'R',null,null,'C','O','R','V','I','D','A','E',null,'N',null,'L',null,null],
+  [null,'T',null,'U','O','F','T','#','B',null,null,null,'U',null,null,'B',null,null,null,null,null],
+  [null,'U',null,null,null,null,null,'G','A','T','E','W','A','Y','C','A','L','L',null,null,null],
+  [null,'S','M','U','K','I','E',null,'O',null,null,null,null,null,null,'G',null,null,null,null,null],
+  [null,null,null,null,null,null,null,null,null,null,null,null,null,'B','A','S','K','E','T',null,null]
+  ];
+
+  const CLUES = {
+  "1A": "Musikal yang diceritakan Erin waktu live bareng Mike dan Yvonnie",
+  "7A": "Permainan arcade yang disukai Erin",
+  "8A": "Nama kucing peliharaan Erin",
+  "11A": "Karakter bias Erin di Ensemble Stars",
+  "13A": "Salah satu ungkapan ikonik Erin selama CoC",
+  "14A": "Game esports yang disukai Erin",
+  "15A": "Emoji favorit Erin",
+  "16A": "Ujian masuk universitas di Tiongkok yang lebih ketat dari OSN, diperebutkan sekitar 13 juta peserta",
+  "19A": "Daerah asal Erin",
+  "21A": "Nama tim yang dipimpin Erin sebagai kapten di CoC",
+  "23A": "Karakter yang menginspirasi busur Erin di CoC",
+  "25A": "Tipe kepribadian (MBTI) Erin",
+  "27A": "Medali yang diraih Erin di OSN 2023",
+  "28A": "Famili taksonomi dari hewan favorit Erin",
+  "30A": "Universitas impian Erin untuk melanjutkan kuliah",
+  "32A": "Mini-game di CoC yang berhasil diselesaikan Erin di peringkat pertama",
+  "33A": "Singkatan nama SMA Erin",
+  "34A": "Les yang paling sulit buat Erin, di antara semua yang pernah diikuti",
+  "2D": "Grup K-pop yang albumnya rutin dikoleksi Erin",
+  "3D": "Gaya cosplay yang pernah dipakai Erin",
+  "4D": "Universitas di atas gunung, tempat Erin kuliah",
+  "5D": "Gaya potongan rambut Erin sekarang",
+  "6D": "Fenomena cuaca yang sampai bikin jendela kamar Erin ikut bergetar",
+  "7D": "Profesi baru Erin setelah gagal di OSN",
+  "9D": "Akun komunitas alumni medalis OSN Biologi yang pernah diadmini Erin",
+  "10D": "Nama tengah Erin",
+  "12D": "Mata kuliah yang paling dibenci Erin",
+  "17D": "Jenis soto favorit Erin",
+  "18D": "Menu makan siang lab Erin tanggal 20 Juli 2026",
+  "19D": "Nama adik Erin",
+  "20D": "Salah satu sahabat dekat Erin di CoC",
+  "22D": "Tanggal Erin tereliminasi setelah revival",
+  "24D": "Warna favorit Erin, campuran hijau dan biru",
+  "26D": "Situs belanja online favorit Erin",
+  "29D": "Episode CoC saat Erin pertama kali muncul",
+  "31D": "Lagu SOTD Erin tanggal 15 September 2026"
+};
+
+  const R = PUZZLE_ROWS.length;
+  const C = PUZZLE_ROWS[0].length;
+  function isLetterCell(r,c){
+    return r>=0 && r<R && c>=0 && c<C && PUZZLE_ROWS[r][c] !== null && PUZZLE_ROWS[r][c] !== '#';
+  }
+
+  // Build ENTRIES (36 words) + numbering, same algorithm used to author CLUES keys.
+  const ENTRIES = []; // {num, dir, r, c, len, word, clue}
+  const numberAt = {}; // "r,c" -> number
+  (function buildEntries(){
+    let num = 0;
+    for (let r=0; r<R; r++){
+      for (let c=0; c<C; c++){
+        if (!isLetterCell(r,c)) continue;
+        const startsAcross = (c===0 || !isLetterCell(r,c-1)) && isLetterCell(r,c+1);
+        const startsDown = (r===0 || !isLetterCell(r-1,c)) && isLetterCell(r+1,c);
+        if (!startsAcross && !startsDown) continue;
+        num++;
+        numberAt[`${r},${c}`] = num;
+        if (startsAcross){
+          let cc=c, word='';
+          while (cc<C && isLetterCell(r,cc)){ word += PUZZLE_ROWS[r][cc]; cc++; }
+          ENTRIES.push({ num, dir:'A', r, c, len: word.length, word, clue: CLUES[`${num}A`] || '' });
+        }
+        if (startsDown){
+          let rr=r, word='';
+          while (rr<R && isLetterCell(rr,c)){ word += PUZZLE_ROWS[rr][c]; rr++; }
+          ENTRIES.push({ num, dir:'D', r, c, len: word.length, word, clue: CLUES[`${num}D`] || '' });
+        }
+      }
+    }
+  })();
+
+  // cellEntry[r][c] = { A: entryIndex|null, D: entryIndex|null }
+  const cellEntryIdx = [];
+  for (let r=0;r<R;r++){ cellEntryIdx.push(new Array(C).fill(null).map(()=>({A:null,D:null}))); }
+  ENTRIES.forEach((e, idx) => {
+    if (e.dir === 'A'){
+      for (let i=0;i<e.len;i++) cellEntryIdx[e.r][e.c+i].A = idx;
+    } else {
+      for (let i=0;i<e.len;i++) cellEntryIdx[e.r+i][e.c].D = idx;
+    }
+  });
+
+  const TOTAL_ENTRIES = ENTRIES.length; // 36
+
+  // ==================================================================
+  // STATE
+  // ==================================================================
+  let elapsedSec = 0;
+  let timerHandle = null;
+  let currentEntryIdx = null; // index into ENTRIES
+  let cellInputs = []; // [r][c] -> <input> or null
+  let filledCount = 0; // cells filled (for progress display, approximate via entries)
+
+  // ==================================================================
+  // BUILD GRID DOM
+  // ==================================================================
+  function buildGrid(){
+    const grid = document.getElementById('xw-grid');
+    grid.innerHTML = '';
+    cellInputs = [];
+    for (let r=0;r<R;r++){
+      cellInputs.push(new Array(C).fill(null));
+      for (let c=0;c<C;c++){
+        const val = PUZZLE_ROWS[r][c];
+        const cellEl = document.createElement('div');
+        cellEl.dataset.r = r; cellEl.dataset.c = c;
+        if (val === null){
+          cellEl.className = 'xw-cell blank';
+        } else if (val === '#'){
+          cellEl.className = 'xw-cell block';
+        } else {
+          cellEl.className = 'xw-cell letter';
+          const num = numberAt[`${r},${c}`];
+          if (num){
+            const numEl = document.createElement('div');
+            numEl.className = 'xw-cell-num';
+            numEl.textContent = num;
+            cellEl.appendChild(numEl);
+          }
+          const input = document.createElement('input');
+          input.type = 'text';
+          input.maxLength = 1;
+          input.autocomplete = 'off';
+          input.inputMode = 'text';
+          input.dataset.r = r; input.dataset.c = c;
+          input.addEventListener('focus', () => onCellFocus(r,c));
+          input.addEventListener('click', () => onCellClick(r,c));
+          input.addEventListener('input', (ev) => onCellInput(r,c,ev));
+          input.addEventListener('keydown', (ev) => onCellKeydown(r,c,ev));
+          cellEl.appendChild(input);
+          cellInputs[r][c] = input;
+        }
+        grid.appendChild(cellEl);
+      }
+    }
+  }
+
+  // ==================================================================
+  // CLUE LIST RENDER
+  // ==================================================================
+  function renderClueLists(){
+    const across = ENTRIES.filter(e => e.dir === 'A').sort((a,b)=>a.num-b.num);
+    const down = ENTRIES.filter(e => e.dir === 'D').sort((a,b)=>a.num-b.num);
+    const html = `
+      <div class="xw-clue-group-title">Mendatar</div>
+      ${across.map(e => clueItemHtml(e)).join('')}
+      <div class="xw-clue-group-title">Menurun</div>
+      ${down.map(e => clueItemHtml(e)).join('')}
+    `;
+    document.getElementById('xw-clues-col').innerHTML = html;
+    document.getElementById('xw-clues-col-mobile').innerHTML = html;
+  }
+
+  function clueItemHtml(e){
+    const idx = ENTRIES.indexOf(e);
+    return `<div class="xw-clue-item" id="clue-item-${idx}" data-idx="${idx}" onclick="selectClueByIdx(${idx})">
+      <span class="xw-clue-num">${e.num}${e.dir==='A'?'A':'D'}</span>
+      <span class="xw-clue-text">${escapeHtml(e.clue)}</span>
+      <span class="xw-clue-dot"></span>
+    </div>`;
+  }
+
+  function selectClueByIdx(idx){
+    setActiveEntry(idx);
+    // focus first empty cell of that word, else first cell
+    const e = ENTRIES[idx];
+    let targetR = e.r, targetC = e.c;
+    for (let i=0;i<e.len;i++){
+      const rr = e.dir==='A' ? e.r : e.r+i;
+      const cc = e.dir==='A' ? e.c+i : e.c;
+      if (!cellInputs[rr][cc].value){ targetR=rr; targetC=cc; break; }
+    }
+    cellInputs[targetR][targetC].focus();
+    closeClueOverlay();
+  }
+
+  // ==================================================================
+  // SELECTION / HIGHLIGHT
+  // ==================================================================
+  function onCellFocus(r,c){
+    const cell = cellEntryIdx[r][c];
+    let idx = null;
+    if (currentEntryIdx !== null){
+      const curDir = ENTRIES[currentEntryIdx].dir;
+      idx = curDir === 'A' ? cell.A : cell.D;
+    }
+    if (idx === null) idx = cell.A !== null ? cell.A : cell.D;
+    setActiveEntry(idx);
+  }
+
+  function onCellClick(r,c){
+    const cell = cellEntryIdx[r][c];
+    // If this cell is already the focused/active cell and belongs to both directions, toggle.
+    if (currentEntryIdx !== null){
+      const cur = ENTRIES[currentEntryIdx];
+      const curCoversThisCell = cur.dir === 'A'
+        ? (cur.r === r && c >= cur.c && c < cur.c + cur.len)
+        : (cur.c === c && r >= cur.r && r < cur.r + cur.len);
+      if (curCoversThisCell && cell.A !== null && cell.D !== null){
+        const otherIdx = cur.dir === 'A' ? cell.D : cell.A;
+        setActiveEntry(otherIdx);
+        return;
+      }
+    }
+    onCellFocus(r,c);
+  }
+
+  function toggleDirection(){
+    if (currentEntryIdx === null) return;
+    const cur = ENTRIES[currentEntryIdx];
+    const focusedInput = document.activeElement;
+    const r = parseInt(focusedInput?.dataset?.r ?? cur.r, 10);
+    const c = parseInt(focusedInput?.dataset?.c ?? cur.c, 10);
+    const cell = cellEntryIdx[r][c];
+    const otherIdx = cur.dir === 'A' ? cell.D : cell.A;
+    if (otherIdx !== null) setActiveEntry(otherIdx);
+  }
+
+  function setActiveEntry(idx){
+    if (idx === null || idx === undefined) return;
+    currentEntryIdx = idx;
+    const e = ENTRIES[idx];
+    document.querySelectorAll('.xw-cell.active').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.xw-cell.inword').forEach(el => el.classList.remove('inword'));
+    for (let i=0;i<e.len;i++){
+      const rr = e.dir==='A' ? e.r : e.r+i;
+      const cc = e.dir==='A' ? e.c+i : e.c;
+      const cellEl = cellInputs[rr][cc].parentElement;
+      cellEl.classList.add('inword');
+    }
+    const activeInput = document.activeElement;
+    if (activeInput && activeInput.tagName === 'INPUT'){
+      activeInput.parentElement.classList.add('active');
+    }
+    document.querySelectorAll('.xw-clue-item.active').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll(`#clue-item-${idx}`).forEach(el => {
+      el.classList.add('active');
+      el.scrollIntoView({ block: 'nearest' });
+    });
+    document.getElementById('ccb-num').textContent = `${e.num}${e.dir}`;
+    document.getElementById('ccb-text').textContent = e.clue;
+  }
+
+  // ==================================================================
+  // TYPING
+  // ==================================================================
+  function onCellInput(r,c,ev){
+    let v = cellInputs[r][c].value.toUpperCase().replace(/[^A-Z0-9]/g,'');
+    cellInputs[r][c].value = v.slice(-1);
+    cellInputs[r][c].parentElement.classList.toggle('filled', !!cellInputs[r][c].value);
+    updateClueDots();
+    updateProgress();
+    if (cellInputs[r][c].value && currentEntryIdx !== null){
+      moveToNextCell(r,c);
+    }
+    maybeAutoFinish();
+  }
+
+  function onCellKeydown(r,c,ev){
+    if (ev.key === 'Backspace'){
+      if (!cellInputs[r][c].value){
+        ev.preventDefault();
+        moveToPrevCell(r,c);
+        const p = document.activeElement;
+        if (p && p.tagName === 'INPUT'){ p.value=''; p.parentElement.classList.remove('filled'); updateClueDots(); updateProgress(); }
+      }
+      return;
+    }
+    const cur = currentEntryIdx !== null ? ENTRIES[currentEntryIdx] : null;
+    if (['ArrowRight','ArrowLeft','ArrowUp','ArrowDown'].includes(ev.key)){
+      ev.preventDefault();
+      let nr=r, nc=c;
+      if (ev.key==='ArrowRight') nc++;
+      if (ev.key==='ArrowLeft') nc--;
+      if (ev.key==='ArrowUp') nr--;
+      if (ev.key==='ArrowDown') nr++;
+      if (isLetterCell(nr,nc)) cellInputs[nr][nc].focus();
+    }
+  }
+
+  function moveToNextCell(r,c){
+    const e = ENTRIES[currentEntryIdx];
+    if (e.dir === 'A' && c+1 < e.c+e.len){ cellInputs[r][c+1].focus(); }
+    else if (e.dir === 'D' && r+1 < e.r+e.len){ cellInputs[r+1][c].focus(); }
+  }
+  function moveToPrevCell(r,c){
+    if (currentEntryIdx === null) return;
+    const e = ENTRIES[currentEntryIdx];
+    if (e.dir === 'A' && c-1 >= e.c){ cellInputs[r][c-1].focus(); }
+    else if (e.dir === 'D' && r-1 >= e.r){ cellInputs[r-1][c].focus(); }
+  }
+
+  function updateClueDots(){
+    ENTRIES.forEach((e, idx) => {
+      let filled = true;
+      for (let i=0;i<e.len;i++){
+        const rr = e.dir==='A' ? e.r : e.r+i;
+        const cc = e.dir==='A' ? e.c+i : e.c;
+        if (!cellInputs[rr][cc].value){ filled = false; break; }
+      }
+      document.querySelectorAll(`#clue-item-${idx}`).forEach(el => el.classList.toggle('filled', filled));
+    });
+  }
+
+  function updateProgress(){
+    let filled = 0, total = 0;
+    for (let r=0;r<R;r++) for (let c=0;c<C;c++){
+      if (isLetterCell(r,c)){ total++; if (cellInputs[r][c].value) filled++; }
+    }
+    filledCount = filled;
+    document.querySelectorAll('.js-progress-val').forEach(el => el.textContent = `${filled} / ${total}`);
+  }
+
+  function maybeAutoFinish(){
+    let allFilled = true;
+    for (let r=0;r<R;r++) for (let c=0;c<C;c++){
+      if (isLetterCell(r,c) && !cellInputs[r][c].value){ allFilled = false; break; }
+    }
+    if (allFilled) manualFinish();
+  }
+
+  // ==================================================================
+  // TIMER / SCORE
+  // ==================================================================
+  function startTimer(){
+    elapsedSec = 0;
+    updateTimerDisplay();
+    clearInterval(timerHandle);
+    timerHandle = setInterval(() => {
+      elapsedSec++;
+      updateTimerDisplay();
+      updateScoreDisplay();
+    }, 1000);
+  }
+  function updateTimerDisplay(){
+    const mm = String(Math.floor(elapsedSec/60)).padStart(2,'0');
+    const ss = String(elapsedSec%60).padStart(2,'0');
+    document.querySelectorAll('.js-timer-val').forEach(el => el.textContent = `${mm}:${ss}`);
+  }
+  function calcLiveTimeScore(){
+    return Math.max(0, GAME3_SCORE_BASE - Math.floor(elapsedSec / GAME3_SCORE_DECAY_EVERY));
+  }
+  function countCorrectWords(){
+    let correct = 0;
+    ENTRIES.forEach(e => {
+      let ok = true;
+      for (let i=0;i<e.len;i++){
+        const rr = e.dir==='A' ? e.r : e.r+i;
+        const cc = e.dir==='A' ? e.c+i : e.c;
+        if (cellInputs[rr][cc].value !== e.word[i]){ ok=false; break; }
+      }
+      if (ok) correct++;
+    });
+    return correct;
+  }
+  function updateScoreDisplay(){
+    const score = calcLiveTimeScore() + countCorrectWords()*WORD_POINTS;
+    document.querySelectorAll('.js-score-val').forEach(el => el.textContent = score);
+    document.querySelectorAll('.js-timer-chip').forEach(el => el.classList.toggle('low', calcLiveTimeScore() <= 150));
+  }
+
+  // ==================================================================
+  // START / RESET
+  // ==================================================================
+  function startVault(){
+    if (new Date() < STAGE_UNLOCK_AT) return;
+    const usernameBox = document.getElementById('username-box');
+    if (usernameBox.style.display !== 'none'){
+      const input = document.getElementById('username-input');
+      const val = input.value.trim();
+      if (!isValidUsername(val)){
+        updateUsernameFeedback();
+        mgShake('#username-box');
+        return;
+      }
+      localStorage.setItem(USERNAME_KEY, val);
+      usernameBox.style.display = 'none';
+    }
+    buildGrid();
+    renderClueLists();
+    updateProgress();
+    startTimer();
+    showScreen('screen-vault');
+    const first = ENTRIES[0];
+    setTimeout(() => { cellInputs[first.r][first.c].focus(); }, 50);
+  }
+
+  function openClueOverlay(){ document.getElementById('xw-clue-overlay').classList.add('active'); }
+  function closeClueOverlay(){ document.getElementById('xw-clue-overlay').classList.remove('active'); }
+
+  // ==================================================================
+  // FINISH / LEADERBOARD
+  // ==================================================================
+  function manualFinish(){
+    clearInterval(timerHandle);
+    const correctWords = countCorrectWords();
+    const timeScore = calcLiveTimeScore();
+    const wordScore = correctWords * WORD_POINTS;
+    const finalScore = timeScore + wordScore;
+    const mm = String(Math.floor(elapsedSec/60)).padStart(2,'0');
+    const ss = String(elapsedSec%60).padStart(2,'0');
+    showScreen('screen-end');
+    const el = document.getElementById('end-content');
+
+    submitFinalLeaderboardScore(elapsedSec*1000, correctWords, finalScore);
+    const isBest = checkAndUpdateBestScore(GAME3_BEST_SCORE_KEY, finalScore);
+    const won = correctWords >= TOTAL_ENTRIES;
+
+    if (won){
+      el.innerHTML = `
+        <div class="eyebrow-mark">VAULT UNLOCKED</div>
+        <h1 class="welcome-title">Semua 36 Jawaban Benar</h1>
+        <div class="result-box success">
+          <div class="result-time">WAKTU TEMPUH: ${mm}:${ss}</div>
+          <div class="result-score-big">${finalScore}<span class="result-score-unit">Poin</span></div>
+          <p class="result-subnote">Waktu: ${timeScore} poin · Jawaban benar (${correctWords}/${TOTAL_ENTRIES}): ${wordScore} poin</p>
+          ${isBest ? '<div class="high-score-badge">🏆 Rekor Pribadi Baru</div>' : ''}
+        </div>
+        <p class="result-subnote">Total skor Game 1 + Game 2 + Game 3 sudah dikirim ke leaderboard (kalau lebih baik dari rekor lamamu).</p>
+        <div class="bday-popup" id="bday-popup">
+          <p>Congratulations! You cleared every stage.<br>
+          Special Happy Birthday to <span class="bday-name">Erin Larasati Angdika</span>!<br>
+          Keep inspiring and communicating science to the world!</p>
+        </div>
+        <div class="cta-row">
+          <button class="btn btn-primary" onclick="startVault()">Main Lagi</button>
+          <button class="btn btn-secondary" onclick="openLeaderboard()">Lihat Leaderboard</button>
+        </div>
+      `;
+      launchConfetti();
+    } else {
+      el.innerHTML = `
+        <div class="eyebrow-mark">SESI SELESAI</div>
+        <h1 class="welcome-title">Skor Terkunci</h1>
+        <div class="result-box timeup">
+          <div class="result-time">WAKTU TEMPUH: ${mm}:${ss}</div>
+          <div class="result-score-big">${finalScore}<span class="result-score-unit">Poin</span></div>
+          <p class="result-subnote">Waktu: ${timeScore} poin · Jawaban benar (${correctWords}/${TOTAL_ENTRIES}): ${wordScore} poin</p>
+          <h3>${correctWords} dari ${TOTAL_ENTRIES} jawaban benar</h3>
+          <p>Belum semua benar, tapi poin dari jawaban yang sudah benar tetap dikirim ke leaderboard. Main lagi buat coba kejar skor yang lebih tinggi.</p>
+        </div>
+        <div class="cta-row">
+          <button class="btn btn-primary" onclick="startVault()">Main Lagi</button>
+          <button class="btn btn-secondary" onclick="openLeaderboard()">Lihat Leaderboard</button>
+        </div>
+      `;
+    }
+  }
+
+  function launchConfetti(){
+    const colors = ['#2dd4bf','#5eead4','#34d399','#d8b979','#eaf6f3'];
+    for (let i=0;i<80;i++){
+      const piece = document.createElement('div');
+      piece.className = 'confetti-piece';
+      piece.style.left = Math.random()*100 + 'vw';
+      piece.style.background = colors[Math.floor(Math.random()*colors.length)];
+      piece.style.animationDuration = (2.5 + Math.random()*2) + 's';
+      piece.style.animationDelay = (Math.random()*0.6) + 's';
+      document.body.appendChild(piece);
+      setTimeout(() => piece.remove(), 5200);
+    }
+  }
+
+  async function submitFinalLeaderboardScore(game3TimeMs, correctWords, game3Score){
+    if (!db) return;
+    const username = getStoredUsername();
+    if (!username || !isValidUsername(username)) return;
+    const game1Score = parseInt(localStorage.getItem(GAME1_SCORE_KEY) || '0', 10);
+    const game1TimeMs = parseInt(localStorage.getItem(GAME1_TIME_KEY) || '0', 10);
+    const game2Score = parseInt(localStorage.getItem(GAME2_SCORE_KEY) || '0', 10);
+    const game2TimeMs = parseInt(localStorage.getItem(GAME2_TIME_KEY) || '0', 10);
+    const score = game1Score + game2Score + game3Score;
+
+    const ref = db.ref('leaderboard/' + username);
+    try {
+      const snap = await ref.once('value');
+      const existing = snap.val();
+      if (!existing || score >= existing.score){
+        await ref.set({
+          username,
+          game1Score, game1TimeMs,
+          game2Score, game2TimeMs,
+          game3Score, game3TimeMs, game3CorrectWords: correctWords,
+          score,
+          partial: false,
+          updatedAt: Date.now()
+        });
+      }
+    } catch (e){
+      console.error('Gagal mengirim skor ke leaderboard:', e);
+    }
+  }
+
+  function openLeaderboard(){
+    showScreen('screen-leaderboard');
+    renderLeaderboardPage();
+  }
+
+  const PODIUM_MEDALS = ['🥇', '🥈', '🥉'];
+  async function renderLeaderboardPage(){
+    const podiumEl = document.getElementById('lb-podium');
+    const listEl = document.getElementById('leaderboard-list');
+    podiumEl.innerHTML = '';
+    listEl.innerHTML = '<div class="leaderboard-loading">Memuat leaderboard…</div>';
+    if (!db){
+      listEl.innerHTML = '<div class="leaderboard-empty">Leaderboard belum dikonfigurasi.</div>';
+      return;
+    }
+    try {
+      const snap = await db.ref('leaderboard').once('value');
+      const rows = [];
+      snap.forEach(child => { rows.push(child.val()); });
+      rows.sort((a, b) => b.score - a.score);
+      if (rows.length === 0){
+        listEl.innerHTML = '<div class="leaderboard-empty">Belum ada skor masuk. Jadilah yang pertama!</div>';
+        return;
+      }
+      const me = getStoredUsername();
+      const top3 = rows.slice(0, 3);
+      podiumEl.innerHTML = top3.map((r, i) => {
+        const place = i + 1;
+        const isMe = me && r.username === me;
+        return `
+          <div class="podium-slot place-${place}${isMe ? ' me' : ''}">
+            <div class="podium-medal">${PODIUM_MEDALS[i]}</div>
+            <div class="podium-name">${escapeHtml(r.username)}</div>
+            <div class="podium-score">${Number(r.score).toLocaleString('id-ID')} pts</div>
+          </div>
+        `;
+      }).join('');
+      listEl.innerHTML = rows.map((r, i) => {
+        const isMe = me && r.username === me;
+        return `
+          <div class="leaderboard-row${isMe ? ' me' : ''}"${isMe ? ' id="lb-my-row"' : ''}>
+            <span class="lb-rank">#${i + 1}</span>
+            <span class="lb-name">${escapeHtml(r.username)}</span>
+            <span class="lb-score">${Number(r.score).toLocaleString('id-ID')} pts</span>
+          </div>
+        `;
+      }).join('');
+      const myRow = document.getElementById('lb-my-row');
+      if (myRow) setTimeout(() => myRow.scrollIntoView({ block: 'center', behavior: 'smooth' }), 150);
+    } catch (e){
+      listEl.innerHTML = '<div class="leaderboard-empty">Gagal memuat leaderboard.</div>';
+      console.error(e);
+    }
+  }
+</script>
+</body>
+</html>
