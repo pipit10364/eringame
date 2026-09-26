@@ -199,7 +199,7 @@
     <div class="welcome-wrap">
       <div class="eyebrow-mark">STAGE 04</div>
       <h1 class="welcome-title">Celebration Chamber</h1>
-      <p class="welcome-sub">Ruang terakhir. Satu kombinasi lagi.</p>
+      <p class="welcome-sub">The last room. One more combination.</p>
       <div class="plaque">
         <div class="cipher-label">BRIEFING</div>
         <p class="salutation" style="color:var(--ink);font-weight:700;">Selamat, Investigator. Kamu sudah sampai di pintu terakhir.</p>
@@ -547,6 +547,7 @@
   catch (e) { console.warn('Firebase belum dikonfigurasi.', e); }
 
   const USERNAME_KEY = 'eg_username_v1';
+  const GAME4_DONE_KEY = 'eg_game4_done_v1'; // dibaca hub (index.html) buat tanda checkmark stage 4
 
   function isValidUsername(u){ return /^[a-z_.]{3,20}$/.test(u); }
   function getStoredUsername(){ return localStorage.getItem(USERNAME_KEY); }
@@ -670,6 +671,7 @@
       fb.textContent = 'PIN benar. Pintu terbuka...';
       fb.className = 'pin-feedback ok';
       finalizeLeaderboardEntry();
+      localStorage.setItem(GAME4_DONE_KEY, '1');
       setTimeout(() => {
         showScreen('screen-cake');
         const audio = document.getElementById('bday-audio');
