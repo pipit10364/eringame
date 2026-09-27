@@ -482,9 +482,20 @@
     .pipe-grid{ grid-template-columns: repeat(4, minmax(30px, 48px)); grid-template-rows: repeat(4, minmax(30px, 48px)); }
     .cip-digit{ width: 48px; height: 58px; font-size: 1.4rem; }
   }
+
+  .back-to-menu-btn{
+    position: fixed; top: 14px; left: 14px; z-index: 100;
+    font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; letter-spacing: 0.04em;
+    color: var(--ink-faint); text-decoration: none; background: rgba(12,39,33,0.85);
+    border: 1px solid var(--border); border-radius: 20px; padding: 6px 12px;
+    transition: color 0.15s ease, border-color 0.15s ease;
+  }
+  .back-to-menu-btn:hover{ color: var(--teal); border-color: var(--teal); }
+  @media (max-width: 480px){ .back-to-menu-btn{ top: 8px; left: 8px; font-size: 0.68rem; padding: 5px 10px; } }
 </style>
 </head>
 <body>
+  <a href="index.html" class="back-to-menu-btn" title="Kembali ke Menu Utama">← Menu</a>
 
 <!-- ===================== GATE / UNLOCK SCREEN ===================== -->
 <section class="screen active" id="screen-gate">
@@ -525,7 +536,7 @@
     <div class="username-box">
       <label class="username-label" for="username-input">Nama Investigator (untuk Leaderboard)</label>
       <input type="text" id="username-input" class="username-input" placeholder="contoh: erin.larasati" maxlength="20" autocomplete="off">
-      <div class="username-hint">Hanya huruf kecil, titik (.), dan underscore (_) — 3 sampai 20 karakter. Nama ini dipakai di kedua game, jadi cukup diisi sekali.</div>
+      <div class="username-hint">Saran: pakai username Instagram/media sosial kamu, biar temen-temen gampang ngenalin kamu di leaderboard. Hanya huruf kecil, titik (.), dan underscore (_) — 3 sampai 20 karakter. Nama ini dipakai di semua game, jadi cukup diisi sekali.</div>
       <div class="username-feedback" id="username-feedback"></div>
       <div class="username-confirm" id="username-confirm" style="display:none;">
         <p class="username-confirm-text" id="username-confirm-text"></p>
