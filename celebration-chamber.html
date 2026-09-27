@@ -190,9 +190,20 @@
     .pin-groups{ gap: 8px; }
     .pin-digit{ width: 34px; height: 44px; font-size: 1.2rem; }
   }
+
+  .back-to-menu-btn{
+    position: fixed; top: 14px; left: 14px; z-index: 100;
+    font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; letter-spacing: 0.04em;
+    color: var(--ink-faint); text-decoration: none; background: rgba(12,39,33,0.85);
+    border: 1px solid var(--border); border-radius: 20px; padding: 6px 12px;
+    transition: color 0.15s ease, border-color 0.15s ease;
+  }
+  .back-to-menu-btn:hover{ color: var(--teal); border-color: var(--teal); }
+  @media (max-width: 480px){ .back-to-menu-btn{ top: 8px; left: 8px; font-size: 0.68rem; padding: 5px 10px; } }
 </style>
 </head>
 <body>
+  <a href="index.html" class="back-to-menu-btn" title="Kembali ke Menu Utama">← Menu</a>
 
   <!-- ================= LOCK / WELCOME SCREEN ================= -->
   <div class="screen active" id="screen-welcome">
@@ -208,7 +219,7 @@
       <div class="username-box" id="username-box" style="display:none;">
         <label class="username-label" for="username-input">Nama Investigator</label>
         <input type="text" id="username-input" class="username-input" placeholder="contoh: erin.larasati" maxlength="20" autocomplete="off">
-        <div class="username-hint">Hanya huruf kecil, titik (.), dan underscore (_) — 3 sampai 20 karakter.</div>
+        <div class="username-hint">Saran: pakai username Instagram/media sosial kamu, biar temen-temen gampang ngenalin kamu di leaderboard. Hanya huruf kecil, titik (.), dan underscore (_) — 3 sampai 20 karakter.</div>
         <div class="username-feedback" id="username-feedback"></div>
       </div>
       <div class="cta-row">
@@ -361,115 +372,115 @@
   // Tiap orang otomatis dapat 1 set berdasarkan username-nya (konsisten tiap dia buka lagi).
   const QUESTION_SETS = [
   {
-    "pin": "520306",
+    "pin": "520310",
     "hints": [
       "Dua digit terakhir dari kode akses vault (VLT-xxx) di Molecular Museum.",
       "Jumlah huruf pada kata kategori Animals yang tersembunyi di Cerebral Hunt Arena: \"CAT\".",
-      "Nomor clue Menurun di Lexicon Vault yang jawabannya adalah fenomena cuaca yang bikin jendela kamar Erin bergetar."
+      "Nomor clue Mendatar di Lexicon Vault yang jawabannya adalah akun yang pernah diadmini Erin."
     ]
   },
   {
-    "pin": "120420",
+    "pin": "120413",
     "hints": [
       "Jumlah kandidat per kategori di Case Roster Molecular Museum.",
       "Jumlah huruf pada kata kategori Animals yang tersembunyi di Cerebral Hunt Arena: \"BIRD\".",
-      "Nomor clue Menurun di Lexicon Vault yang jawabannya adalah salah satu sahabat dekat Erin di CoC."
-    ]
-  },
-  {
-    "pin": "090621",
-    "hints": [
-      "Jumlah huruf pada nama ruangan rahasia di Molecular Museum (tanpa spasi/tanda baca).",
-      "Jumlah huruf pada kata kategori Animals yang tersembunyi di Cerebral Hunt Arena: \"MAGPIE\".",
-      "Nomor clue Mendatar di Lexicon Vault yang jawabannya adalah nama tim yang dipimpin Erin sebagai kapten di CoC."
-    ]
-  },
-  {
-    "pin": "110313",
-    "hints": [
-      "Jumlah huruf pada nama elemen kunci di Molecular Museum (tanpa spasi).",
-      "Jumlah huruf pada kata kategori Food & Drinks yang tersembunyi di Cerebral Hunt Arena: \"EGG\".",
       "Nomor clue Mendatar di Lexicon Vault yang jawabannya adalah salah satu ungkapan ikonik Erin selama CoC."
     ]
   },
   {
-    "pin": "520425",
+    "pin": "090606",
+    "hints": [
+      "Jumlah huruf pada nama ruangan rahasia di Molecular Museum (tanpa spasi/tanda baca).",
+      "Jumlah huruf pada kata kategori Animals yang tersembunyi di Cerebral Hunt Arena: \"MAGPIE\".",
+      "Nomor clue Menurun di Lexicon Vault yang jawabannya adalah salah satu sahabat dekat Erin di CoC."
+    ]
+  },
+  {
+    "pin": "110327",
+    "hints": [
+      "Jumlah huruf pada nama elemen kunci di Molecular Museum (tanpa spasi).",
+      "Jumlah huruf pada kata kategori Food & Drinks yang tersembunyi di Cerebral Hunt Arena: \"EGG\".",
+      "Nomor clue Menurun di Lexicon Vault yang jawabannya adalah karakter bias Erin di Ensemble Stars."
+    ]
+  },
+  {
+    "pin": "520432",
     "hints": [
       "Dua digit terakhir dari kode akses vault (VLT-xxx) di Molecular Museum.",
       "Jumlah huruf pada kata kategori Food & Drinks yang tersembunyi di Cerebral Hunt Arena: \"SOTO\".",
-      "Nomor clue Mendatar di Lexicon Vault yang jawabannya adalah tipe kepribadian (MBTI) Erin."
+      "Nomor clue Mendatar di Lexicon Vault yang jawabannya adalah daerah asal Erin."
     ]
   },
   {
-    "pin": "120629",
+    "pin": "120620",
     "hints": [
       "Jumlah kandidat per kategori di Case Roster Molecular Museum.",
       "Jumlah huruf pada kata kategori Food & Drinks yang tersembunyi di Cerebral Hunt Arena: \"COFFEE\".",
-      "Nomor clue Menurun di Lexicon Vault yang jawabannya adalah episode CoC saat Erin pertama kali muncul."
+      "Nomor clue Menurun di Lexicon Vault yang jawabannya adalah tipe kepribadian (MBTI) Erin."
     ]
   },
   {
-    "pin": "090416",
+    "pin": "090430",
     "hints": [
       "Jumlah huruf pada nama ruangan rahasia di Molecular Museum (tanpa spasi/tanda baca).",
       "Jumlah huruf pada kata kategori Colors yang tersembunyi di Cerebral Hunt Arena: \"BLUE\".",
-      "Nomor clue Mendatar di Lexicon Vault yang jawabannya adalah ujian masuk universitas di Tiongkok yang lebih ketat dari OSN."
+      "Nomor clue Mendatar di Lexicon Vault yang jawabannya adalah nama kucing peliharaan Erin."
     ]
   },
   {
-    "pin": "110511",
+    "pin": "110525",
     "hints": [
       "Jumlah huruf pada nama elemen kunci di Molecular Museum (tanpa spasi).",
       "Jumlah huruf pada kata kategori Colors yang tersembunyi di Cerebral Hunt Arena: \"GREEN\".",
-      "Nomor clue Mendatar di Lexicon Vault yang jawabannya adalah karakter bias Erin di Ensemble Stars."
+      "Nomor clue Mendatar di Lexicon Vault yang jawabannya adalah situs belanja online favorit Erin."
     ]
   },
   {
-    "pin": "520617",
+    "pin": "520622",
     "hints": [
       "Dua digit terakhir dari kode akses vault (VLT-xxx) di Molecular Museum.",
       "Jumlah huruf pada kata kategori Colors yang tersembunyi di Cerebral Hunt Arena: \"ORANGE\".",
-      "Nomor clue Menurun di Lexicon Vault yang jawabannya adalah nama soto favorit Erin."
+      "Nomor clue Menurun di Lexicon Vault yang jawabannya adalah mini-game di CoC yang diselesaikan Erin di peringkat pertama."
     ]
   },
   {
-    "pin": "120612",
+    "pin": "120626",
     "hints": [
       "Jumlah kandidat per kategori di Case Roster Molecular Museum.",
       "Jumlah huruf pada kata kategori Professions yang tersembunyi di Cerebral Hunt Arena: \"CASTER\".",
-      "Nomor clue Menurun di Lexicon Vault yang jawabannya adalah mata kuliah yang paling dibenci Erin."
+      "Nomor clue Mendatar di Lexicon Vault yang jawabannya adalah universitas impian Erin untuk melanjutkan kuliah."
     ]
   },
   {
-    "pin": "090627",
+    "pin": "090631",
     "hints": [
       "Jumlah huruf pada nama ruangan rahasia di Molecular Museum (tanpa spasi/tanda baca).",
       "Jumlah huruf pada kata kategori Professions yang tersembunyi di Cerebral Hunt Arena: \"SINGER\".",
-      "Nomor clue Mendatar di Lexicon Vault yang jawabannya adalah medali yang diraih Erin di OSN 2023."
+      "Nomor clue Mendatar di Lexicon Vault yang jawabannya adalah potongan rambut Erin sekarang."
     ]
   },
   {
-    "pin": "111015",
+    "pin": "111011",
     "hints": [
       "Jumlah huruf pada nama elemen kunci di Molecular Museum (tanpa spasi).",
       "Jumlah huruf pada kata kategori Professions yang tersembunyi di Cerebral Hunt Arena: \"RESEARCHER\".",
-      "Nomor clue Mendatar di Lexicon Vault yang jawabannya adalah emoji favorit Erin."
+      "Nomor clue Menurun di Lexicon Vault yang jawabannya adalah medali yang diraih Erin di OSN 2023."
     ]
   },
   {
-    "pin": "520326",
+    "pin": "520312",
     "hints": [
       "Dua digit terakhir dari kode akses vault (VLT-xxx) di Molecular Museum.",
       "Jumlah huruf pada kata kategori Animals yang tersembunyi di Cerebral Hunt Arena: \"CAT\".",
-      "Nomor clue Menurun di Lexicon Vault yang jawabannya adalah situs belanja online favorit Erin."
+      "Nomor clue Mendatar di Lexicon Vault yang jawabannya adalah menu makan siang lab Erin tanggal 20 Juli 2026."
     ]
   },
   {
-    "pin": "120410",
+    "pin": "120428",
     "hints": [
       "Jumlah kandidat per kategori di Case Roster Molecular Museum.",
       "Jumlah huruf pada kata kategori Animals yang tersembunyi di Cerebral Hunt Arena: \"BIRD\".",
-      "Nomor clue Menurun di Lexicon Vault yang jawabannya adalah nama tengah Erin."
+      "Nomor clue Menurun di Lexicon Vault yang jawabannya adalah les yang paling sulit buat Erin."
     ]
   },
   {
@@ -477,47 +488,47 @@
     "hints": [
       "Jumlah huruf pada nama ruangan rahasia di Molecular Museum (tanpa spasi/tanda baca).",
       "Jumlah huruf pada kata kategori Animals yang tersembunyi di Cerebral Hunt Arena: \"MAGPIE\".",
-      "Nomor clue Menurun di Lexicon Vault yang jawabannya adalah akun komunitas alumni medalis OSN Biologi yang pernah diadmini Erin."
+      "Nomor clue Menurun di Lexicon Vault yang jawabannya adalah game esports yang disukai Erin."
     ]
   },
   {
-    "pin": "110330",
+    "pin": "110321",
     "hints": [
       "Jumlah huruf pada nama elemen kunci di Molecular Museum (tanpa spasi).",
       "Jumlah huruf pada kata kategori Food & Drinks yang tersembunyi di Cerebral Hunt Arena: \"EGG\".",
-      "Nomor clue Mendatar di Lexicon Vault yang jawabannya adalah universitas impian Erin untuk melanjutkan kuliah."
+      "Nomor clue Mendatar di Lexicon Vault yang jawabannya adalah famili taksonomi dari hewan favorit Erin."
     ]
   },
   {
-    "pin": "520407",
+    "pin": "520417",
     "hints": [
       "Dua digit terakhir dari kode akses vault (VLT-xxx) di Molecular Museum.",
       "Jumlah huruf pada kata kategori Food & Drinks yang tersembunyi di Cerebral Hunt Arena: \"SOTO\".",
-      "Nomor clue Mendatar di Lexicon Vault yang jawabannya adalah permainan arcade yang disukai Erin."
+      "Nomor clue Mendatar di Lexicon Vault yang jawabannya adalah nama adik Erin."
     ]
   },
   {
-    "pin": "120623",
+    "pin": "120634",
     "hints": [
       "Jumlah kandidat per kategori di Case Roster Molecular Museum.",
       "Jumlah huruf pada kata kategori Food & Drinks yang tersembunyi di Cerebral Hunt Arena: \"COFFEE\".",
-      "Nomor clue Mendatar di Lexicon Vault yang jawabannya adalah karakter yang menginspirasi bow Erin di CoC."
+      "Nomor clue Mendatar di Lexicon Vault yang jawabannya adalah ujian masuk universitas di Tiongkok yang lebih ketat dari OSN."
     ]
   },
   {
-    "pin": "090401",
+    "pin": "090407",
     "hints": [
       "Jumlah huruf pada nama ruangan rahasia di Molecular Museum (tanpa spasi/tanda baca).",
       "Jumlah huruf pada kata kategori Colors yang tersembunyi di Cerebral Hunt Arena: \"BLUE\".",
-      "Nomor clue Mendatar di Lexicon Vault yang jawabannya adalah musikal yang dibahas Erin waktu live bareng Mike dan Yvonnie."
+      "Nomor clue Mendatar di Lexicon Vault yang jawabannya adalah warna kesukaan Erin."
     ]
   },
   {
-    "pin": "110533",
+    "pin": "110524",
     "hints": [
       "Jumlah huruf pada nama elemen kunci di Molecular Museum (tanpa spasi).",
       "Jumlah huruf pada kata kategori Colors yang tersembunyi di Cerebral Hunt Arena: \"GREEN\".",
-      "Nomor clue Mendatar di Lexicon Vault yang jawabannya adalah singkatan nama SMA Erin."
+      "Nomor clue Menurun di Lexicon Vault yang jawabannya adalah karakter yang menginspirasi bow Erin di CoC."
     ]
   }
 ];
