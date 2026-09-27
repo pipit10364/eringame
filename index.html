@@ -109,6 +109,16 @@
     margin-top: 12px; font-size: 0.74rem; color: var(--ink-faint); font-family:'JetBrains Mono', monospace;
     border-top: 1px solid var(--border-soft); padding-top: 10px;
   }
+
+  .username-box{ margin-top: 30px; text-align: left; background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; padding: 20px 22px; }
+  .username-label{ display:block; font-family: 'JetBrains Mono', monospace; font-size: 0.74rem; letter-spacing: 0.08em; color: var(--gold); margin-bottom: 10px; text-transform: uppercase; }
+  .username-input{ width: 100%; background: var(--bg-tile); border: 1px solid var(--border); border-radius: 4px; padding: 12px 14px; color: var(--ink); font-family: 'JetBrains Mono', monospace; font-size: 1rem; letter-spacing: 0.02em; }
+  .username-hint{ margin-top: 8px; color: var(--ink-faint); font-size: 0.8rem; line-height: 1.5; }
+  .username-feedback{ margin-top: 8px; font-size: 0.82rem; display:none; }
+  .username-feedback.show{ display:block; }
+  .username-feedback.warn{ color: var(--struck, #e8827a); }
+  .username-feedback.ok{ color: var(--emerald); }
+  @keyframes shakeX{10%,90%{transform:translateX(-1px);}20%,80%{transform:translateX(2px);}30%,50%,70%{transform:translateX(-4px);}40%,60%{transform:translateX(4px);}}
 </style>
 </head>
 <body>
@@ -120,13 +130,13 @@
       <p class="opening-line">In order to celebrate our special one,</p>
       <div class="opening-name">Erin Larasati Angdika</div>
       <p class="opening-tagline">Four rooms. One unforgettable day.</p>
-      <button class="game-start-btn" onclick="showScreen('screen-select')">GAME START</button>
-      <div class="stage-shortcuts">
-        <a class="stage-shortcut" href="molecular-museum.html">Stage 01</a>
-        <a class="stage-shortcut" href="cerebral-hunt-arena.html">Stage 02</a>
-        <a class="stage-shortcut" href="lexicon-vault.html">Stage 03</a>
-        <a class="stage-shortcut" href="celebration-chamber.html">Stage 04</a>
+      <div class="username-box" id="username-box" style="display:none;">
+        <label class="username-label" for="username-input">Nama Investigator (untuk Leaderboard)</label>
+        <input type="text" id="username-input" class="username-input" placeholder="contoh: erin.larasati" maxlength="20" autocomplete="off">
+        <div class="username-hint">Saran: pakai username Instagram/media sosial kamu, biar temen-temen gampang ngenalin kamu di leaderboard. Hanya huruf kecil, titik (.), dan underscore (_) — 3 sampai 20 karakter.</div>
+        <div class="username-feedback" id="username-feedback"></div>
       </div>
+      <button class="game-start-btn" onclick="handleGameStart()">GAME START</button>
     </div>
   </div>
 
@@ -168,6 +178,48 @@
   </div>
 
 <script>
+  const USERNAME_KEY = 'eg_username_v1';
+  function isValidUsername(u){ return /^[a-z_.]{3,20}$/.test(u); }
+  function getStoredUsername(){ return localStorage.getItem(USERNAME_KEY); }
+  function initUsernameField(){
+    const box = document.getElementById('username-box');
+    const stored = getStoredUsername();
+    if (stored && isValidUsername(stored)){ box.style.display = 'none'; return; }
+    box.style.display = 'block';
+    const input = document.getElementById('username-input');
+    input.addEventListener('input', () => { input.value = input.value.replace(/[^a-z_.]/g, ''); updateUsernameFeedback(); });
+    updateUsernameFeedback();
+  }
+  function updateUsernameFeedback(){
+    const box = document.getElementById('username-box');
+    if (box.style.display === 'none') return;
+    const input = document.getElementById('username-input');
+    const fb = document.getElementById('username-feedback');
+    const val = input.value.trim();
+    const valid = isValidUsername(val);
+    if (!val){ fb.textContent=''; fb.className='username-feedback'; }
+    else if (!valid){ fb.textContent='Gunakan 3–20 karakter: huruf kecil a-z, titik (.), underscore (_).'; fb.className='username-feedback show warn'; }
+    else { fb.textContent='Nama siap dipakai ✓'; fb.className='username-feedback show ok'; }
+  }
+  function mgShake(selector){
+    const el = document.querySelector(selector);
+    if (!el) return;
+    el.style.animation = 'none'; void el.offsetWidth; el.style.animation = 'shakeX 0.4s ease';
+  }
+  initUsernameField();
+
+  function handleGameStart(){
+    const usernameBox = document.getElementById('username-box');
+    if (usernameBox.style.display !== 'none'){
+      const input = document.getElementById('username-input');
+      const val = input.value.trim();
+      if (!isValidUsername(val)){ updateUsernameFeedback(); mgShake('#username-box'); return; }
+      localStorage.setItem(USERNAME_KEY, val);
+      usernameBox.style.display = 'none';
+    }
+    showScreen('screen-select');
+  }
+
   function showScreen(id){
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
