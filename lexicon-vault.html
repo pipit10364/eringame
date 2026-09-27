@@ -225,14 +225,14 @@
   .xw-clue-item.filled{ color: var(--ink-dim); }
 
   .xw-board-scroll{
-    overflow: auto; max-width: min(700px, 92vw); border:1px solid var(--border); border-radius:6px;
+    overflow: auto; max-width: min(760px, 92vw); max-height: 640px; border:1px solid var(--border); border-radius:6px;
     background: var(--bg-panel); padding: 10px;
     -webkit-overflow-scrolling: touch;
   }
   .xw-grid{
     display:grid;
-    grid-template-columns: repeat(21, 30px);
-    grid-template-rows: repeat(21, 30px);
+    grid-template-columns: repeat(24, 30px);
+    grid-template-rows: repeat(25, 30px);
     gap:0;
   }
   .xw-cell{ position:relative; width:30px; height:30px; }
@@ -322,9 +322,20 @@
     }
     .xw-board-scroll{ max-width: 94vw; }
   }
+
+  .back-to-menu-btn{
+    position: fixed; top: 14px; left: 14px; z-index: 100;
+    font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; letter-spacing: 0.04em;
+    color: var(--ink-faint); text-decoration: none; background: rgba(12,39,33,0.85);
+    border: 1px solid var(--border); border-radius: 20px; padding: 6px 12px;
+    transition: color 0.15s ease, border-color 0.15s ease;
+  }
+  .back-to-menu-btn:hover{ color: var(--teal); border-color: var(--teal); }
+  @media (max-width: 480px){ .back-to-menu-btn{ top: 8px; left: 8px; font-size: 0.68rem; padding: 5px 10px; } }
 </style>
 </head>
 <body>
+  <a href="index.html" class="back-to-menu-btn" title="Kembali ke Menu Utama">← Menu</a>
 
   <!-- ================= WELCOME / LOCK SCREEN ================= -->
   <div class="screen active" id="screen-welcome">
@@ -350,7 +361,7 @@
       <div class="username-box" id="username-box" style="display:none;">
         <label class="username-label" for="username-input">Nama Investigator (untuk Leaderboard)</label>
         <input type="text" id="username-input" class="username-input" placeholder="contoh: erin.larasati" maxlength="20" autocomplete="off">
-        <div class="username-hint">Hanya huruf kecil, titik (.), dan underscore (_) — 3 sampai 20 karakter. Harus sama dengan nama yang dipakai di Game 1 &amp; 2 supaya skornya nyambung.</div>
+        <div class="username-hint">Saran: pakai username Instagram/media sosial kamu, biar temen-temen gampang ngenalin kamu di leaderboard. Hanya huruf kecil, titik (.), dan underscore (_) — 3 sampai 20 karakter. Harus sama dengan nama yang dipakai di Game 1 &amp; 2 supaya skornya nyambung.</div>
         <div class="username-feedback" id="username-feedback"></div>
       </div>
 
@@ -567,66 +578,70 @@
   // PUZZLE DATA
   // ==================================================================
   const PUZZLE_ROWS = [
-  ['D','E','A','R','E','V','A','N','H','A','N','S','E','N',null,null,null,null,null,'C',null],
-  [null,null,null,null,null,null,null,null,null,null,null,'E',null,'E',null,null,null,null,null,'U',null],
-  [null,null,null,null,null,null,null,null,null,null,null,'V',null,'K',null,'W',null,'T',null,'H',null],
-  [null,null,'C','H','U','N','I','T','H','M',null,'E',null,'O',null,'O',null,'Y','U','K','I'],
-  [null,null,'A',null,null,null,null,null,null,null,null,'N',null,'M',null,'L',null,'P',null,null,null],
-  [null,null,'S',null,null,null,'M',null,null,null,null,'T',null,'I',null,'F',null,'H',null,null,'L'],
-  ['N','A','T','S','U','M','E',null,'B',null,'L','E','T','M','E','C','O','O','K',null,'A'],
-  [null,null,'E',null,null,null,'N',null,'I',null,null,'E','#','I',null,'U',null,'O',null,null,'R'],
-  [null,null,'R',null,null,'V','A','L','O','R','A','N','T',null,null,'T',null,'N','A','G','A'],
-  [null,null,null,null,null,null,'D',null,'C',null,null,null,null,null,null,null,null,null,null,null,'S'],
-  [null,'G','A','O','K','A','O',null,'H',null,null,null,'P',null,'J','A','K','A','R','T','A'],
-  [null,null,null,null,'A',null,'E',null,'E',null,null,'L','I','M','A',null,'A',null,null,null,'T'],
-  [null,'4',null,null,'D',null,'N',null,'M',null,null,null,'Z',null,'M',null,'I',null,null,null,'I'],
-  ['K','A','T','N','I','S','S',null,null,null,null,null,'Z',null,'E',null,'T',null,'T',null,null],
-  [null,'G',null,null,'P',null,'I','N','T','P',null,null,'A',null,'S','I','L','V','E','R',null],
-  [null,'U',null,null,'I',null,'S','#','A',null,null,null,null,null,null,null,'Y',null,'A',null,null],
-  [null,'S',null,null,'R',null,null,'C','O','R','V','I','D','A','E',null,'N',null,'L',null,null],
-  [null,'T',null,'U','O','F','T','#','B',null,null,null,'U',null,null,'B',null,null,null,null,null],
-  [null,'U',null,null,null,null,null,'G','A','T','E','W','A','Y','C','A','L','L',null,null,null],
-  [null,'S','M','U','K','I','E',null,'O',null,null,null,null,null,null,'G',null,null,null,null,null],
-  [null,null,null,null,null,null,null,null,null,null,null,null,null,'B','A','S','K','E','T',null,null]
+  ['D','E','A','R','E','V','A','N','H','A','N','S','E','N',null,null,null,null,null,null,null,null,null,null],
+  [null,null,null,null,null,null,null,'A',null,null,null,'E',null,'E',null,null,null,null,null,null,'C',null,null,null],
+  [null,null,null,null,null,null,null,'G',null,null,null,'V',null,'K',null,null,null,null,null,null,'H',null,'K',null],
+  [null,null,null,null,null,'T','E','A','L',null,null,'E',null,'O',null,null,'V',null,null,null,'U',null,'A',null],
+  [null,null,null,null,null,null,null,null,'I',null,null,'N',null,'M','E','N','A','D','O','E','N','S','I','S'],
+  [null,null,null,null,null,'S',null,null,'M',null,null,'T',null,'I',null,null,'L',null,null,null,'I',null,'T',null],
+  [null,null,null,null,'P','I','Z','Z','A',null,'L','E','T','M','E','C','O','O','K',null,'T',null,'L',null],
+  [null,null,null,null,null,'L',null,null,null,null,null,'E',null,'I',null,null,'R',null,'A',null,'H',null,'Y',null],
+  [null,null,null,'1',null,'V',null,null,null,null,null,'N',null,null,'D','U','A',null,'D',null,'M',null,'N',null],
+  [null,null,'J','A','M','E','S',null,null,null,null,null,null,null,null,null,'N',null,'I',null,null,null,null,null],
+  [null,null,null,'G',null,'R',null,null,null,null,null,null,null,null,null,null,'T','Y','P','H','O','O','N',null],
+  [null,null,null,'U',null,null,null,null,null,null,null,null,null,null,null,null,null,null,'I',null,null,null,null,null],
+  [null,null,null,'S','M','U','K','I','E',null,null,null,null,null,null,null,'C','O','R','V','I','D','A','E'],
+  [null,null,null,'T',null,null,null,'N',null,null,null,'G',null,null,null,null,'H',null,'O',null,null,null,null,null],
+  [null,null,'C','U','H','K',null,'T','A','O','B','A','O',null,null,null,'U',null,null,null,null,null,null,null],
+  [null,null,null,'S',null,'A',null,'P',null,null,null,'T',null,null,null,null,'U','O','F','T',null,'N',null,null],
+  [null,null,null,null,null,'T',null,null,null,null,null,'E',null,'B',null,null,'Y',null,null,null,null,'A',null,null],
+  [null,null,null,null,null,'N',null,null,null,null,null,'W',null,'A',null,'L','A','R','A','S','A','T','I',null],
+  [null,null,null,null,null,'I',null,null,null,null,null,'A',null,'S',null,null,null,null,null,null,null,'S',null,null],
+  [null,null,null,null,null,'S',null,null,null,null,null,'Y','U','K','I',null,'W','O','L','F','C','U','T',null],
+  [null,null,null,null,null,'S',null,null,null,null,null,'C','#','E',null,null,null,null,null,null,null,'M',null,null],
+  [null,null,null,null,null,null,null,null,'J','A','K','A','R','T','A',null,'B','I','O','C','H','E','M',null],
+  [null,null,null,null,null,null,null,null,null,null,null,'L',null,null,null,null,'A',null,null,null,null,null,null,null],
+  [null,null,null,null,null,null,null,null,null,null,null,'L',null,null,null,null,'G','A','O','K','A','O',null,null],
+  [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,'S',null,null,null,null,null,null,null]
   ];
 
   const CLUES = {
   "1A": "Musikal yang diceritakan Erin waktu live barsama Mike dan Yvonnie",
-  "7A": "Permainan arcade yang disukai Erin",
-  "8A": "Nama kucing peliharaan Erin",
-  "11A": "Bias Erin di Ensemble Stars",
+  "7A": "Warna kesukaan Erin",
+  "10A": "Erin pernah jadi admin akun ini",
+  "12A": "Menu makan siang lab Erin tanggal 20 Juli 2026",
   "13A": "Salah satu ungkapan ikonik Erin selama CoC",
-  "14A": "Game esports yang disukai Erin",
-  "15A": "Emoji favorit Erin",
-  "16A": "Ujian masuk universitas di Tiongkok yang lebih ketat dari OSN, diperebutkan sekitar 13 juta peserta",
-  "19A": "Daerah asal Erin",
-  "21A": "Tim yang dipimpin Erin sebagai kapten di CoC",
-  "23A": "Karakter yang menginspirasi bow Erin di CoC",
-  "25A": "Tipe kepribadian (MBTI) Erin",
-  "27A": "Medali yang diraih Erin di OSN 2023",
-  "28A": "Famili taksonomi dari hewan favorit Erin",
-  "30A": "Universitas impian Erin untuk melanjutkan kuliah",
-  "32A": "Mini-game di CoC yang berhasil diselesaikan Erin di peringkat pertama",
-  "33A": "Singkatan nama SMA Erin",
-  "34A": "Les yang paling sulit buat Erin, di antara semua yang pernah diikuti",
-  "2D": "Grup K-pop yang albumnya dikoleksi Erin",
-  "3D": "Gaya cosplay yang pernah dipakai Erin",
-  "4D": "Universitas di atas gunung, tempat Erin kuliah",
-  "5D": "Gaya potongan rambut Erin sekarang",
-  "6D": "Fenomena cuaca yang sampai bikin jendela kamar Erin ikut bergetar",
-  "7D": "Bidang yang digeluti Erin setelah gagal di OSN",
-  "9D": "Akun yang pernah dipegang Erin sebagai admin",
-  "10D": "Nama tengah Erin",
-  "12D": "Worst mata kuliah bagi Erin",
-  "17D": "Nama soto favorit Erin",
-  "18D": "Menu makan siang lab Erin tanggal 20 Juli 2026",
-  "19D": "Nama adik Erin",
-  "20D": "Salah satu sahabat dekat Erin di CoC",
-  "22D": "Tanggal Erin tereliminasi setelah revival",
-  "24D": "Warna favorit Erin, campuran hijau dan biru",
-  "26D": "Situs belanja online favorit Erin",
-  "29D": "Episode CoC saat Erin pertama kali muncul",
-  "31D": "Lagu SOTD Erin tanggal 15 September 2026"
+  "16A": "Kita melihat Erin pertama kali di CoC di episode ini",
+  "17A": "Nama adik Erin",
+  "18A": "Fenomena cuaca yang sampai bikin jendela kamar Erin bergetar",
+  "19A": "Singkatan nama SMA Erin",
+  "21A": "Famili taksonomi dari hewan favorit Erin",
+  "23A": "Universitas di atas gunung, tempat Erin kuliah",
+  "25A": "Erin suka beli barang di sini",
+  "26A": "Universitas impian Erin untuk melanjutkan kuliah",
+  "29A": "Nama tengah Erin",
+  "30A": "Nama kucing peliharaan Erin",
+  "31A": "Gaya potongan rambut Erin sekarang",
+  "32A": "Daerah asal Erin",
+  "33A": "Mata kuliah yang paling dibenci Erin",
+  "34A": "Ujian masuk universitas di Tiongkok yang lebih ketat dari OSN, diperebutkan sekitar 13 juta peserta",
+  "2D": "Emoji favorit Erin",
+  "3D": "Grup K-pop yang albumnya dikoleksi Erin",
+  "4D": "Gaya cosplay yang pernah dipakai Erin",
+  "5D": "Permainan arkade yang disukai Erin",
+  "6D": "Salah satu sahabat dekat Erin di CoC",
+  "8D": "Nama tim yang dipimpin Erin sebagai kapten di CoC",
+  "9D": "Game esports yang disukai Erin",
+  "11D": "Medali yang diraih Erin di OSN 2023",
+  "14D": "Jenis soto favorit Erin",
+  "15D": "Tanggal Erin tereliminasi setelah revival",
+  "20D": "Tipe kepribadian (MBTI) Erin",
+  "21D": "Karakter favorit Erin di Bungo Stray Dogs",
+  "22D": "Mini-game di CoC yang berhasil diselesaikan Erin di peringkat pertama",
+  "24D": "Karakter yang menginspirasi bow Erin di CoC",
+  "27D": "Karakter bias Erin di Ensemble Stars",
+  "28D": "Les yang paling sulit buat Erin, di antara semua yang pernah diikuti",
+  "33D": "Lagu SOTD Erin tanggal 15 September 2026"
 };
 
   const R = PUZZLE_ROWS.length;
@@ -1029,10 +1044,11 @@
           <div class="result-score-big">${finalScore}<span class="result-score-unit">Poin</span></div>
           <p class="result-subnote">Waktu: ${timeScore} poin · Jawaban benar (${correctWords}/${TOTAL_ENTRIES}): ${wordScore} poin</p>
           <h3>${correctWords} dari ${TOTAL_ENTRIES} jawaban benar</h3>
-          <p>Belum semua benar, tapi poin dari jawaban yang sudah benar tetap dikirim ke leaderboard. Main lagi buat coba kejar skor yang lebih tinggi.</p>
+          <p>Belum semua benar, tapi poin dari jawaban yang sudah benar tetap dikirim ke leaderboard. Kamu tetap bisa lanjut ke Game 4, atau main lagi dulu buat kejar skor yang lebih tinggi.</p>
         </div>
         <div class="cta-row">
-          <button class="btn btn-primary" onclick="startVault()">Main Lagi</button>
+          <button class="btn btn-primary" onclick="goToNextGame()">Lanjut ke Game 4 →</button>
+          <button class="btn btn-secondary" onclick="startVault()">Main Lagi</button>
           <button class="btn btn-secondary" onclick="openLeaderboard()">Lihat Leaderboard</button>
         </div>
       `;
