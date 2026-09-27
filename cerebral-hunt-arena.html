@@ -333,9 +333,20 @@
     40%,60%{ transform: translateX(4px); }
   }
   .shake{ animation: shake 0.45s; }
+
+  .back-to-menu-btn{
+    position: fixed; top: 14px; left: 14px; z-index: 100;
+    font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; letter-spacing: 0.04em;
+    color: var(--ink-faint); text-decoration: none; background: rgba(12,39,33,0.85);
+    border: 1px solid var(--border); border-radius: 20px; padding: 6px 12px;
+    transition: color 0.15s ease, border-color 0.15s ease;
+  }
+  .back-to-menu-btn:hover{ color: var(--teal); border-color: var(--teal); }
+  @media (max-width: 480px){ .back-to-menu-btn{ top: 8px; left: 8px; font-size: 0.68rem; padding: 5px 10px; } }
 </style>
 </head>
 <body>
+  <a href="index.html" class="back-to-menu-btn" title="Kembali ke Menu Utama">← Menu</a>
 
   <!-- ================= WELCOME / LOCK SCREEN ================= -->
   <div class="screen active" id="screen-welcome">
@@ -361,7 +372,7 @@
       <div class="username-box" id="username-box" style="display:none;">
         <label class="username-label" for="username-input">Nama Investigator (untuk Leaderboard)</label>
         <input type="text" id="username-input" class="username-input" placeholder="contoh: erin.larasati" maxlength="20" autocomplete="off">
-        <div class="username-hint">Hanya huruf kecil, titik (.), dan underscore (_) — 3 sampai 20 karakter. Harus sama dengan nama yang dipakai di Game 1 supaya skornya nyambung.</div>
+        <div class="username-hint">Saran: pakai username Instagram/media sosial kamu, biar temen-temen gampang ngenalin kamu di leaderboard. Hanya huruf kecil, titik (.), dan underscore (_) — 3 sampai 20 karakter. Harus sama dengan nama yang dipakai di Game 1 supaya skornya nyambung.</div>
         <div class="username-feedback" id="username-feedback"></div>
         <div class="username-confirm" id="username-confirm" style="display:none;">
           <p class="username-confirm-text" id="username-confirm-text"></p>
@@ -457,11 +468,6 @@
       <div class="wordbank-grid" id="wordbank-grid"></div>
 
       <div class="ws-board-wrap"><div class="ws-grid" id="ws-grid"></div></div>
-
-      <div class="cta-row">
-        <button class="btn btn-secondary" id="back-to-logic-btn" onclick="goToLogic()">Jawab Soal Lagi</button>
-        <button class="btn btn-secondary" onclick="manualFinish()">Selesai &amp; Lihat Skor</button>
-      </div>
     </div>
   </div>
 
@@ -1028,7 +1034,6 @@
     const word = revealPool.pop();
     revealedWords.add(word);
     renderWordbank();
-    document.getElementById('back-to-logic-btn').style.display = revealPool.length === 0 ? 'none' : 'inline-block';
     return word;
   }
 
@@ -1256,6 +1261,8 @@
     if (solvedTotal >= TOTAL_WORDS){
       clearInterval(timerHandle);
       endGame(true);
+    } else if (revealPool.length > 0){
+      setTimeout(() => { goToLogic(); }, 700);
     }
   }
 
