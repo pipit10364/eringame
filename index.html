@@ -110,7 +110,7 @@
     border-top: 1px solid var(--border-soft); padding-top: 10px;
   }
 
-  .username-box{ margin-top: 30px; text-align: left; background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; padding: 20px 22px; }
+  .username-box{ margin-top: 30px; margin-bottom: 30px; text-align: left; background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; padding: 20px 22px; }
   .username-label{ display:block; font-family: 'JetBrains Mono', monospace; font-size: 0.74rem; letter-spacing: 0.08em; color: var(--gold); margin-bottom: 10px; text-transform: uppercase; }
   .username-input{ width: 100%; background: var(--bg-tile); border: 1px solid var(--border); border-radius: 4px; padding: 12px 14px; color: var(--ink); font-family: 'JetBrains Mono', monospace; font-size: 1rem; letter-spacing: 0.02em; }
   .username-hint{ margin-top: 8px; color: var(--ink-faint); font-size: 0.8rem; line-height: 1.5; }
@@ -131,9 +131,9 @@
       <div class="opening-name">Erin Larasati Angdika</div>
       <p class="opening-tagline">Four rooms. One unforgettable day.</p>
       <div class="username-box" id="username-box" style="display:none;">
-        <label class="username-label" for="username-input">Nama Investigator (untuk Leaderboard)</label>
+        <label class="username-label" for="username-input">Input your name</label>
         <input type="text" id="username-input" class="username-input" placeholder="contoh: erin.larasati" maxlength="20" autocomplete="off">
-        <div class="username-hint">Saran: pakai username Instagram/media sosial kamu, biar temen-temen gampang ngenalin kamu di leaderboard. Hanya huruf kecil, titik (.), dan underscore (_) — 3 sampai 20 karakter.</div>
+        <div class="username-hint">Pakai username sosmed kamu biar gampang dikenali di leaderboard.</div>
         <div class="username-feedback" id="username-feedback"></div>
       </div>
       <button class="game-start-btn" onclick="handleGameStart()">GAME START</button>
