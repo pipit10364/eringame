@@ -260,26 +260,27 @@
   .rhy-step-dot{ width:9px; height:9px; border-radius:50%; background: var(--border); }
   .rhy-step-dot.filled{ background: var(--teal); }
 
-  /* Pipe puzzle */
-  .pipe-outer{ max-width: 340px; margin: 0 auto; }
-  .pipe-label-row{ font-size: 0.7rem; letter-spacing: 0.1em; color: var(--ink-faint); margin: 0 0 6px; }
-  .pipe-label-row.finish{ text-align: right; margin: 6px 0 0; }
-  .pipe-grid{
-    display: grid; grid-template-columns: repeat(4, minmax(38px, 62px)); grid-template-rows: repeat(4, minmax(38px, 62px));
-    gap: 5px; background: var(--bg-tile); padding: 9px; border-radius: 8px; border: 1px solid var(--border);
+  /* Lights puzzle */
+  .lt-outer{ max-width: 320px; margin: 0 auto; }
+  .lt-grid{
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 0;
+    background: var(--bg-tile); padding: 6px; border-radius: 8px; border: 1px solid var(--border);
   }
-  .pipe-cell{ position: relative; background: var(--bg-card); border-radius: 5px; cursor: pointer; overflow: hidden; transition: transform 0.1s ease; }
-  .pipe-cell:active{ transform: scale(0.92); }
-  .pipe-shape{ position: absolute; inset: 0; transition: transform 0.25s ease; }
-  .pipe-arm{ position: absolute; background: var(--ink-faint); border-radius: 2px; }
-  .pipe-cell.solved .pipe-arm{ background: var(--emerald); }
-  .pipe-arm-n{ left: 50%; top: 0; width: 16%; height: 50%; transform: translateX(-50%); }
-  .pipe-arm-e{ top: 50%; right: 0; width: 50%; height: 16%; transform: translateY(-50%); }
-  .pipe-arm-w{ top: 50%; left: 0; width: 50%; height: 16%; transform: translateY(-50%); }
-  .pipe-node{ position: absolute; left: 50%; top: 50%; width: 18%; height: 18%; border-radius: 50%; background: var(--ink-faint); transform: translate(-50%,-50%); }
-  .pipe-cell.solved .pipe-node{ background: var(--emerald); }
-  .pipe-cell.filler .pipe-arm, .pipe-cell.filler .pipe-node{ opacity: 0.35; }
-  .pipe-cell.dead .pipe-arm, .pipe-cell.dead .pipe-node{ opacity: 0.5; background: var(--struck); }
+  .lt-cell{ position: relative; aspect-ratio: 1 / 1; cursor: pointer; outline: 1px solid var(--border-soft); outline-offset: -1px; }
+  .lt-cell:active .lt-shape{ filter: brightness(1.3); }
+  .lt-shape{ position: absolute; inset: 0; transition: transform 0.25s ease; }
+  .lt-shape svg, .lt-plug{ width: 100%; height: 100%; display: block; }
+  .lt-plug{ position: absolute; inset: 0; pointer-events: none; }
+  .lt-wire{ stroke: var(--ink-faint); stroke-width: 15; stroke-linecap: round; fill: none; transition: stroke 0.2s ease; }
+  .lt-hub{ fill: var(--ink-faint); transition: fill 0.2s ease; }
+  .lt-bulb{ fill: var(--bg-card); stroke: var(--ink-faint); stroke-width: 4; transition: fill 0.2s ease, stroke 0.2s ease; }
+  .lt-bulb-core{ fill: var(--ink-faint); transition: fill 0.2s ease; }
+  .lt-cell.powered .lt-wire{ stroke: var(--gold); }
+  .lt-cell.powered .lt-hub{ fill: var(--gold); }
+  .lt-cell.powered .lt-bulb{ fill: rgba(216,185,121,0.35); stroke: var(--gold); }
+  .lt-cell.powered .lt-bulb-core{ fill: #fff3c9; }
+  .lt-cell.powered .lt-shape{ filter: drop-shadow(0 0 5px rgba(216,185,121,0.55)); }
+  .lt-grid.solved .lt-cell{ cursor: default; }
 
   /* Mental rotation */
   .mr-main{ display: flex; justify-content: center; margin-bottom: 20px; }
@@ -479,7 +480,6 @@
     .deduction-categories{ grid-template-columns: 1fr; gap: 18px; }
     .roster-grid{ grid-template-columns: 1fr; }
     .mr-options{ grid-template-columns: repeat(2, 1fr); }
-    .pipe-grid{ grid-template-columns: repeat(4, minmax(30px, 48px)); grid-template-rows: repeat(4, minmax(30px, 48px)); }
     .cip-digit{ width: 48px; height: 58px; font-size: 1.4rem; }
   }
 
@@ -534,9 +534,9 @@
     </div>
 
     <div class="username-box">
-      <label class="username-label" for="username-input">Nama Investigator (untuk Leaderboard)</label>
+      <label class="username-label" for="username-input">Input your name</label>
       <input type="text" id="username-input" class="username-input" placeholder="contoh: erin.larasati" maxlength="20" autocomplete="off">
-      <div class="username-hint">Saran: pakai username Instagram/media sosial kamu, biar temen-temen gampang ngenalin kamu di leaderboard. Hanya huruf kecil, titik (.), dan underscore (_) — 3 sampai 20 karakter. Nama ini dipakai di semua game, jadi cukup diisi sekali.</div>
+      <div class="username-hint">Pakai username sosmed kamu biar gampang dikenali di leaderboard, dan cukup diisi sekali untuk semua game.</div>
       <div class="username-feedback" id="username-feedback"></div>
       <div class="username-confirm" id="username-confirm" style="display:none;">
         <p class="username-confirm-text" id="username-confirm-text"></p>
@@ -1059,7 +1059,7 @@
         {
           miniGameId: 1,
           miniGameName: "Molecule Logic Switch",
-          miniGameIntro: "Putar tiap potongan sirkuit, hati-hati pipa buntu, hingga arus tersambung dari Start ke Finish.",
+          miniGameIntro: "Ketuk potongan kabel untuk memutarnya, sampai semua lampu tersambung ke sumber listrik dan menyala. Semua potongan kabel harus terpakai, tidak ada yang tertinggal.",
           exhibits: [
             {
               type: "jejak",
@@ -1193,8 +1193,8 @@
   let mgMistakes = { 0: 0, 1: 0, 2: 0, 3: 0 };
   let deductionMistakes = { rooms: 0, elements: 0, codes: 0 };
   let game1AccuracyPoints = 0;
-  let pipeClickCount = 0;
-  let pipeMinRotations = 0;
+  let ltClickCount = 0;
+  let ltMinRotations = 0;
 
   function accuracyPointsFor(mistakes){
     if (mistakes <= 0) return STRIKE_POINTS;
@@ -1637,136 +1637,179 @@
   }
 
   // ==================================================================
-  // MINI-GAME 2 — Molecule Logic Switch (4x4 pipe rotation puzzle)
+  // MINI-GAME 2 — Molecule Logic Switch (Lights: nyalakan semua lampu dari satu sumber listrik)
   // ==================================================================
-  // All paths run West-of-(0,0) -> ... -> South-of-(3,3) (Finish), so the
-  // START/FINISH labels stay accurate, but the route through the grid is
-  // picked at random each attempt so the board doesn't always look the same.
-  const PIPE_PATH_VARIANTS = [
-    // Variant A: up-over-down staircase through the middle, includes a T-piece
-    [
-      { col: 0, row: 0, type: 'straight', accepted: [0, 180] },
-      { col: 1, row: 0, type: 'elbow',    accepted: [180] },
-      { col: 1, row: 1, type: 'straight', accepted: [90, 270] },
-      { col: 1, row: 2, type: 't',        accepted: [0] },
-      { col: 2, row: 2, type: 'elbow',    accepted: [180] },
-      { col: 2, row: 3, type: 'elbow',    accepted: [0] },
-      { col: 3, row: 3, type: 'elbow',    accepted: [180] }
-    ],
-    // Variant B: zigzag stair-step across the whole board
-    [
-      { col: 0, row: 0, type: 'elbow',    accepted: [180] },
-      { col: 0, row: 1, type: 'elbow',    accepted: [0] },
-      { col: 1, row: 1, type: 'straight', accepted: [0, 180] },
-      { col: 2, row: 1, type: 'elbow',    accepted: [180] },
-      { col: 2, row: 2, type: 'elbow',    accepted: [0] },
-      { col: 3, row: 2, type: 'elbow',    accepted: [180] },
-      { col: 3, row: 3, type: 'straight', accepted: [90, 270] }
-    ],
-    // Variant C: long horizontal run first, then drops down, T-piece placed differently
-    [
-      { col: 0, row: 0, type: 'straight', accepted: [0, 180] },
-      { col: 1, row: 0, type: 'straight', accepted: [0, 180] },
-      { col: 2, row: 0, type: 'elbow',    accepted: [180] },
-      { col: 2, row: 1, type: 't',        accepted: [90] },
-      { col: 2, row: 2, type: 'elbow',    accepted: [0] },
-      { col: 3, row: 2, type: 'elbow',    accepted: [180] },
-      { col: 3, row: 3, type: 'straight', accepted: [90, 270] }
-    ],
-    // Variant D: pure staircase of elbows only, no straight or T pieces
-    [
-      { col: 0, row: 0, type: 'elbow', accepted: [180] },
-      { col: 0, row: 1, type: 'elbow', accepted: [0] },
-      { col: 1, row: 1, type: 'elbow', accepted: [180] },
-      { col: 1, row: 2, type: 'elbow', accepted: [0] },
-      { col: 2, row: 2, type: 'elbow', accepted: [180] },
-      { col: 2, row: 3, type: 'elbow', accepted: [0] },
-      { col: 3, row: 3, type: 'elbow', accepted: [180] }
-    ]
-  ];
-  let PIPE_FUNCTIONAL = PIPE_PATH_VARIANTS[0];
-  const PIPE_ARMS = {
-    straight: ['pipe-arm-w', 'pipe-arm-e'],
-    elbow:    ['pipe-arm-n', 'pipe-arm-e'],
-    t:        ['pipe-arm-n', 'pipe-arm-e', 'pipe-arm-w'],
-    dead:     ['pipe-arm-n']
-  };
-  let pipeState = {};
+  // Tiap main, jaringan kabel dibangun acak sebagai pohon yang menjangkau SEMUA kotak, jadi tidak ada
+  // potongan yang nganggur dan puzzle selalu punya jawaban. Setelah itu tiap potongan diputar acak.
+  const LT_COLS = 4, LT_ROWS = 4;
+  const LT_DX = [0, 1, 0, -1];   // arah: 0=Utara, 1=Timur, 2=Selatan, 3=Barat
+  const LT_DY = [-1, 0, 1, 0];
+  let ltMask = [];   // bentuk kabel jawaban per kotak (bitmask arah)
+  let ltRot = [];    // putaran 90 derajat searah jarum jam yang sedang dipakai per kotak (0 sampai 3)
+  let ltDeg = [];    // derajat kumulatif, dipakai animasi supaya putarannya selalu maju
+  let ltRoot = 0;
+  let ltFinished = false;
 
-  function initMiniGame2(){
-    PIPE_FUNCTIONAL = PIPE_PATH_VARIANTS[Math.floor(Math.random() * PIPE_PATH_VARIANTS.length)];
-    const container = document.getElementById('minigame-container');
-    const funcMap = {};
-    PIPE_FUNCTIONAL.forEach(f => funcMap[`${f.col},${f.row}`] = f);
-    pipeState = {};
-    pipeClickCount = 0;
-    pipeMinRotations = 0;
+  function ltRotMask(mask, k){
+    let m = 0;
+    for (let d = 0; d < 4; d++){
+      if (mask & (1 << d)) m |= 1 << ((d + k) % 4);
+    }
+    return m;
+  }
+  function ltNeighbor(i, d){
+    const c = i % LT_COLS, r = Math.floor(i / LT_COLS);
+    const nc = c + LT_DX[d], nr = r + LT_DY[d];
+    if (nc < 0 || nc >= LT_COLS || nr < 0 || nr >= LT_ROWS) return -1;
+    return nr * LT_COLS + nc;
+  }
+  function ltCurrentMask(i){ return ltRotMask(ltMask[i], ltRot[i]); }
 
-    const fillerTypes = ['dead','elbow','t','straight','dead','elbow','t','straight','dead'];
-    let fillerIdx = 0;
+  function ltBuildTree(){
+    const n = LT_COLS * LT_ROWS;
+    const mask = new Array(n).fill(0);
+    const inTree = new Array(n).fill(false);
+    const root = (1 + Math.floor(Math.random() * (LT_ROWS - 2))) * LT_COLS + (1 + Math.floor(Math.random() * (LT_COLS - 2)));
+    inTree[root] = true;
+    const frontier = [];
+    const addFrontier = (i) => {
+      for (let d = 0; d < 4; d++){
+        const j = ltNeighbor(i, d);
+        if (j >= 0 && !inTree[j]) frontier.push([i, d]);
+      }
+    };
+    addFrontier(root);
+    while (frontier.length){
+      const pick = Math.floor(Math.random() * frontier.length);
+      const [from, d] = frontier.splice(pick, 1)[0];
+      const to = ltNeighbor(from, d);
+      if (inTree[to]) continue;
+      inTree[to] = true;
+      mask[from] |= 1 << d;
+      mask[to] |= 1 << ((d + 2) % 4);
+      addFrontier(to);
+    }
+    return { mask, root };
+  }
 
-    let cellsHtml = '';
-    for (let row = 0; row < 4; row++){
-      for (let col = 0; col < 4; col++){
-        const k = `${col},${row}`;
-        const func = funcMap[k];
-        let type, rotation, isDead = false;
-        if (func){
-          type = func.type;
-          const options = [0, 90, 180, 270].filter(v => !func.accepted.includes(v));
-          rotation = options[Math.floor(Math.random() * options.length)];
-          const minClicksForCell = Math.min(...func.accepted.map(acc => ((acc - rotation + 360) % 360) / 90));
-          pipeMinRotations += minClicksForCell;
-        } else {
-          type = fillerTypes[fillerIdx % fillerTypes.length];
-          fillerIdx++;
-          isDead = type === 'dead';
-          rotation = [0, 90, 180, 270][Math.floor(Math.random() * 4)];
+  function ltPoweredSet(){
+    const seen = new Set([ltRoot]);
+    const queue = [ltRoot];
+    while (queue.length){
+      const i = queue.shift();
+      const mi = ltCurrentMask(i);
+      for (let d = 0; d < 4; d++){
+        if (!(mi & (1 << d))) continue;
+        const j = ltNeighbor(i, d);
+        if (j < 0 || seen.has(j)) continue;
+        if (ltCurrentMask(j) & (1 << ((d + 2) % 4))){
+          seen.add(j);
+          queue.push(j);
         }
-        pipeState[k] = rotation;
-        const arms = PIPE_ARMS[type].map(cls => `<div class="pipe-arm ${cls}"></div>`).join('');
-        cellsHtml += `
-          <div class="pipe-cell${func ? '' : ' filler'}${isDead ? ' dead' : ''}" data-col="${col}" data-row="${row}" onclick="pipeRotate(${col},${row})">
-            <div class="pipe-shape" style="transform: rotate(${rotation}deg);">
-              ${arms}
-              <div class="pipe-node"></div>
-            </div>
-          </div>`;
       }
     }
+    return seen;
+  }
 
+  function ltMinRotationsTotal(){
+    let total = 0;
+    for (let i = 0; i < ltMask.length; i++){
+      for (let k = 0; k < 4; k++){
+        if (ltRotMask(ltMask[i], (ltRot[i] + k) % 4) === ltMask[i]){ total += k; break; }
+      }
+    }
+    return total;
+  }
+
+  function ltNewPuzzle(){
+    const n = LT_COLS * LT_ROWS;
+    const built = ltBuildTree();
+    ltMask = built.mask;
+    ltRoot = built.root;
+    for (let tries = 0; tries < 60; tries++){
+      ltRot = ltMask.map(m => m === 15 ? 0 : Math.floor(Math.random() * 4));
+      if (ltPoweredSet().size < n && ltMinRotationsTotal() >= 10) break;
+    }
+    ltDeg = ltRot.map(r => r * 90);
+    ltFinished = false;
+  }
+
+  function ltTileHtml(i){
+    const mask = ltMask[i];
+    const isRoot = i === ltRoot;
+    const degree = [0, 1, 2, 3].filter(d => mask & (1 << d)).length;
+    const isBulb = !isRoot && degree === 1;
+    const ends = [[50, 0], [100, 50], [50, 100], [0, 50]];
+    let arms = '';
+    for (let d = 0; d < 4; d++){
+      if (mask & (1 << d)) arms += `<line class="lt-wire" x1="50" y1="50" x2="${ends[d][0]}" y2="${ends[d][1]}"/>`;
+    }
+    const hub = isBulb
+      ? '<circle class="lt-bulb" cx="50" cy="50" r="20"/><circle class="lt-bulb-core" cx="50" cy="50" r="8"/>'
+      : '<circle class="lt-hub" cx="50" cy="50" r="8"/>';
+    const plug = isRoot
+      ? `<svg class="lt-plug" viewBox="0 0 100 100"><circle cx="50" cy="50" r="22" fill="#d8b979"/>
+           <rect x="41" y="30" width="5" height="13" rx="2" fill="#061a15"/><rect x="54" y="30" width="5" height="13" rx="2" fill="#061a15"/>
+           <path d="M37 43 h26 v5 a13 13 0 0 1 -26 0 z" fill="#061a15"/><rect x="48" y="60" width="4" height="12" rx="2" fill="#061a15"/></svg>`
+      : '';
+    return `
+      <div class="lt-cell${isRoot ? ' root' : ''}" data-i="${i}" onclick="ltRotate(${i})">
+        <div class="lt-shape" style="transform: rotate(${ltDeg[i]}deg);">
+          <svg viewBox="0 0 100 100">${arms}${hub}</svg>
+        </div>
+        ${plug}
+      </div>`;
+  }
+
+  function ltRefresh(){
+    const powered = ltPoweredSet();
+    const n = LT_COLS * LT_ROWS;
+    let bulbs = 0, lit = 0;
+    for (let i = 0; i < n; i++){
+      const el = document.querySelector(`.lt-cell[data-i="${i}"]`);
+      if (el) el.classList.toggle('powered', powered.has(i));
+      const degree = [0, 1, 2, 3].filter(d => ltMask[i] & (1 << d)).length;
+      if (i !== ltRoot && degree === 1){
+        bulbs++;
+        if (powered.has(i)) lit++;
+      }
+    }
+    if (powered.size === n){
+      ltFinished = true;
+      document.querySelector('.lt-grid').classList.add('solved');
+      mgSetStatus('Semua lampu menyala!');
+      // Ketukan berlebih dihitung sebagai kesalahan: tiap 6 ketukan sia sia dihitung satu kali salah.
+      mgMistakes[1] = Math.floor(Math.max(0, ltClickCount - ltMinRotations) / 6);
+      setTimeout(() => miniGameSuccess(), 700);
+    } else {
+      mgSetStatus(`Lampu menyala: ${lit} dari ${bulbs}`);
+    }
+  }
+
+  function initMiniGame2(){
+    ltNewPuzzle();
+    ltClickCount = 0;
+    ltMinRotations = ltMinRotationsTotal();
+    const container = document.getElementById('minigame-container');
+    let cells = '';
+    for (let i = 0; i < LT_COLS * LT_ROWS; i++) cells += ltTileHtml(i);
     container.innerHTML = `
-      <div class="pipe-outer">
-        <div class="pipe-label-row start">◀ START (kiri-atas)</div>
-        <div class="pipe-grid">${cellsHtml}</div>
-        <div class="pipe-label-row finish">FINISH (kanan-bawah) ▶</div>
-      </div>
-    `;
-    mgSetStatus('Klik potongan sirkuit untuk memutarnya 90°. Waspadai pipa buntu!');
+      <div class="lt-outer">
+        <div class="lt-grid">${cells}</div>
+      </div>`;
+    ltRefresh();
     mgShowReset('Acak Ulang Sirkuit', () => initMiniGame2());
   }
 
-  function pipeRotate(col, row){
-    if (currentMiniGameId !== 1) return;
-    pipeClickCount++;
-    const k = `${col},${row}`;
-    pipeState[k] = (pipeState[k] + 90) % 360;
-    const cell = document.querySelector(`.pipe-cell[data-col="${col}"][data-row="${row}"] .pipe-shape`);
-    if (cell) cell.style.transform = `rotate(${pipeState[k]}deg)`;
-    pipeCheckSolved();
-  }
-
-  function pipeCheckSolved(){
-    const solved = PIPE_FUNCTIONAL.every(f => f.accepted.includes(pipeState[`${f.col},${f.row}`]));
-    if (solved){
-      PIPE_FUNCTIONAL.forEach(f => {
-        const cellEl = document.querySelector(`.pipe-cell[data-col="${f.col}"][data-row="${f.row}"]`);
-        if (cellEl) cellEl.classList.add('solved');
-      });
-      // Klik "boros" di luar rotasi minimum yang dibutuhkan dihitung sebagai kesalahan.
-      mgMistakes[1] = Math.max(0, pipeClickCount - pipeMinRotations);
-      setTimeout(() => miniGameSuccess(), 300);
-    }
+  function ltRotate(i){
+    if (currentMiniGameId !== 1 || ltFinished) return;
+    if (ltMask[i] === 15) return;
+    ltClickCount++;
+    ltRot[i] = (ltRot[i] + 1) % 4;
+    ltDeg[i] += 90;
+    const shape = document.querySelector(`.lt-cell[data-i="${i}"] .lt-shape`);
+    if (shape) shape.style.transform = `rotate(${ltDeg[i]}deg)`;
+    ltRefresh();
   }
 
   // ==================================================================
