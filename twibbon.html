@@ -62,7 +62,7 @@
 </head>
 <body>
 <div class="wrap">
-  <a href="index.html" style="display:block;text-align:center;font:600 .8rem Manrope,sans-serif;color:#0b7a6e;text-decoration:none;margin-bottom:14px">← Kembali ke menu</a>
+  <a href="index.html#menu" style="display:block;text-align:center;font:600 .8rem Manrope,sans-serif;color:#0b7a6e;text-decoration:none;margin-bottom:14px">← Kembali ke menu</a>
   <div class="eyebrow">MISSION 01 · PORTRAIT ATELIER</div>
   <h1>Pasang twibbon untuk Erin</h1>
   <p class="sub">Ambil atau pilih fotomu, atur posisinya, lalu unduh. Kunci misi akan muncul setelah twibbon berhasil kamu simpan.</p>
@@ -82,6 +82,7 @@
     <div id="editor" style="display:none">
       <div class="tabs">
         <button class="tab on" data-m="foto">Foto</button>
+        <button class="tab" data-m="bingkai">Bingkai</button>
         <button class="tab" data-m="stiker">Stiker</button>
         <button class="tab" data-m="coret">Coret</button>
       </div>
@@ -91,9 +92,14 @@
         <label class="s"><span>Putar</span><input type="range" id="rot" min="-180" max="180" step="1" value="0"></label>
         <div class="row">
           <button class="btn ghost small" id="rot90">Putar 90°</button>
-          <button class="btn ghost small" id="btnNew">Ganti foto</button>
         </div>
         <p class="hint">Geser fotonya di atas gambar untuk mengatur posisi (crop). Di HP, cubit dua jari untuk zoom dan putar; di komputer, pakai scroll mouse untuk zoom.</p>
+      </div>
+
+      <div class="panel" id="p-bingkai">
+        <label class="s"><span>Ukuran</span><input type="range" id="fz" min="0.5" max="2.5" step="0.01" value="1"></label>
+        <div class="row"><button class="btn ghost small" id="fReset">Reset bingkai</button></div>
+        <p class="hint">Geser bingkai di atas gambar, cubit dua jari untuk memperbesar atau memperkecil. Geser bingkai ke bawah atau perbesar agar tulisan di bawahnya keluar dari gambar.</p>
       </div>
 
       <div class="panel" id="p-stiker">
@@ -110,6 +116,11 @@
         <div class="row"><button class="btn ghost small" id="undo">Urungkan</button></div>
         <p class="hint">Gambar langsung di atas foto dengan jari atau mouse.</p>
       </div>
+    </div>
+
+    <div class="row" id="swapRow" style="display:none">
+      <button class="btn ghost small" id="btnNew" style="flex:1">Ganti foto</button>
+      <button class="btn ghost small" id="btnRetake" style="flex:1">Ambil ulang foto</button>
     </div>
 
     <div class="user">
@@ -164,7 +175,7 @@
   const $ = id => document.getElementById(id);
   const cv = $('cv'), ctx = cv.getContext('2d'), S = 1080;
 
-  const st = { img:null, ox:0, oy:0, zoom:1, rot:0, base:1, mode:'foto', stickers:[], sel:-1, strokes:[], color:COLORS[0] };
+  const st = { fx:0, fy:0, fs:1, img:null, ox:0, oy:0, zoom:1, rot:0, base:1, mode:'foto', stickers:[], sel:-1, strokes:[], color:COLORS[0] };
   let frame = null, frameOk = false;
   const fi = new Image();
   fi.onload = () => { frame = fi; frameOk = true; draw(); };
@@ -196,7 +207,10 @@
       ctx.drawImage(st.img, -st.img.width/2, -st.img.height/2);
       ctx.restore();
     }
+    ctx.save();
+    ctx.translate(S/2 + st.fx, S/2 + st.fy); ctx.scale(st.fs, st.fs); ctx.translate(-S/2, -S/2);
     if (frameOk) ctx.drawImage(frame,0,0,S,S); else drawFramePlaceholder(ctx);
+    ctx.restore();
     ctx.lineCap = 'round'; ctx.lineJoin = 'round';
     st.strokes.forEach(s => {
       if (!s.pts.length) return;
@@ -230,7 +244,7 @@
       st.base = Math.max(S/im.width, S/im.height);
       $('zoom').value = 1; $('rot').value = 0;
       $('empty').style.display = 'none'; $('editor').style.display = 'block';
-      $('btnSave').disabled = false; draw(); URL.revokeObjectURL(url);
+      $('btnSave').disabled = false; $('swapRow').style.display = 'flex'; draw(); URL.revokeObjectURL(url);
     };
     im.src = url;
   }
@@ -252,6 +266,7 @@
   }
   function closeCam(){ if (stream){ stream.getTracks().forEach(t=>t.stop()); stream=null; } $('camBox').classList.remove('on'); }
   $('btnCam').onclick = openCam;
+  $('btnRetake').onclick = openCam;
   $('camClose').onclick = closeCam;
   $('camFlip').onclick = () => { closeCam(); facing = facing==='user' ? 'environment' : 'user'; openCam(); };
   $('camShot').onclick = () => {
@@ -270,6 +285,8 @@
   });
   $('zoom').oninput = e => { st.zoom = +e.target.value; draw(); };
   $('rot').oninput = e => { st.rot = +e.target.value; draw(); };
+  $('fz').oninput = e => { st.fs = +e.target.value; draw(); };
+  $('fReset').onclick = () => { st.fx = st.fy = 0; st.fs = 1; $('fz').value = 1; draw(); };
   $('rot90').onclick = () => { st.rot = ((st.rot + 90 + 180) % 360) - 180; $('rot').value = st.rot; draw(); };
 
   function syncSticker(){
@@ -315,11 +332,15 @@
       const t = twoPtr(), s = st.stickers[st.sel];
       pinch = { kind:'stiker', d:t.d, ang:t.ang, size:s.size, rot:s.rot||0 }; drag = null; return;
     }
+    if (ptrs.size === 2 && st.mode === 'bingkai'){
+      const t = twoPtr(); pinch = { kind:'bingkai', d:t.d, fs:st.fs }; drag = null; return;
+    }
     if (ptrs.size === 2 && st.mode === 'foto'){
       const t = twoPtr();
       pinch = { kind:'foto', d:t.d, ang:t.ang, zoom:st.zoom, rot:st.rot }; drag = null; return;
     }
     if (st.mode === 'foto') drag = {x,y,ox:st.ox,oy:st.oy};
+    else if (st.mode === 'bingkai') drag = {x,y,ox:st.fx,oy:st.fy};
     else if (st.mode === 'stiker'){
       const hit = hitSticker(x,y);
       st.sel = hit; if (hit>=0) drag = {x,y,sx:st.stickers[hit].x,sy:st.stickers[hit].y};
@@ -336,6 +357,8 @@
         st.zoom = Math.max(0.3, Math.min(4, pinch.zoom * t.d / pinch.d));
         st.rot = Math.round(wrap(pinch.rot + t.ang - pinch.ang));
         $('zoom').value = st.zoom; $('rot').value = st.rot; draw();
+      } else if (pinch.kind === 'bingkai'){
+        st.fs = Math.max(0.5, Math.min(2.5, pinch.fs * t.d / pinch.d)); $('fz').value = st.fs; draw();
       } else {
         const s = st.stickers[st.sel];
         if (s){ s.size = Math.max(50, Math.min(500, pinch.size * t.d / pinch.d)); s.rot = wrap(pinch.rot + t.ang - pinch.ang); syncSticker(); draw(); }
@@ -344,6 +367,7 @@
     }
     if (!drag) return;
     if (st.mode === 'foto'){ st.ox = drag.ox + (x-drag.x); st.oy = drag.oy + (y-drag.y); }
+    else if (st.mode === 'bingkai'){ st.fx = drag.ox + (x-drag.x); st.fy = drag.oy + (y-drag.y); }
     else if (st.mode === 'stiker'){ const s = st.stickers[st.sel]; if (s){ s.x = drag.sx + (x-drag.x); s.y = drag.sy + (y-drag.y); } }
     else st.strokes[st.strokes.length-1].pts.push([x,y]);
     draw();
