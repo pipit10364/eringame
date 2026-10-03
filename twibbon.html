@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Misi 01 — Twibbon untuk Erin</title>
+<title>Portrait Atelier — Mission 01</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
@@ -61,7 +61,8 @@
 </head>
 <body>
 <div class="wrap">
-  <div class="eyebrow">MISI 01 · TWIBBON</div>
+  <a href="index.html" style="display:block;text-align:center;font:600 .8rem Manrope,sans-serif;color:#0b7a6e;text-decoration:none;margin-bottom:14px">← Kembali ke menu</a>
+  <div class="eyebrow">MISSION 01 · PORTRAIT ATELIER</div>
   <h1>Pasang twibbon untuk Erin</h1>
   <p class="sub">Ambil atau pilih fotomu, atur posisinya, lalu unduh. Kunci misi akan muncul setelah twibbon berhasil kamu simpan.</p>
 
@@ -113,8 +114,8 @@
     </div>
 
     <div class="user">
-      <input id="uname" placeholder="username game kamu" autocomplete="off" autocapitalize="off" spellcheck="false">
-      <small>Pakai username yang sama dengan di game (huruf kecil, angka, titik, garis bawah).</small>
+      <input id="uname" maxlength="20" placeholder="username game kamu" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <small>Pakai username yang sama dengan di game (huruf kecil a-z, titik, garis bawah).</small>
     </div>
     <div class="row"><button class="btn" id="btnSave" disabled>Unduh &amp; dapatkan kunci</button></div>
   </div>
@@ -312,7 +313,8 @@
   // username
   const un = $('uname');
   un.value = localStorage.getItem(USERNAME_KEY) || '';
-  const validUser = v => /^[a-z0-9._]{3,24}$/.test(v);
+  const validUser = v => /^[a-z_.]{3,20}$/.test(v);
+  un.addEventListener('input', () => { un.value = un.value.toLowerCase().replace(/[^a-z_.]/g,''); });
 
   // kode misi
   function newCode(){
@@ -350,7 +352,7 @@
 
   $('btnSave').onclick = async () => {
     const u = un.value.trim().toLowerCase();
-    if (!validUser(u)){ alert('Isi username game dulu ya (3-24 karakter: huruf kecil, angka, titik, garis bawah).'); un.focus(); return; }
+    if (!validUser(u)){ alert('Isi username game dulu ya (3-20 karakter: huruf kecil a-z, titik, garis bawah).'); un.focus(); return; }
     localStorage.setItem(USERNAME_KEY, u);
     download();
     const btn = $('btnSave'); btn.disabled = true; btn.textContent = 'Membuat kunci...';
@@ -361,6 +363,7 @@
       $('doneMsg').textContent = r.existing
         ? 'Kamu sudah menyelesaikan Misi Twibbon sebelumnya. Demi keamanan, kunci tidak ditampilkan ulang. Kalau lupa, nanti bisa dipulihkan dengan kata pemulihan.'
         : 'Ini kunci Misi Twibbon-mu. Simpan baik-baik, dibutuhkan saat klaim hadiah di Stage 4.';
+      localStorage.setItem('eg_mission_twibbon_v1','1');
       $('done').classList.add('on');
     }catch(err){
       alert('Twibbon sudah terunduh, tapi kunci belum bisa dibuat: ' + err.message + '\nCoba tekan tombol lagi.');
