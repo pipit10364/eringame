@@ -214,7 +214,7 @@
   const HUB = [
     { label:'MISSIONS', note:'Selesaikan misi, dapatkan kuncinya.', items:[
       { num:'MISSION 01', title:'Portrait Atelier', blurb:'Pasang twibbon-mu dan bingkai satu kenangan untuk Erin.', href:'twibbon.html', doneKey:'eg_mission_twibbon_v1' },
-      { num:'MISSION 02', title:'Letter Sanctum', blurb:'Tulis surat untuk Erin. Semua surat baru terbuka di akhir.', href:'letter.html', ready:false, doneKey:'eg_mission_letter_v1' },
+      { num:'MISSION 02', title:'Letter Sanctum', blurb:'Tulis surat untuk Erin. Semua surat baru terbuka di akhir.', href:'letter.html', doneKey:'eg_mission_letter_v1' },
       { num:'MISSION 03', title:'Polaroid Parlor', blurb:'Photo booth dengan template spesial, hanya di hari-H.', href:'photobooth.html', ready:false, openAt:'2026-11-17T00:00:00+07:00', doneKey:'eg_mission_photobooth_v1' },
     ]},
     { label:'GAMES', note:'Mainkan untuk membuka kode hadiah.', items:[
@@ -223,18 +223,20 @@
       { num:'GAME 03', title:'Lexicon Vault', blurb:'Satu grid, 36 kunci. Semua tentang Erin.', href:'lexicon-vault.html', doneKey:'eg_game3_best_score_v1' },
     ]},
     { label:'PRIZE', note:'Kado untuk Erin menantimu.', items:[
-      { num:'PRIZE', title:'Prize', blurb:'Masukkan kode dari 3 game dan 3 kunci misi untuk membuka hadiahnya.', href:'celebration-chamber.html', openAt:'2026-11-17T00:00:00+07:00', doneKey:'eg_game4_done_v1', hint:'🔒 butuh kode Game 01–03 &amp; kunci 3 misi' },
+      { num:'PRIZE', title:'Claim Your Prize', blurb:'Masukkan kode dari 3 game dan 3 kunci misi untuk membuka hadiahnya.', href:'celebration-chamber.html', openAt:'2026-11-17T00:00:00+07:00', doneKey:'eg_game4_done_v1', hint:'🔒 butuh kode Game 01–03 &amp; kunci 3 misi' },
     ]},
   ];
 
-  const BYPASS = new URLSearchParams(location.search).get('unlock') === '1';
+  // Saat testing: false = semua banner terbuka. Ubah ke true menjelang hari-H agar kunci tanggal aktif.
+  const LOCKS_ENABLED = false;
+  const BYPASS = !LOCKS_ENABLED || new URLSearchParams(location.search).get('unlock') === '1';
   function fmtWIB(iso){
     return new Date(iso).toLocaleString('en-GB', { day:'numeric', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit', timeZone:'Asia/Jakarta' }) + ' WIB';
   }
   function lockInfo(it){
-    if (BYPASS) return null;
     const name = it.title.replace(/<br>/g,' ');
-    if (it.ready === false) return name + ' can be accessed soon';
+    if (it.ready === false) return name + ' can be accessed soon';   // halaman belum dibuat
+    if (BYPASS) return null;
     if (it.openAt && Date.now() < new Date(it.openAt).getTime()) return name + ' can be accessed at ' + fmtWIB(it.openAt);
     return null;
   }
