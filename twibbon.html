@@ -45,6 +45,7 @@
   .swatches{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
   .sw{width:28px;height:28px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px var(--line);cursor:pointer}
   .sw.on{box-shadow:0 0 0 2px var(--teal)}
+  .lbl{font:700 .72rem 'JetBrains Mono',monospace;letter-spacing:.1em;color:var(--gold);margin-bottom:8px}
   .hint{font-size:.8rem;color:var(--faint);margin-top:8px}
   .user{margin-top:14px}
   .user input{width:100%;border:1px solid var(--line);border-radius:10px;padding:11px 13px;font:500 .95rem 'JetBrains Mono',monospace;color:var(--ink);background:#fff}
@@ -67,6 +68,7 @@
   <h1>Pasang twibbon untuk Erin</h1>
   <p class="sub">Ambil atau pilih fotomu, atur posisinya, lalu unduh. Kunci misi akan muncul setelah twibbon berhasil kamu simpan.</p>
 
+  <div id="viewEdit">
   <div class="card">
     <div class="stick"><div class="stage">
       <canvas id="cv" width="1080" height="1080"></canvas>
@@ -82,7 +84,6 @@
     <div id="editor" style="display:none">
       <div class="tabs">
         <button class="tab on" data-m="foto">Foto</button>
-        <button class="tab" data-m="bingkai">Bingkai</button>
         <button class="tab" data-m="stiker">Stiker</button>
         <button class="tab" data-m="coret">Coret</button>
       </div>
@@ -94,12 +95,6 @@
           <button class="btn ghost small" id="rot90">Putar 90°</button>
         </div>
         <p class="hint">Geser fotonya di atas gambar untuk mengatur posisi (crop). Di HP, cubit dua jari untuk zoom dan putar; di komputer, pakai scroll mouse untuk zoom.</p>
-      </div>
-
-      <div class="panel" id="p-bingkai">
-        <label class="s"><span>Ukuran</span><input type="range" id="fz" min="0.5" max="2.5" step="0.01" value="1"></label>
-        <div class="row"><button class="btn ghost small" id="fReset">Reset bingkai</button></div>
-        <p class="hint">Geser bingkai di atas gambar, cubit dua jari untuk memperbesar atau memperkecil. Geser bingkai ke bawah atau perbesar agar tulisan di bawahnya keluar dari gambar.</p>
       </div>
 
       <div class="panel" id="p-stiker">
@@ -127,7 +122,19 @@
       <input id="uname" maxlength="20" placeholder="username game kamu" autocomplete="off" autocapitalize="off" spellcheck="false">
       <small>Pakai username yang sama dengan di game (huruf kecil a-z, titik, garis bawah).</small>
     </div>
-    <div class="row"><button class="btn" id="btnSave" disabled>Unduh &amp; dapatkan kunci</button></div>
+    <div class="row"><button class="btn" id="btnPrev" disabled>Lihat pratinjau</button></div>
+  </div>
+  </div>
+
+  <div id="viewPrev" style="display:none">
+    <div class="card">
+      <div class="lbl">PRATINJAU · BEGINI HASIL TWIBBON-MU</div>
+      <img id="pvImg" alt="Pratinjau twibbon" style="width:100%;max-width:min(100%,60vh);display:block;margin:0 auto;border-radius:10px">
+    </div>
+    <div class="row">
+      <button class="btn ghost" id="btnBack" style="flex:1">← Edit twibbon</button>
+      <button class="btn" id="btnSave" style="flex:2">Unduh &amp; dapatkan kunci</button>
+    </div>
   </div>
 </div>
 
@@ -175,7 +182,7 @@
   const $ = id => document.getElementById(id);
   const cv = $('cv'), ctx = cv.getContext('2d'), S = 1080;
 
-  const st = { fx:0, fy:0, fs:1, img:null, ox:0, oy:0, zoom:1, rot:0, base:1, mode:'foto', stickers:[], sel:-1, strokes:[], color:COLORS[0] };
+  const st = { img:null, ox:0, oy:0, zoom:1, rot:0, base:1, mode:'foto', stickers:[], sel:-1, strokes:[], color:COLORS[0] };
   let frame = null, frameOk = false;
   const fi = new Image();
   fi.onload = () => { frame = fi; frameOk = true; draw(); };
@@ -207,10 +214,7 @@
       ctx.drawImage(st.img, -st.img.width/2, -st.img.height/2);
       ctx.restore();
     }
-    ctx.save();
-    ctx.translate(S/2 + st.fx, S/2 + st.fy); ctx.scale(st.fs, st.fs); ctx.translate(-S/2, -S/2);
     if (frameOk) ctx.drawImage(frame,0,0,S,S); else drawFramePlaceholder(ctx);
-    ctx.restore();
     ctx.lineCap = 'round'; ctx.lineJoin = 'round';
     st.strokes.forEach(s => {
       if (!s.pts.length) return;
@@ -244,7 +248,7 @@
       st.base = Math.max(S/im.width, S/im.height);
       $('zoom').value = 1; $('rot').value = 0;
       $('empty').style.display = 'none'; $('editor').style.display = 'block';
-      $('btnSave').disabled = false; $('swapRow').style.display = 'flex'; draw(); URL.revokeObjectURL(url);
+      $('btnPrev').disabled = false; $('swapRow').style.display = 'flex'; draw(); URL.revokeObjectURL(url);
     };
     im.src = url;
   }
@@ -285,8 +289,6 @@
   });
   $('zoom').oninput = e => { st.zoom = +e.target.value; draw(); };
   $('rot').oninput = e => { st.rot = +e.target.value; draw(); };
-  $('fz').oninput = e => { st.fs = +e.target.value; draw(); };
-  $('fReset').onclick = () => { st.fx = st.fy = 0; st.fs = 1; $('fz').value = 1; draw(); };
   $('rot90').onclick = () => { st.rot = ((st.rot + 90 + 180) % 360) - 180; $('rot').value = st.rot; draw(); };
 
   function syncSticker(){
@@ -332,15 +334,11 @@
       const t = twoPtr(), s = st.stickers[st.sel];
       pinch = { kind:'stiker', d:t.d, ang:t.ang, size:s.size, rot:s.rot||0 }; drag = null; return;
     }
-    if (ptrs.size === 2 && st.mode === 'bingkai'){
-      const t = twoPtr(); pinch = { kind:'bingkai', d:t.d, fs:st.fs }; drag = null; return;
-    }
     if (ptrs.size === 2 && st.mode === 'foto'){
       const t = twoPtr();
       pinch = { kind:'foto', d:t.d, ang:t.ang, zoom:st.zoom, rot:st.rot }; drag = null; return;
     }
     if (st.mode === 'foto') drag = {x,y,ox:st.ox,oy:st.oy};
-    else if (st.mode === 'bingkai') drag = {x,y,ox:st.fx,oy:st.fy};
     else if (st.mode === 'stiker'){
       const hit = hitSticker(x,y);
       st.sel = hit; if (hit>=0) drag = {x,y,sx:st.stickers[hit].x,sy:st.stickers[hit].y};
@@ -357,8 +355,6 @@
         st.zoom = Math.max(0.3, Math.min(4, pinch.zoom * t.d / pinch.d));
         st.rot = Math.round(wrap(pinch.rot + t.ang - pinch.ang));
         $('zoom').value = st.zoom; $('rot').value = st.rot; draw();
-      } else if (pinch.kind === 'bingkai'){
-        st.fs = Math.max(0.5, Math.min(2.5, pinch.fs * t.d / pinch.d)); $('fz').value = st.fs; draw();
       } else {
         const s = st.stickers[st.sel];
         if (s){ s.size = Math.max(50, Math.min(500, pinch.size * t.d / pinch.d)); s.rot = wrap(pinch.rot + t.ang - pinch.ang); syncSticker(); draw(); }
@@ -367,7 +363,6 @@
     }
     if (!drag) return;
     if (st.mode === 'foto'){ st.ox = drag.ox + (x-drag.x); st.oy = drag.oy + (y-drag.y); }
-    else if (st.mode === 'bingkai'){ st.fx = drag.ox + (x-drag.x); st.fy = drag.oy + (y-drag.y); }
     else if (st.mode === 'stiker'){ const s = st.stickers[st.sel]; if (s){ s.x = drag.sx + (x-drag.x); s.y = drag.sy + (y-drag.y); } }
     else st.strokes[st.strokes.length-1].pts.push([x,y]);
     draw();
@@ -424,6 +419,14 @@
       setTimeout(()=>URL.revokeObjectURL(a.href), 4000);
     }, 'image/png');
   }
+
+  $('btnPrev').onclick = () => {
+    const u = un.value.trim().toLowerCase();
+    if (!validUser(u)){ alert('Isi username game dulu ya (3-20 karakter: huruf kecil a-z, titik, garis bawah).'); un.focus(); return; }
+    draw.exporting = true; draw(); $('pvImg').src = cv.toDataURL('image/png'); draw.exporting = false; draw();
+    $('viewEdit').style.display = 'none'; $('viewPrev').style.display = 'block'; window.scrollTo(0,0);
+  };
+  $('btnBack').onclick = () => { $('viewPrev').style.display = 'none'; $('viewEdit').style.display = 'block'; window.scrollTo(0,0); };
 
   $('btnSave').onclick = async () => {
     const u = un.value.trim().toLowerCase();
