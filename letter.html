@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Letter Sanctum — Mission 02</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Caveat:wght@500;700&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
+<style>
+  :root{--bg:#fbf8f1;--panel:#fff;--ink:#17332d;--dim:#5d7a72;--faint:#93a8a1;--line:#e6e0d1;--teal:#0f9d8e;--teal-d:#0b7a6e;--teal-soft:#e3f4f1;--gold:#b8975a}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:radial-gradient(circle at 12% 8%,rgba(15,157,142,.07),transparent 40%),var(--bg);color:var(--ink);font-family:'Manrope',sans-serif;line-height:1.55;min-height:100vh;padding:28px 16px 60px}
+  .wrap{max-width:600px;margin:0 auto}
+  .back{display:block;text-align:center;font:600 .8rem Manrope,sans-serif;color:var(--teal-d);text-decoration:none;margin-bottom:14px}
+  .eyebrow{font-family:'JetBrains Mono',monospace;font-size:.72rem;letter-spacing:.14em;color:var(--gold);text-align:center}
+  h1{font-family:'Cormorant Garamond',serif;font-weight:700;font-size:clamp(1.9rem,6vw,2.5rem);text-align:center;margin-top:8px;line-height:1.15}
+  .sub{text-align:center;color:var(--dim);font-size:.95rem;margin:10px auto 20px;max-width:440px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:0 6px 24px rgba(23,51,45,.05);margin-top:14px}
+  .lbl{font:700 .72rem 'JetBrains Mono',monospace;letter-spacing:.1em;color:var(--gold);margin-bottom:8px}
+  .chips{display:flex;gap:8px;flex-wrap:wrap}
+  .chip{border:1px solid var(--line);background:#fff;color:var(--dim);font:600 .82rem Manrope,sans-serif;padding:8px 13px;border-radius:20px;cursor:pointer}
+  .chip.on{background:var(--teal-soft);border-color:var(--teal);color:var(--teal-d)}
+  .paper{border:1px solid var(--line);border-radius:12px;padding:18px 18px 14px;box-shadow:0 4px 16px rgba(23,51,45,.06)}
+  .p-polos{background:#fffdf7}
+  .p-garis{background:repeating-linear-gradient(#fffdf7 0 31px,#e9e2cf 31px 32px)}
+  .p-titik{background:radial-gradient(#d3ccb5 1px,transparent 1px) 0 0/18px 18px,#fffdf7}
+  .p-teal{background:linear-gradient(160deg,#e6f6f3,#fbf8f1);border-color:#bfe5df}
+  .f-serif{font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:600}
+  .f-hand{font-family:'Caveat',cursive;font-size:1.5rem;font-weight:500}
+  .f-sans{font-family:'Manrope',sans-serif;font-size:1rem}
+  .greet{line-height:32px;color:var(--teal-d)}
+  textarea{width:100%;min-height:250px;border:0;background:transparent;resize:vertical;font:inherit;line-height:32px;color:var(--ink);outline:none}
+  .sign{text-align:right;line-height:32px;color:var(--teal-d)}
+  .count{font-size:.76rem;color:var(--faint);text-align:right;margin-top:4px}
+  .pimg{margin-top:12px;display:none;position:relative}
+  .pimg img{width:100%;border-radius:8px;display:block}
+  .pimg button{position:absolute;top:8px;right:8px}
+  .btn{border:1px solid var(--teal);background:var(--teal);color:#fff;font:600 .92rem Manrope,sans-serif;padding:12px 14px;border-radius:10px;cursor:pointer}
+  .btn.ghost{background:#fff;color:var(--teal-d)}
+  .btn.small{padding:7px 11px;font-size:.8rem}
+  .btn:disabled{opacity:.45;cursor:not-allowed}
+  .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  input[type=text],input[type=url]{flex:1;min-width:130px;border:1px solid var(--line);border-radius:10px;padding:10px 12px;font:500 .9rem Manrope,sans-serif;color:var(--ink);background:#fff}
+  .linkli{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:.88rem}
+  .linkli a{color:var(--teal-d);font-weight:600;text-decoration:underline;word-break:break-all}
+  .hint{font-size:.8rem;color:var(--faint);margin-top:8px}
+  .user input{width:100%;font-family:'JetBrains Mono',monospace}
+  .overlay{position:fixed;inset:0;background:rgba(23,51,45,.55);display:none;align-items:center;justify-content:center;padding:18px;z-index:10}
+  .overlay.on{display:flex}
+  .modal{background:var(--panel);border-radius:16px;padding:22px;max-width:420px;width:100%;text-align:center}
+  .modal h2{font-family:'Cormorant Garamond',serif;font-size:1.6rem}
+  .modal p{color:var(--dim);font-size:.9rem}
+  .code{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:1.7rem;letter-spacing:.22em;color:var(--teal-d);background:var(--teal-soft);border:1px dashed var(--teal);border-radius:10px;padding:14px;margin:14px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="index.html">← Kembali ke menu</a>
+  <div class="eyebrow">MISSION 02 · LETTER SANCTUM</div>
+  <h1>Tulis surat untuk Erin</h1>
+  <p class="sub">Pilih kertas dan gaya tulisanmu, lalu tuangkan isi hatimu. Surat disimpan rapi dan baru terbuka di hari perayaan. Setelah terkirim, kamu mendapat kunci misi.</p>
+
+  <div class="card">
+    <div class="lbl">KERTAS</div><div class="chips" id="papers"></div>
+    <div class="lbl" style="margin-top:14px">GAYA TULISAN</div><div class="chips" id="fonts"></div>
+  </div>
+
+  <div class="card">
+    <div class="paper p-polos f-serif" id="paper">
+      <div class="greet">Untuk Erin,</div>
+      <textarea id="text" maxlength="1500" placeholder="Tulis suratmu di sini..."></textarea>
+      <div class="sign" id="sign">— kamu</div>
+    </div>
+    <div class="count"><span id="cnt">0</span> / 1500</div>
+    <div class="pimg" id="pimg"><img id="pimgEl" alt="Foto suratmu"><button class="btn ghost small" id="pdel">Hapus foto</button></div>
+  </div>
+
+  <div class="card">
+    <div class="lbl">FOTO (OPSIONAL)</div>
+    <button class="btn ghost small" id="padd">Pilih foto</button>
+    <input type="file" id="pfile" accept="image/*" hidden>
+    <div class="lbl" style="margin-top:16px">TAUTAN (OPSIONAL, MAKS 3)</div>
+    <div class="row" style="margin-top:0">
+      <input type="text" id="lname" placeholder="Nama tautan, mis. Video kenangan" maxlength="40">
+      <input type="url" id="lurl" placeholder="https://..." autocapitalize="off">
+      <button class="btn ghost small" id="ladd">Tambah</button>
+    </div>
+    <div id="links"></div>
+    <p class="hint">Tautan tampil sebagai nama yang kamu tulis, bukan alamat lengkapnya. Foto dan tautan ikut tersimpan di database bersama suratmu dan hanya admin yang bisa membacanya sampai hari perayaan.</p>
+  </div>
+
+  <div class="card user">
+    <div class="lbl">USERNAME GAME</div>
+    <input type="text" id="uname" maxlength="20" placeholder="username game kamu" autocomplete="off" autocapitalize="off" spellcheck="false">
+    <p class="hint">Satu username hanya bisa mengirim satu surat, dan surat tidak bisa diubah setelah terkirim. Baca ulang dulu ya.</p>
+    <div class="row"><button class="btn" id="send" style="flex:1">Kirim surat &amp; dapatkan kunci</button></div>
+  </div>
+</div>
+
+<div class="overlay" id="done"><div class="modal">
+  <h2>Surat terkirim 💌</h2>
+  <p id="doneMsg"></p>
+  <div class="code" id="codeBox"></div>
+  <div class="row" style="justify-content:center"><button class="btn ghost" id="copyCode">Salin kunci</button><button class="btn" id="closeDone">Tutup</button></div>
+</div></div>
+
+<script>
+(function(){
+  const firebaseConfig = {
+    apiKey: "AIzaSyDyfktOuIxMwtKfoniVHYvMgd55Ml95gP8",
+    authDomain: "erin-game.firebaseapp.com",
+    databaseURL: "https://erin-game-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "erin-game",
+    storageBucket: "erin-game.firebasestorage.app",
+    messagingSenderId: "303866378537",
+    appId: "1:303866378537:web:f3844c701203391f4b5f38"
+  };
+  let db = null;
+  try { firebase.initializeApp(firebaseConfig); db = firebase.database(); } catch(e){ console.warn(e); }
+  const $ = id => document.getElementById(id);
+  const USERNAME_KEY = 'eg_username_v1';
+  const st = { paper:'polos', font:'serif', photo:null, links:[] };
+  const PAPERS = [['polos','Polos'],['garis','Bergaris'],['titik','Titik'],['teal','Teal lembut']];
+  const FONTS = [['serif','Klasik'],['hand','Tulisan tangan'],['sans','Modern']];
+
+  function chips(box, list, key){
+    list.forEach(([v,l]) => {
+      const b = document.createElement('button'); b.className = 'chip' + (st[key]===v ? ' on' : ''); b.textContent = l;
+      b.onclick = () => { st[key] = v; [...box.children].forEach(c => c.classList.toggle('on', c===b)); applyStyle(); };
+      box.appendChild(b);
+    });
+  }
+  function applyStyle(){ $('paper').className = 'paper p-' + st.paper + ' f-' + st.font; }
+  chips($('papers'), PAPERS, 'paper'); chips($('fonts'), FONTS, 'font');
+
+  $('text').addEventListener('input', () => { $('cnt').textContent = $('text').value.length; });
+
+  const un = $('uname');
+  un.value = localStorage.getItem(USERNAME_KEY) || '';
+  const validUser = v => /^[a-z_.]{3,20}$/.test(v);
+  const upSign = () => { $('sign').textContent = '— ' + (un.value || 'kamu'); };
+  un.addEventListener('input', () => { un.value = un.value.toLowerCase().replace(/[^a-z_.]/g,''); upSign(); });
+  upSign();
+
+  // foto: dikecilkan di browser, tidak dikirim ke layanan lain
+  $('padd').onclick = () => { $('pfile').value = ''; $('pfile').click(); };
+  $('pfile').onchange = e => {
+    const f = e.target.files[0]; if (!f) return;
+    const url = URL.createObjectURL(f), im = new Image();
+    im.onload = () => {
+      const k = Math.min(1, 900 / Math.max(im.width, im.height));
+      const c = document.createElement('canvas'); c.width = Math.round(im.width*k); c.height = Math.round(im.height*k);
+      c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
+      let q = .78, out = c.toDataURL('image/jpeg', q);
+      while (out.length > 170000 && q > .35){ q -= .08; out = c.toDataURL('image/jpeg', q); }
+      URL.revokeObjectURL(url);
+      if (out.length > 200000){ alert('Fotonya terlalu besar. Pilih foto lain ya.'); return; }
+      st.photo = out; $('pimgEl').src = out; $('pimg').style.display = 'block';
+    };
+    im.src = url;
+  };
+  $('pdel').onclick = () => { st.photo = null; $('pimg').style.display = 'none'; };
+
+  // tautan bernama
+  function cleanUrl(v){
+    v = v.trim(); if (!v) return null;
+    if (!/^https?:\/\//i.test(v)) v = 'https://' + v;
+    try { const u = new URL(v); return (u.protocol === 'http:' || u.protocol === 'https:') && u.hostname.includes('.') ? u.href : null; } catch(e){ return null; }
+  }
+  function renderLinks(){
+    $('links').innerHTML = '';
+    st.links.forEach((l,i) => {
+      const d = document.createElement('div'); d.className = 'linkli';
+      const a = document.createElement('a'); a.href = l.url; a.target = '_blank'; a.rel = 'noopener noreferrer'; a.textContent = l.label;
+      const x = document.createElement('button'); x.className = 'btn ghost small'; x.textContent = 'Hapus';
+      x.onclick = () => { st.links.splice(i,1); renderLinks(); };
+      d.append(a, x); $('links').appendChild(d);
+    });
+  }
+  $('ladd').onclick = () => {
+    if (st.links.length >= 3){ alert('Maksimal 3 tautan.'); return; }
+    const label = $('lname').value.trim(), url = cleanUrl($('lurl').value);
+    if (!label){ alert('Isi nama tautannya dulu.'); return; }
+    if (!url){ alert('Alamat tautan belum valid.'); return; }
+    st.links.push({ label, url }); $('lname').value = ''; $('lurl').value = ''; renderLinks();
+  };
+
+  // kunci misi
+  function newCode(){ const a = new Uint32Array(2); crypto.getRandomValues(a); return String((a[0]%9000)+1000) + String((a[1]%9000)+1000); }
+  async function submit(u, payload){
+    if (!db) throw new Error('Database belum tersambung.');
+    for (let i=0;i<4;i++){
+      const code = newCode(), at = Date.now(), up = {};
+      up['codes/' + code] = { username:u, app:'letter', valid:true, at };
+      up['missions/' + u + '/letter'] = { code, valid:true, at };
+      up['letters/' + u] = Object.assign({ at }, payload);
+      try { await db.ref().update(up); return { code }; }
+      catch(err){ if (!String(err.code || err.message).toUpperCase().includes('PERMISSION')) throw err; }
+    }
+    return { existing:true };
+  }
+
+  $('send').onclick = async () => {
+    const u = un.value.trim();
+    const text = $('text').value.trim();
+    if (!validUser(u)){ alert('Isi username game dulu ya (3-20 karakter: huruf kecil a-z, titik, garis bawah).'); un.focus(); return; }
+    if (text.length < 10){ alert('Suratnya masih terlalu singkat. Tulis minimal 10 karakter ya.'); return; }
+    if (!confirm('Kirim surat ini? Setelah terkirim, surat tidak bisa diubah.')) return;
+    localStorage.setItem(USERNAME_KEY, u);
+    const payload = { text, paper:st.paper, font:st.font };
+    if (st.photo) payload.photo = st.photo;
+    if (st.links.length) payload.links = st.links;
+    const btn = $('send'); btn.disabled = true; btn.textContent = 'Mengirim...';
+    try{
+      const r = await submit(u, payload);
+      $('codeBox').textContent = r.existing ? '✓ Sudah terkirim' : r.code;
+      $('copyCode').style.display = r.existing ? 'none' : '';
+      $('doneMsg').textContent = r.existing
+        ? 'Username ini sudah pernah mengirim surat, jadi surat baru tidak disimpan. Demi keamanan, kunci tidak ditampilkan ulang. Kalau lupa, nanti bisa dipulihkan dengan kata pemulihan.'
+        : 'Suratmu aman tersimpan dan baru terbuka di hari perayaan. Ini kunci Misi Letter-mu. Simpan baik-baik, dibutuhkan saat klaim hadiah.';
+      localStorage.setItem('eg_mission_letter_v1','1');
+      $('done').classList.add('on');
+    }catch(err){ alert('Surat belum terkirim: ' + err.message + '\nCoba tekan tombol lagi.'); }
+    btn.disabled = false; btn.textContent = 'Kirim surat & dapatkan kunci';
+  };
+  $('copyCode').onclick = () => { navigator.clipboard && navigator.clipboard.writeText($('codeBox').textContent); $('copyCode').textContent = 'Tersalin ✓'; };
+  $('closeDone').onclick = () => { $('done').classList.remove('on'); $('copyCode').textContent = 'Salin kunci'; };
+})();
+</script>
+</body>
+</html>
