@@ -41,7 +41,7 @@
   textarea{width:100%;min-height:250px;border:0;background:transparent;resize:vertical;font:inherit;line-height:32px;color:var(--pi);outline:none}
   .sign{text-align:right;line-height:32px;color:var(--pa)}
   .count{font-size:.76rem;color:var(--faint);text-align:right;margin-top:4px}
-  .pimg{margin-top:12px;display:none;position:relative}
+  .pimg{margin:0 0 14px;display:none;position:relative}
   .pimg img{width:100%;border-radius:8px;display:block}
   .pimg button{position:absolute;top:8px;right:8px}
   .btn{border:1px solid var(--teal);background:var(--teal);color:#fff;font:600 .92rem Manrope,sans-serif;padding:12px 14px;border-radius:10px;cursor:pointer}
@@ -77,12 +77,12 @@
 
   <div class="card">
     <div class="paper p-polos f-serif" id="paper">
+      <div class="pimg" id="pimg"><img id="pimgEl" alt="Foto suratmu"><button class="btn ghost small" id="pdel">Hapus foto</button></div>
       <div class="greet">Untuk Erin,</div>
       <textarea id="text" maxlength="1500" placeholder="Tulis suratmu di sini..."></textarea>
       <div class="sign" id="sign">— kamu</div>
     </div>
     <div class="count"><span id="cnt">0</span> / 1500</div>
-    <div class="pimg" id="pimg"><img id="pimgEl" alt="Foto suratmu"><button class="btn ghost small" id="pdel">Hapus foto</button></div>
   </div>
 
   <div class="card">
@@ -111,9 +111,9 @@
     <div class="card">
       <div class="lbl">PRATINJAU · BEGINI SURATMU AKAN TAMPIL</div>
       <div class="paper p-polos f-serif" id="pvPaper">
+        <div id="pvPhoto"></div>
         <div class="greet">Untuk Erin,</div>
         <div class="ptext" id="pvText"></div>
-        <div id="pvPhoto"></div>
         <div class="plinks" id="pvLinks"></div>
         <div class="sign" id="pvSign"></div>
       </div>
@@ -240,7 +240,7 @@
     $('pvText').textContent = $('text').value.trim();
     $('pvSign').textContent = '— ' + un.value.trim();
     $('pvPhoto').innerHTML = '';
-    if (st.photo){ const im = new Image(); im.src = st.photo; im.style.cssText = 'width:100%;border-radius:8px;margin-top:12px;display:block'; $('pvPhoto').appendChild(im); }
+    if (st.photo){ const im = new Image(); im.src = st.photo; im.style.cssText = 'width:100%;border-radius:8px;margin-bottom:14px;display:block'; $('pvPhoto').appendChild(im); }
     $('pvLinks').innerHTML = '';
     st.links.forEach(l => { const a = document.createElement('a'); a.href = l.url; a.target = '_blank'; a.rel = 'noopener noreferrer'; a.textContent = '↗ ' + l.label; $('pvLinks').appendChild(a); });
     $('viewEdit').style.display = 'none'; $('viewPrev').style.display = 'block'; window.scrollTo(0,0);
