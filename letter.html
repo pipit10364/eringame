@@ -26,13 +26,20 @@
   .p-polos{background:#fffdf7}
   .p-garis{background:repeating-linear-gradient(#fffdf7 0 31px,#e9e2cf 31px 32px)}
   .p-titik{background:radial-gradient(#d3ccb5 1px,transparent 1px) 0 0/18px 18px,#fffdf7}
+  .paper{--pi:var(--ink);--pa:var(--teal-d)}
   .p-teal{background:linear-gradient(160deg,#e6f6f3,#fbf8f1);border-color:#bfe5df}
+  .p-tealtua{background:linear-gradient(160deg,#0f8f81,#0b6f64);--pi:#fbf8f1;--pa:#f1dcaa;border-color:#0b6f64}
+  .p-malam{background:linear-gradient(160deg,#12382f,#0a211c);--pi:#eaf6f3;--pa:#d8b979;border-color:#1e4a3f}
+  .p-emas{background:linear-gradient(160deg,#f4e6bf,#ead29b);border-color:#d8b979}
+  .ptext{white-space:pre-wrap;word-break:break-word;line-height:32px;color:var(--pi)}
+  .plinks{margin-top:10px}.plinks a{display:block;color:var(--pa);font-weight:700;text-decoration:underline;line-height:30px}
+  textarea::placeholder{color:var(--pi);opacity:.5}
   .f-serif{font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:600}
   .f-hand{font-family:'Caveat',cursive;font-size:1.5rem;font-weight:500}
   .f-sans{font-family:'Manrope',sans-serif;font-size:1rem}
-  .greet{line-height:32px;color:var(--teal-d)}
-  textarea{width:100%;min-height:250px;border:0;background:transparent;resize:vertical;font:inherit;line-height:32px;color:var(--ink);outline:none}
-  .sign{text-align:right;line-height:32px;color:var(--teal-d)}
+  .greet{line-height:32px;color:var(--pa)}
+  textarea{width:100%;min-height:250px;border:0;background:transparent;resize:vertical;font:inherit;line-height:32px;color:var(--pi);outline:none}
+  .sign{text-align:right;line-height:32px;color:var(--pa)}
   .count{font-size:.76rem;color:var(--faint);text-align:right;margin-top:4px}
   .pimg{margin-top:12px;display:none;position:relative}
   .pimg img{width:100%;border-radius:8px;display:block}
@@ -57,11 +64,12 @@
 </head>
 <body>
 <div class="wrap">
-  <a class="back" href="index.html">← Kembali ke menu</a>
+  <a class="back" href="index.html#menu">← Kembali ke menu</a>
   <div class="eyebrow">MISSION 02 · LETTER SANCTUM</div>
   <h1>Tulis surat untuk Erin</h1>
   <p class="sub">Pilih kertas dan gaya tulisanmu, lalu tuangkan isi hatimu. Surat disimpan rapi dan baru terbuka di hari perayaan. Setelah terkirim, kamu mendapat kunci misi.</p>
 
+  <div id="viewEdit">
   <div class="card">
     <div class="lbl">KERTAS</div><div class="chips" id="papers"></div>
     <div class="lbl" style="margin-top:14px">GAYA TULISAN</div><div class="chips" id="fonts"></div>
@@ -95,7 +103,25 @@
     <div class="lbl">USERNAME GAME</div>
     <input type="text" id="uname" maxlength="20" placeholder="username game kamu" autocomplete="off" autocapitalize="off" spellcheck="false">
     <p class="hint">Satu username hanya bisa mengirim satu surat, dan surat tidak bisa diubah setelah terkirim. Baca ulang dulu ya.</p>
-    <div class="row"><button class="btn" id="send" style="flex:1">Kirim surat &amp; dapatkan kunci</button></div>
+    <div class="row"><button class="btn" id="prev" style="flex:1">Lihat pratinjau</button></div>
+  </div>
+  </div>
+
+  <div id="viewPrev" style="display:none">
+    <div class="card">
+      <div class="lbl">PRATINJAU · BEGINI SURATMU AKAN TAMPIL</div>
+      <div class="paper p-polos f-serif" id="pvPaper">
+        <div class="greet">Untuk Erin,</div>
+        <div class="ptext" id="pvText"></div>
+        <div id="pvPhoto"></div>
+        <div class="plinks" id="pvLinks"></div>
+        <div class="sign" id="pvSign"></div>
+      </div>
+    </div>
+    <div class="row">
+      <button class="btn ghost" id="backEdit" style="flex:1">← Edit suratku</button>
+      <button class="btn" id="send" style="flex:2">Kirim surat &amp; dapatkan kunci</button>
+    </div>
   </div>
 </div>
 
@@ -122,7 +148,7 @@
   const $ = id => document.getElementById(id);
   const USERNAME_KEY = 'eg_username_v1';
   const st = { paper:'polos', font:'serif', photo:null, links:[] };
-  const PAPERS = [['polos','Polos'],['garis','Bergaris'],['titik','Titik'],['teal','Teal lembut']];
+  const PAPERS = [['polos','Polos'],['garis','Bergaris'],['titik','Titik'],['teal','Teal pucat'],['tealtua','Teal pekat'],['malam','Hijau malam'],['emas','Emas hangat']];
   const FONTS = [['serif','Klasik'],['hand','Tulisan tangan'],['sans','Modern']];
 
   function chips(box, list, key){
@@ -201,6 +227,25 @@
     }
     return { existing:true };
   }
+
+  function check(){
+    const u = un.value.trim(), text = $('text').value.trim();
+    if (!validUser(u)){ alert('Isi username game dulu ya (3-20 karakter: huruf kecil a-z, titik, garis bawah).'); un.focus(); return false; }
+    if (text.length < 10){ alert('Suratnya masih terlalu singkat. Tulis minimal 10 karakter ya.'); return false; }
+    return true;
+  }
+  $('prev').onclick = () => {
+    if (!check()) return;
+    $('pvPaper').className = 'paper p-' + st.paper + ' f-' + st.font;
+    $('pvText').textContent = $('text').value.trim();
+    $('pvSign').textContent = '— ' + un.value.trim();
+    $('pvPhoto').innerHTML = '';
+    if (st.photo){ const im = new Image(); im.src = st.photo; im.style.cssText = 'width:100%;border-radius:8px;margin-top:12px;display:block'; $('pvPhoto').appendChild(im); }
+    $('pvLinks').innerHTML = '';
+    st.links.forEach(l => { const a = document.createElement('a'); a.href = l.url; a.target = '_blank'; a.rel = 'noopener noreferrer'; a.textContent = '↗ ' + l.label; $('pvLinks').appendChild(a); });
+    $('viewEdit').style.display = 'none'; $('viewPrev').style.display = 'block'; window.scrollTo(0,0);
+  };
+  $('backEdit').onclick = () => { $('viewPrev').style.display = 'none'; $('viewEdit').style.display = 'block'; window.scrollTo(0,0); };
 
   $('send').onclick = async () => {
     const u = un.value.trim();
