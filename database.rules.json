@@ -1,0 +1,28 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+
+    "leaderboard": {
+      ".read": true,
+      ".write": true
+    },
+
+    "codes": {
+      "$code": {
+        ".read": true,
+        ".write": "(!data.exists() && newData.exists() && $code.matches(/^[0-9]{8}$/) && newData.child('valid').val() === true) || auth.uid === 'GANTI_DENGAN_UID_ADMIN'",
+        ".validate": "newData.hasChildren(['username','app','valid','at']) && newData.child('app').val().matches(/^(twibbon|letter|photobooth)$/)"
+      }
+    },
+
+    "missions": {
+      "$username": {
+        "$app": {
+          ".read": "auth.uid === 'GANTI_DENGAN_UID_ADMIN'",
+          ".write": "(!data.exists() && newData.exists()) || auth.uid === 'GANTI_DENGAN_UID_ADMIN'"
+        }
+      }
+    }
+  }
+}
