@@ -119,6 +119,16 @@
   .username-feedback.warn{ color: var(--struck, #e8827a); }
   .username-feedback.ok{ color: var(--emerald); }
   @keyframes shakeX{10%,90%{transform:translateX(-1px);}20%,80%{transform:translateX(2px);}30%,50%,70%{transform:translateX(-4px);}40%,60%{transform:translateX(4px);}}
+
+  .hub-group{ margin-top: 44px; text-align: left; }
+  .hub-group:first-of-type{ margin-top: 36px; }
+  .hub-head{ display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; border-bottom:1px solid var(--border-soft); padding-bottom:10px; }
+  .hub-label{ font-family:'JetBrains Mono', monospace; font-size:0.78rem; letter-spacing:0.16em; color:var(--gold); }
+  .hub-note{ color: var(--ink-faint); font-size: 0.82rem; }
+  .hub-group .stage-grid{ margin-top: 16px; }
+  .stage-card.locked{ cursor: not-allowed; opacity: 0.62; border-style: dashed; }
+  .stage-card.locked:hover{ transform:none; border-color: var(--border); }
+  .stage-lock{ margin-top: 12px; font-size: 0.76rem; color: var(--gold); font-family:'JetBrains Mono', monospace; border-top:1px solid var(--border-soft); padding-top:10px; line-height:1.55; }
 </style>
 </head>
 <body>
@@ -129,7 +139,7 @@
       <div class="opening-kicker">A Small Puzzle, A Big Celebration</div>
       <p class="opening-line">In order to celebrate our special one,</p>
       <div class="opening-name">Erin Larasati Angdika</div>
-      <p class="opening-tagline">Four rooms. One unforgettable day.</p>
+      <p class="opening-tagline">Three missions. Three games. One unforgettable prize.</p>
       <div class="username-box" id="username-box" style="display:none;">
         <label class="username-label" for="username-input">Input your name</label>
         <input type="text" id="username-input" class="username-input" placeholder="contoh: erin.larasati" maxlength="20" autocomplete="off">
@@ -143,37 +153,10 @@
   <!-- ================= STAGE SELECT SCREEN ================= -->
   <div class="screen" id="screen-select">
     <div class="select-wrap">
-      <div class="eyebrow-mark">CHOOSE YOUR STAGE</div>
-      <h1 class="select-title">Empat Ruang, Satu Perayaan</h1>
-      <p class="select-sub">Main sesuka hati, urutan bebas — tiap ruang gerbangnya jalan sendiri-sendiri.</p>
-
-      <div class="stage-grid" id="stage-grid">
-        <a class="stage-card" href="molecular-museum.html">
-          <span class="stage-check" id="check-1">•</span>
-          <div class="stage-num">STAGE 01</div>
-          <div class="stage-title">The Secret of the<br>Molecular Museum</div>
-          <div class="stage-blurb">Deduksi & logic grid. Pecahkan kombinasi vault utama.</div>
-        </a>
-        <a class="stage-card" href="cerebral-hunt-arena.html">
-          <span class="stage-check" id="check-2">•</span>
-          <div class="stage-num">STAGE 02</div>
-          <div class="stage-title">Cerebral Hunt Arena</div>
-          <div class="stage-blurb">Jawab soal logika, temukan 12 kata tersembunyi di papan huruf.</div>
-        </a>
-        <a class="stage-card" href="lexicon-vault.html">
-          <span class="stage-check" id="check-3">•</span>
-          <div class="stage-num">STAGE 03</div>
-          <div class="stage-title">Lexicon Vault</div>
-          <div class="stage-blurb">Satu grid, 36 kunci — semua tentang Erin.</div>
-        </a>
-        <a class="stage-card" href="celebration-chamber.html">
-          <span class="stage-check" id="check-4">•</span>
-          <div class="stage-num">STAGE 04</div>
-          <div class="stage-title">Celebration Chamber</div>
-          <div class="stage-blurb">Ruang terakhir. Kado untuk Erin menantimu di baliknya.</div>
-          <div class="stage-hint">🔒 butuh info dari Stage 01–03</div>
-        </a>
-      </div>
+      <div class="eyebrow-mark">CHOOSE YOUR PATH</div>
+      <h1 class="select-title">Tiga Misi, Tiga Game, Satu Hadiah</h1>
+      <p class="select-sub">Urutan bebas. Selesaikan misi untuk mendapat kunci, mainkan game untuk membuka kode, lalu klaim Prize.</p>
+      <div id="hub"></div>
     </div>
   </div>
 
@@ -226,20 +209,54 @@
     window.scrollTo(0,0);
   }
 
-  // Tanda subtle "sudah pernah dimainkan", dibaca dari localStorage tiap game (best-effort, tidak wajib akurat).
-  (function markProgress(){
-    const checks = {
-      'check-1': !!localStorage.getItem('eg_game1_score_v1'),
-      'check-2': !!localStorage.getItem('eg_game2_score_v1'),
-      'check-3': !!localStorage.getItem('eg_game3_best_score_v1'),
-      'check-4': !!localStorage.getItem('eg_game4_done_v1'),
-    };
-    Object.entries(checks).forEach(([id, done]) => {
-      const el = document.getElementById(id);
-      if (!el) return;
-      if (done){ el.textContent = '✓'; el.classList.add('done'); }
-    });
-  })();
+  // ====== HUB: daftar banner. Ubah teks/tanggal di sini. ======
+  // openAt: tanggal buka (WIB). ready:false = belum dibuat ("soon"). Tambahkan ?unlock=1 di URL untuk uji coba.
+  const HUB = [
+    { label:'MISSIONS', note:'Selesaikan misi, dapatkan kuncinya.', items:[
+      { num:'MISSION 01', title:'Portrait Atelier', blurb:'Pasang twibbon-mu dan bingkai satu kenangan untuk Erin.', href:'twibbon.html', doneKey:'eg_mission_twibbon_v1' },
+      { num:'MISSION 02', title:'Letter Sanctum', blurb:'Tulis surat untuk Erin. Semua surat baru terbuka di akhir.', href:'letter.html', ready:false, doneKey:'eg_mission_letter_v1' },
+      { num:'MISSION 03', title:'Polaroid Parlor', blurb:'Photo booth dengan template spesial, hanya di hari-H.', href:'photobooth.html', ready:false, openAt:'2026-11-17T00:00:00+07:00', doneKey:'eg_mission_photobooth_v1' },
+    ]},
+    { label:'GAMES', note:'Mainkan untuk membuka kode hadiah.', items:[
+      { num:'GAME 01', title:'The Secret of the<br>Molecular Museum', blurb:'Deduksi & logic grid. Pecahkan kombinasi vault utama.', href:'molecular-museum.html', doneKey:'eg_game1_score_v1' },
+      { num:'GAME 02', title:'Cerebral Hunt Arena', blurb:'Jawab soal logika, temukan 12 kata tersembunyi di papan huruf.', href:'cerebral-hunt-arena.html', doneKey:'eg_game2_score_v1' },
+      { num:'GAME 03', title:'Lexicon Vault', blurb:'Satu grid, 36 kunci. Semua tentang Erin.', href:'lexicon-vault.html', doneKey:'eg_game3_best_score_v1' },
+    ]},
+    { label:'PRIZE', note:'Kado untuk Erin menantimu.', items:[
+      { num:'PRIZE', title:'Prize', blurb:'Masukkan kode dari 3 game dan 3 kunci misi untuk membuka hadiahnya.', href:'celebration-chamber.html', openAt:'2026-11-17T00:00:00+07:00', doneKey:'eg_game4_done_v1', hint:'🔒 butuh kode Game 01–03 &amp; kunci 3 misi' },
+    ]},
+  ];
+
+  const BYPASS = new URLSearchParams(location.search).get('unlock') === '1';
+  function fmtWIB(iso){
+    return new Date(iso).toLocaleString('en-GB', { day:'numeric', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit', timeZone:'Asia/Jakarta' }) + ' WIB';
+  }
+  function lockInfo(it){
+    if (BYPASS) return null;
+    const name = it.title.replace(/<br>/g,' ');
+    if (it.ready === false) return name + ' can be accessed soon';
+    if (it.openAt && Date.now() < new Date(it.openAt).getTime()) return name + ' can be accessed at ' + fmtWIB(it.openAt);
+    return null;
+  }
+  function renderHub(){
+    const root = document.getElementById('hub');
+    root.innerHTML = HUB.map(g => `
+      <section class="hub-group">
+        <div class="hub-head"><span class="hub-label">${g.label}</span><span class="hub-note">${g.note}</span></div>
+        <div class="stage-grid">${g.items.map(it => {
+          const lock = lockInfo(it);
+          const done = it.doneKey && localStorage.getItem(it.doneKey);
+          const inner = `
+            <span class="stage-check ${done ? 'done' : ''}">${done ? '✓' : '•'}</span>
+            <div class="stage-num">${it.num}</div>
+            <div class="stage-title">${it.title}</div>
+            <div class="stage-blurb">${it.blurb}</div>
+            ${lock ? `<div class="stage-lock">🔒 ${lock}</div>` : (it.hint ? `<div class="stage-hint">${it.hint}</div>` : '')}`;
+          return lock ? `<div class="stage-card locked">${inner}</div>` : `<a class="stage-card" href="${it.href}">${inner}</a>`;
+        }).join('')}</div>
+      </section>`).join('');
+  }
+  renderHub();
 </script>
 </body>
 </html>
