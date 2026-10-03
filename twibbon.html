@@ -97,12 +97,10 @@
 
       <div class="panel" id="p-stiker">
         <div class="emojis" id="emojis"></div>
-        <div class="row">
-          <button class="btn ghost small" id="stBig">Perbesar</button>
-          <button class="btn ghost small" id="stSmall">Perkecil</button>
-          <button class="btn ghost small" id="stDel">Hapus</button>
-        </div>
-        <p class="hint">Ketuk emoji untuk menambah, lalu geser di atas gambar. Stiker terakhir yang disentuh yang dipilih.</p>
+        <label class="s"><span>Ukuran</span><input type="range" id="stSize" min="50" max="500" step="1" value="160" disabled></label>
+        <label class="s"><span>Putar</span><input type="range" id="stRot" min="-180" max="180" step="1" value="0" disabled></label>
+        <div class="row"><button class="btn ghost small" id="stDel">Hapus stiker</button></div>
+        <p class="hint">Ketuk emoji untuk menambah, geser untuk memindah. Di HP, cubit dua jari di atas gambar untuk mengubah ukuran dan memutar stiker yang terpilih.</p>
       </div>
 
       <div class="panel" id="p-coret">
@@ -209,12 +207,15 @@
     });
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     st.stickers.forEach((e,i) => {
+      ctx.save();
+      ctx.translate(e.x, e.y); ctx.rotate((e.rot||0)*Math.PI/180);
       ctx.font = e.size + 'px serif';
-      ctx.fillText(e.ch, e.x, e.y);
+      ctx.fillText(e.ch, 0, 0);
       if (i === st.sel && st.mode === 'stiker' && !draw.exporting){
         ctx.strokeStyle = '#0f9d8e'; ctx.lineWidth = 3; ctx.setLineDash([10,8]);
-        ctx.strokeRect(e.x-e.size*.6, e.y-e.size*.6, e.size*1.2, e.size*1.2); ctx.setLineDash([]);
+        ctx.strokeRect(-e.size*.6, -e.size*.6, e.size*1.2, e.size*1.2); ctx.setLineDash([]);
       }
+      ctx.restore();
     });
     ctx.textBaseline = 'alphabetic';
   }
@@ -270,14 +271,19 @@
   $('rot').oninput = e => { st.rot = +e.target.value; draw(); };
   $('rot90').onclick = () => { st.rot = ((st.rot + 90 + 180) % 360) - 180; $('rot').value = st.rot; draw(); };
 
+  function syncSticker(){
+    const e = st.stickers[st.sel];
+    $('stSize').disabled = $('stRot').disabled = !e;
+    if (e){ $('stSize').value = e.size; $('stRot').value = Math.round(e.rot||0); }
+  }
   EMOJIS.forEach(ch => {
     const b = document.createElement('button'); b.textContent = ch;
-    b.onclick = () => { st.stickers.push({ch, x:S/2, y:S/2, size:160}); st.sel = st.stickers.length-1; draw(); };
+    b.onclick = () => { st.stickers.push({ch, x:S/2, y:S/2, size:160, rot:0}); st.sel = st.stickers.length-1; syncSticker(); draw(); };
     $('emojis').appendChild(b);
   });
-  $('stBig').onclick = () => { const e = st.stickers[st.sel]; if (e){ e.size = Math.min(500, e.size*1.2); draw(); } };
-  $('stSmall').onclick = () => { const e = st.stickers[st.sel]; if (e){ e.size = Math.max(50, e.size/1.2); draw(); } };
-  $('stDel').onclick = () => { if (st.sel>=0){ st.stickers.splice(st.sel,1); st.sel = st.stickers.length-1; draw(); } };
+  $('stSize').oninput = e => { const s = st.stickers[st.sel]; if (s){ s.size = +e.target.value; draw(); } };
+  $('stRot').oninput = e => { const s = st.stickers[st.sel]; if (s){ s.rot = +e.target.value; draw(); } };
+  $('stDel').onclick = () => { if (st.sel>=0){ st.stickers.splice(st.sel,1); st.sel = st.stickers.length-1; syncSticker(); draw(); } };
 
   COLORS.forEach((c,i) => {
     const d = document.createElement('div'); d.className = 'sw' + (i===0?' on':''); d.style.background = c;
@@ -287,28 +293,54 @@
   $('undo').onclick = () => { st.strokes.pop(); draw(); };
 
   // gestur di canvas
-  let drag = null;
+  let drag = null, pinch = null;
+  const ptrs = new Map();
   function pos(e){ const r = cv.getBoundingClientRect(); return [(e.clientX-r.left)*S/r.width, (e.clientY-r.top)*S/r.height]; }
+  function twoPtr(){ const [a,b] = [...ptrs.values()]; return { d:Math.hypot(b[0]-a[0], b[1]-a[1]) || 1, ang:Math.atan2(b[1]-a[1], b[0]-a[0])*180/Math.PI }; }
+  function hitSticker(x,y){
+    for (let i=st.stickers.length-1;i>=0;i--){
+      const s = st.stickers[i], r = -(s.rot||0)*Math.PI/180, dx = x-s.x, dy = y-s.y;
+      const lx = dx*Math.cos(r) - dy*Math.sin(r), ly = dx*Math.sin(r) + dy*Math.cos(r);
+      if (Math.abs(lx) < s.size*.6 && Math.abs(ly) < s.size*.6) return i;
+    }
+    return -1;
+  }
   cv.addEventListener('pointerdown', e => {
     if (!st.img) return;
     cv.setPointerCapture(e.pointerId);
     const [x,y] = pos(e);
+    ptrs.set(e.pointerId, [x,y]);
+    if (st.mode === 'stiker' && ptrs.size === 2 && st.stickers[st.sel]){
+      const t = twoPtr(), s = st.stickers[st.sel];
+      pinch = { d:t.d, ang:t.ang, size:s.size, rot:s.rot||0 }; drag = null; return;
+    }
     if (st.mode === 'foto') drag = {x,y,ox:st.ox,oy:st.oy};
     else if (st.mode === 'stiker'){
-      let hit = -1;
-      for (let i=st.stickers.length-1;i>=0;i--){ const s=st.stickers[i]; if (Math.abs(x-s.x)<s.size*.6 && Math.abs(y-s.y)<s.size*.6){ hit=i; break; } }
-      st.sel = hit; if (hit>=0) drag = {x,y,sx:st.stickers[hit].x,sy:st.stickers[hit].y}; draw();
+      const hit = hitSticker(x,y);
+      st.sel = hit; if (hit>=0) drag = {x,y,sx:st.stickers[hit].x,sy:st.stickers[hit].y};
+      syncSticker(); draw();
     } else { st.strokes.push({color:st.color, w:+$('brush').value, pts:[[x,y]]}); drag = {}; draw(); }
   });
   cv.addEventListener('pointermove', e => {
-    if (!drag) return;
+    if (!ptrs.has(e.pointerId)) return;
     const [x,y] = pos(e);
+    ptrs.set(e.pointerId, [x,y]);
+    if (pinch && ptrs.size >= 2){
+      const t = twoPtr(), s = st.stickers[st.sel];
+      if (s){ s.size = Math.max(50, Math.min(500, pinch.size * t.d / pinch.d)); s.rot = ((pinch.rot + t.ang - pinch.ang + 540) % 360) - 180; syncSticker(); draw(); }
+      return;
+    }
+    if (!drag) return;
     if (st.mode === 'foto'){ st.ox = drag.ox + (x-drag.x); st.oy = drag.oy + (y-drag.y); }
     else if (st.mode === 'stiker'){ const s = st.stickers[st.sel]; if (s){ s.x = drag.sx + (x-drag.x); s.y = drag.sy + (y-drag.y); } }
     else st.strokes[st.strokes.length-1].pts.push([x,y]);
     draw();
   });
-  ['pointerup','pointercancel'].forEach(ev => cv.addEventListener(ev, () => { drag = null; }));
+  ['pointerup','pointercancel'].forEach(ev => cv.addEventListener(ev, e => {
+    ptrs.delete(e.pointerId);
+    if (ptrs.size < 2) pinch = null;
+    drag = null;
+  }));
 
   // username
   const un = $('uname');
