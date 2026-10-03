@@ -259,6 +259,8 @@
       </section>`).join('');
   }
   renderHub();
+  // Tautan kembali dari halaman misi/game: index.html#menu langsung ke daftar (kalau username sudah ada)
+  if (location.hash === '#menu' && isValidUsername(getStoredUsername() || '')) showScreen('screen-select');
 </script>
 </body>
 </html>
