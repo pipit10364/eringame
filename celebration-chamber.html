@@ -10,6 +10,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+<script src="recovery.js"></script>
 <style>
   :root{
     --bg: #061a15;
@@ -301,6 +302,7 @@
         <div class="key-row"><label for="key-letter">Letter Sanctum</label><input class="key-input" id="key-letter" maxlength="8" inputmode="numeric" placeholder="8 digit" autocomplete="off"></div>
         <div class="key-row"><label for="key-photobooth">Polaroid Parlor</label><input class="key-input" id="key-photobooth" maxlength="8" inputmode="numeric" placeholder="8 digit" autocomplete="off"></div>
       </div>
+      <div style="margin-top:12px;text-align:center"><button type="button" class="leaderboard-link" id="recover-btn">Lupa kunci misi? Pulihkan dengan pertanyaan</button></div>
       <div class="pin-feedback" id="pin-feedback"></div>
       <div class="cta-row">
         <button class="btn btn-primary" id="pin-submit-btn" onclick="checkPin()">Buka Pintu</button>
@@ -743,10 +745,23 @@
       const user = auth.currentUser || (await auth.signInAnonymously()).user;
       const ref = db.ref('claims/' + user.uid);
       if ((await ref.once('value')).exists()) return true;
-      await ref.set({ username:getStoredUsername(), twibbon:codes.twibbon, letter:codes.letter, photobooth:codes.photobooth, at:Date.now() });
+      await ref.set(codes.rh
+        ? { username:getStoredUsername(), rh:codes.rh, at:Date.now() }
+        : { username:getStoredUsername(), twibbon:codes.twibbon, letter:codes.letter, photobooth:codes.photobooth, at:Date.now() });
       return true;
     } catch (e) { console.warn('Klaim gagal:', e); return false; }
   }
+
+  let recoveredHash = null;
+  document.getElementById('recover-btn').onclick = async () => {
+    const u = getStoredUsername(), fb = document.getElementById('pin-feedback');
+    if (!u || !window.EgRecovery) return;
+    const h = await EgRecovery.ask(u);
+    if (!h) return;
+    recoveredHash = h;
+    document.querySelectorAll('.key-input').forEach(k => { k.value = ''; k.disabled = true; k.placeholder = 'dipulihkan ✓'; k.classList.remove('bad'); });
+    fb.textContent = 'Pemulihan berhasil. Isi PIN-nya lalu buka pintu.'; fb.className = 'pin-feedback ok';
+  };
 
   let checking = false;
   async function checkPin(){
@@ -772,15 +787,20 @@
     checking = true;
     const btn = document.getElementById('pin-submit-btn'); btn.disabled = true;
     fb.textContent = 'PIN benar. Memeriksa kunci misi...'; fb.className = 'pin-feedback';
-    const r = await verifyMissionKeys();
+    const r = recoveredHash ? { ok:true, rh:recoveredHash } : await verifyMissionKeys();
     checking = false; btn.disabled = false;
     if (!r.ok){
       fb.textContent = r.msg; fb.className = 'pin-feedback warn';
       if (r.el){ r.el.classList.add('bad'); r.el.focus(); }
       return;
     }
-    if (!(await writeClaim(r.codes))){
-      fb.textContent = 'Kuncinya cocok, tapi klaim belum bisa disahkan. Muat ulang halaman lalu coba lagi ya.'; fb.className = 'pin-feedback warn';
+    if (!(await writeClaim(r.rh ? { rh:r.rh } : r.codes))){
+      if (r.rh){
+        recoveredHash = null;
+        document.querySelectorAll('.key-input').forEach(k => { k.disabled = false; k.placeholder = '8 digit'; });
+        fb.textContent = 'Pemulihan belum bisa dipakai. Pastikan ketiga misi sudah selesai dengan username ini, atau isi kuncinya manual.';
+      } else fb.textContent = 'Kuncinya cocok, tapi klaim belum bisa disahkan. Muat ulang halaman lalu coba lagi ya.';
+      fb.className = 'pin-feedback warn';
       return;
     }
     fb.textContent = 'Semua kunci cocok. Pintu terbuka...';
