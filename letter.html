@@ -9,13 +9,13 @@
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
 <style>
-  :root{--bg:#fbf8f1;--panel:#fff;--ink:#17332d;--dim:#5d7a72;--faint:#93a8a1;--line:#e6e0d1;--teal:#0f9d8e;--teal-d:#0b7a6e;--teal-soft:#e3f4f1;--gold:#b8975a}
+  :root{--bg:#fbf8f1;--panel:#fff;--ink:#17332d;--dim:#5d7a72;--faint:#5c7a71;--line:#e6e0d1;--teal:#0f9d8e;--teal-d:#0b7a6e;--teal-soft:#e3f4f1;--gold:#8a6a2c}
   *{box-sizing:border-box;margin:0;padding:0}
   body{background:radial-gradient(circle at 12% 8%,rgba(15,157,142,.07),transparent 40%),var(--bg);color:var(--ink);font-family:'Nunito',sans-serif;line-height:1.55;min-height:100vh;padding:28px 16px 60px}
   .wrap{max-width:600px;margin:0 auto}
   .back{display:block;text-align:center;font:600 .8rem Nunito,sans-serif;color:var(--teal-d);text-decoration:none;margin-bottom:14px}
   .eyebrow{font-family:'Fredoka',sans-serif;font-size:.72rem;letter-spacing:.14em;color:var(--gold);text-align:center}
-  h1{font-family:'Fredoka',sans-serif;font-weight:700;font-size:clamp(1.9rem,6vw,2.5rem);text-align:center;margin-top:8px;line-height:1.15}
+  h1{font-family:'Cormorant Garamond',serif;font-weight:700;font-size:clamp(2.2rem,7vw,2.9rem);text-align:center;margin-top:8px;line-height:1.15}
   .sub{text-align:center;color:var(--dim);font-size:.95rem;margin:10px auto 20px;max-width:440px}
   .card{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:16px;box-shadow:0 6px 24px rgba(23,51,45,.05);margin-top:14px}
   .lbl{font:600 .78rem 'Fredoka',sans-serif;letter-spacing:.1em;color:var(--gold);margin-bottom:8px}
@@ -57,9 +57,16 @@
   .overlay{position:fixed;inset:0;background:rgba(23,51,45,.55);display:none;align-items:center;justify-content:center;padding:18px;z-index:10}
   .overlay.on{display:flex}
   .modal{background:var(--panel);border-radius:16px;padding:22px;max-width:420px;width:100%;text-align:center}
-  .modal h2{font-family:'Fredoka',sans-serif;font-size:1.6rem}
+  .modal h2{font-family:'Cormorant Garamond',serif;font-weight:700;font-size:1.9rem}
   .modal p{color:var(--dim);font-size:.9rem}
   .code{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:1.7rem;letter-spacing:.22em;color:var(--teal-d);background:var(--teal-soft);border:1px dashed var(--teal);border-radius:10px;padding:14px;margin:14px 0}
+  @media (prefers-reduced-motion: reduce){ *,*::before,*::after{ animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; scroll-behavior:auto !important; } }
+  .keywarn{background:#fff7e6;border:1px solid #e3c98f;color:#5e4510;border-radius:10px;padding:10px 12px;font-size:.84rem;text-align:left;margin-bottom:12px}
+  .card{position:relative}
+  .card::before,.card::after{content:"";position:absolute;width:16px;height:16px;border:1.5px solid #b8975a;opacity:.7;pointer-events:none}
+  .card::before{top:9px;left:9px;border-right:none;border-bottom:none}
+  .card::after{bottom:9px;right:9px;border-left:none;border-top:none}
+  .eyebrow{font-family:'JetBrains Mono',monospace}
 </style>
 </head>
 <body>
@@ -129,6 +136,7 @@
   <h2>Surat terkirim 💌</h2>
   <p id="doneMsg"></p>
   <div class="code" id="codeBox"></div>
+  <div class="keywarn" id="keyWarn">Catat kunci ini sekarang: tulis di kertas, simpan di note HP, atau screenshot. Kunci tidak akan ditampilkan lagi. Kalau terlanjur lupa, kamu masih bisa memulihkannya lewat pertanyaan pemulihan di halaman Prize.</div>
   <div class="row" style="justify-content:center"><button class="btn ghost" id="copyCode">Salin kunci</button><button class="btn" id="closeDone">Tutup</button></div>
 </div></div>
 
@@ -165,9 +173,9 @@
 
   const un = $('uname');
   un.value = localStorage.getItem(USERNAME_KEY) || '';
-  const validUser = v => /^[a-z_.]{3,20}$/.test(v);
+  const validUser = v => /^[a-z0-9]{3,20}$/.test(v);
   const upSign = () => { $('sign').textContent = '— ' + (un.value || 'kamu'); };
-  un.addEventListener('input', () => { un.value = un.value.toLowerCase().replace(/[^a-z_.]/g,''); upSign(); });
+  un.addEventListener('input', () => { un.value = un.value.toLowerCase().replace(/[^a-z0-9]/g,''); upSign(); });
   upSign();
 
   // foto: dikecilkan di browser, tidak dikirim ke layanan lain
@@ -230,7 +238,7 @@
 
   function check(){
     const u = un.value.trim(), text = $('text').value.trim();
-    if (!validUser(u)){ alert('Isi username game dulu ya (3-20 karakter: huruf kecil a-z, titik, garis bawah).'); un.focus(); return false; }
+    if (!validUser(u)){ alert('Isi username game dulu ya (huruf kecil a-z dan angka, 3-20 karakter, tanpa simbol).'); un.focus(); return false; }
     if (text.length < 10){ alert('Suratnya masih terlalu singkat. Tulis minimal 10 karakter ya.'); return false; }
     return true;
   }
@@ -250,7 +258,7 @@
   $('send').onclick = async () => {
     const u = un.value.trim();
     const text = $('text').value.trim();
-    if (!validUser(u)){ alert('Isi username game dulu ya (3-20 karakter: huruf kecil a-z, titik, garis bawah).'); un.focus(); return; }
+    if (!validUser(u)){ alert('Isi username game dulu ya (huruf kecil a-z dan angka, 3-20 karakter, tanpa simbol).'); un.focus(); return; }
     if (text.length < 10){ alert('Suratnya masih terlalu singkat. Tulis minimal 10 karakter ya.'); return; }
     if (!confirm('Kirim surat ini? Setelah terkirim, surat tidak bisa diubah.')) return;
     localStorage.setItem(USERNAME_KEY, u);
@@ -262,6 +270,8 @@
       const r = await submit(u, payload);
       $('codeBox').textContent = r.existing ? '✓ Sudah terkirim' : r.code;
       $('copyCode').style.display = r.existing ? 'none' : '';
+      $('keyWarn').style.display = r.existing ? 'none' : '';
+      $('closeDone').textContent = r.existing ? 'Tutup' : 'Sudah kucatat';
       $('doneMsg').textContent = r.existing
         ? 'Username ini sudah pernah mengirim surat, jadi surat baru tidak disimpan. Demi keamanan, kunci tidak ditampilkan ulang. Kalau lupa, nanti bisa dipulihkan dengan kata pemulihan.'
         : 'Suratmu aman tersimpan dan baru terbuka di hari perayaan. Ini kunci Misi Letter-mu. Simpan baik-baik, dibutuhkan saat klaim hadiah.';
