@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Portrait Atelier — Mission 01</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
 <style>
@@ -15,12 +15,12 @@
   }
   *{box-sizing:border-box;margin:0;padding:0}
   body{background:radial-gradient(circle at 12% 8%,rgba(15,157,142,.07),transparent 40%),var(--bg);
-    color:var(--ink);font-family:'Manrope',sans-serif;line-height:1.55;min-height:100vh;padding:28px 16px 60px}
+    color:var(--ink);font-family:'Nunito',sans-serif;line-height:1.55;min-height:100vh;padding:28px 16px 60px}
   .wrap{max-width:560px;margin:0 auto}
-  .eyebrow{font-family:'JetBrains Mono',monospace;font-size:.72rem;letter-spacing:.14em;color:var(--gold);text-align:center}
-  h1{font-family:'Cormorant Garamond',serif;font-weight:700;font-size:clamp(1.9rem,6vw,2.5rem);text-align:center;margin-top:8px;line-height:1.15}
+  .eyebrow{font-family:'Fredoka',sans-serif;font-size:.72rem;letter-spacing:.14em;color:var(--gold);text-align:center}
+  h1{font-family:'Fredoka',sans-serif;font-weight:700;font-size:clamp(1.9rem,6vw,2.5rem);text-align:center;margin-top:8px;line-height:1.15}
   .sub{text-align:center;color:var(--dim);font-size:.95rem;margin:10px auto 22px;max-width:420px}
-  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:0 6px 24px rgba(23,51,45,.05)}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:16px;box-shadow:0 6px 24px rgba(23,51,45,.05)}
   .stick{position:sticky;top:0;z-index:5;background:var(--panel);padding:2px 0 10px;box-shadow:0 8px 8px -8px rgba(23,51,45,.18)}
   .stage{position:relative;width:min(100%,54vh);aspect-ratio:1/1;margin:0 auto;border-radius:10px;overflow:hidden;background:#eef2ee}
   canvas{width:100%;height:100%;display:block;touch-action:none}
@@ -28,13 +28,13 @@
     background:var(--teal-soft);color:var(--teal-d);text-align:center;padding:20px}
   .empty p{font-size:.92rem;max-width:300px}
   .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
-  .btn{flex:1;min-width:120px;border:1px solid var(--teal);background:var(--teal);color:#fff;font:600 .92rem 'Manrope',sans-serif;
-    padding:12px 14px;border-radius:10px;cursor:pointer}
+  .btn{flex:1;min-width:120px;border:1px solid var(--teal);background:var(--teal);color:#fff;font:600 .92rem 'Nunito',sans-serif;
+    padding:12px 14px;border-radius:14px;cursor:pointer}
   .btn.ghost{background:#fff;color:var(--teal-d)}
   .btn.small{flex:none;min-width:0;padding:8px 12px;font-size:.82rem}
   .btn:disabled{opacity:.45;cursor:not-allowed}
   .tabs{display:flex;gap:6px;margin-top:14px;background:var(--bg);padding:4px;border-radius:10px;border:1px solid var(--line)}
-  .tab{flex:1;border:0;background:transparent;padding:9px;border-radius:8px;font:600 .86rem 'Manrope',sans-serif;color:var(--dim);cursor:pointer}
+  .tab{flex:1;border:0;background:transparent;padding:9px;border-radius:8px;font:600 .86rem 'Nunito',sans-serif;color:var(--dim);cursor:pointer}
   .tab.on{background:var(--panel);color:var(--teal-d);box-shadow:0 1px 4px rgba(23,51,45,.1)}
   .panel{display:none;margin-top:12px}.panel.on{display:block}
   label.s{display:flex;align-items:center;gap:10px;font-size:.82rem;color:var(--dim);margin-top:8px}
@@ -45,7 +45,7 @@
   .swatches{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
   .sw{width:28px;height:28px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px var(--line);cursor:pointer}
   .sw.on{box-shadow:0 0 0 2px var(--teal)}
-  .lbl{font:700 .72rem 'JetBrains Mono',monospace;letter-spacing:.1em;color:var(--gold);margin-bottom:8px}
+  .lbl{font:600 .78rem 'Fredoka',sans-serif;letter-spacing:.1em;color:var(--gold);margin-bottom:8px}
   .hint{font-size:.8rem;color:var(--faint);margin-top:8px}
   .user{margin-top:14px}
   .user input{width:100%;border:1px solid var(--line);border-radius:10px;padding:11px 13px;font:500 .95rem 'JetBrains Mono',monospace;color:var(--ink);background:#fff}
@@ -53,7 +53,7 @@
   .overlay{position:fixed;inset:0;background:rgba(23,51,45,.55);display:none;align-items:center;justify-content:center;padding:18px;z-index:10}
   .overlay.on{display:flex}
   .modal{background:var(--panel);border-radius:16px;padding:22px;max-width:420px;width:100%;text-align:center}
-  .modal h2{font-family:'Cormorant Garamond',serif;font-size:1.6rem}
+  .modal h2{font-family:'Fredoka',sans-serif;font-size:1.6rem}
   .code{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:1.7rem;letter-spacing:.22em;color:var(--teal-d);
     background:var(--teal-soft);border:1px dashed var(--teal);border-radius:10px;padding:14px;margin:14px 0}
   .modal p{color:var(--dim);font-size:.9rem}
@@ -63,7 +63,7 @@
 </head>
 <body>
 <div class="wrap">
-  <a href="index.html#menu" style="display:block;text-align:center;font:600 .8rem Manrope,sans-serif;color:#0b7a6e;text-decoration:none;margin-bottom:14px">← Kembali ke menu</a>
+  <a href="index.html#menu" style="display:block;text-align:center;font:600 .8rem Nunito,sans-serif;color:#0b7a6e;text-decoration:none;margin-bottom:14px">← Kembali ke menu</a>
   <div class="eyebrow">MISSION 01 · PORTRAIT ATELIER</div>
   <h1>Pasang twibbon untuk Erin</h1>
   <p class="sub">Ambil atau pilih fotomu, atur posisinya, lalu unduh. Kunci misi akan muncul setelah twibbon berhasil kamu simpan.</p>
@@ -195,9 +195,9 @@
     c.lineWidth = 4; c.strokeStyle = '#d8b979'; c.strokeRect(70,70,S-140,S-140);
     c.fillStyle = 'rgba(251,248,241,.92)'; c.fillRect(0,S-170,S,170);
     c.fillStyle = '#17332d'; c.textAlign = 'center';
-    c.font = '700 64px "Cormorant Garamond", serif';
+    c.font = '700 64px "Fredoka", sans-serif';
     c.fillText('Selamat Ulang Tahun, Erin', S/2, S-92);
-    c.font = '500 28px "Manrope", sans-serif'; c.fillStyle = '#0b7a6e';
+    c.font = '500 28px "Nunito", sans-serif'; c.fillStyle = '#0b7a6e';
     c.fillText('17 November', S/2, S-48);
     c.restore();
   }
