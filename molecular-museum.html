@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="config.js"></script>
 <title>The Secret of the Molecular Museum</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
@@ -22,7 +23,7 @@
     --cyan: #5eead4;
     --ink: #eaf6f3;
     --ink-dim: #83ab9d;
-    --ink-faint: #4c7669;
+    --ink-faint: #7ca493;
     --struck: #e8827a;
     --gold: #d8b979;
     --glow: 0 0 40px rgba(45, 212, 191, 0.15);
@@ -492,6 +493,7 @@
   }
   .back-to-menu-btn:hover{ color: var(--teal); border-color: var(--teal); }
   @media (max-width: 480px){ .back-to-menu-btn{ top: 8px; left: 8px; font-size: 0.68rem; padding: 5px 10px; } }
+  @media (prefers-reduced-motion: reduce){ *,*::before,*::after{ animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; scroll-behavior:auto !important; } }
 </style>
 </head>
 <body>
@@ -535,8 +537,8 @@
 
     <div class="username-box">
       <label class="username-label" for="username-input">Input your name</label>
-      <input type="text" id="username-input" class="username-input" placeholder="contoh: erin.larasati" maxlength="20" autocomplete="off">
-      <div class="username-hint">Pakai username sosmed kamu biar gampang dikenali di leaderboard, dan cukup diisi sekali untuk semua game.</div>
+      <input type="text" id="username-input" class="username-input" placeholder="contoh: erinlarasati" maxlength="20" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <div class="username-hint">Pakai username sosmed kamu tanpa titik atau simbol, biar gampang dikenali di leaderboard, dan cukup diisi sekali untuk semua game.</div>
       <div class="username-feedback" id="username-feedback"></div>
       <div class="username-confirm" id="username-confirm" style="display:none;">
         <p class="username-confirm-text" id="username-confirm-text"></p>
@@ -643,7 +645,7 @@
 
     <div class="deduction-panel">
       <h3 id="lock-panel-title">Kunci Jawaban</h3>
-      <div class="hint">Pilih satu kandidat berdasarkan bukti di atas. Kamu baru akan tahu benar atau salah di akhir investigasi — jadi pikirkan baik-baik sebelum mengunci.</div>
+      <div class="hint">Pilih satu kandidat berdasarkan bukti di atas. Kamu baru akan tahu benar atau salah di akhir investigasi. Kalau ada yang keliru, investigasi diulang dari awal, jadi pikirkan baik-baik sebelum mengunci.</div>
       <div class="chip-row" id="lock-chip-row"></div>
       <div class="feedback" id="round-feedback"></div>
       <div class="round-actions">
@@ -714,7 +716,7 @@
   const GAME1_SCORE_KEY = 'eg_game1_score_v1'; // skor total Game 1 (waktu + poin akurasi), dipakai leaderboard gabungan
 
   function isValidUsername(u){
-    return /^[a-z_.]{3,20}$/.test(u);
+    return /^[a-z0-9]{3,20}$/.test(u);
   }
 
   // Tracks whether the currently-typed username has been checked against the
@@ -727,7 +729,7 @@
     const saved = localStorage.getItem(USERNAME_KEY);
     if (saved) input.value = saved;
     input.addEventListener('input', () => {
-      input.value = input.value.replace(/[^a-z_.]/g, '');
+      input.value = input.value.toLowerCase().replace(/[^a-z0-9]/g, '');
       document.getElementById('username-confirm').style.display = 'none';
       updateUsernameFeedback();
     });
@@ -814,7 +816,7 @@
       fb.textContent = '';
       fb.className = 'username-feedback';
     } else if (!valid){
-      fb.textContent = 'Gunakan 3–20 karakter: huruf kecil a-z, titik (.), underscore (_).';
+      fb.textContent = 'Gunakan huruf kecil a-z dan angka 0-9, panjang 3-20 karakter, tanpa spasi atau simbol.';
       fb.className = 'username-feedback show warn';
     } else if (checking){
       fb.textContent = 'Mengecek nama ke leaderboard…';
@@ -957,7 +959,7 @@
   // ==================================================================
   // GATE / UNLOCK SCREEN — Game 1 muncul 17 November 2026, jam 09:00
   // ==================================================================
-  const GAME1_UNLOCK_AT = new Date('2024-01-01T00:00:00'); // TESTING: dibuka sementara, ganti balik ke 2026-11-17T09:00:00 sebelum hari-H
+  const GAME1_UNLOCK_AT = EG_CONFIG.unlockDate('game1'); // jadwal asli di config.js
   let gateInterval = null;
 
   function formatCountdown(ms){
@@ -1193,6 +1195,8 @@
   let mgMistakes = { 0: 0, 1: 0, 2: 0, 3: 0 };
   let deductionMistakes = { rooms: 0, elements: 0, codes: 0 };
   let game1AccuracyPoints = 0;
+  let finalAttempts = 1;   // berapa kali investigasi dijalankan
+  let finalSolved = false;
   let ltClickCount = 0;
   let ltMinRotations = 0;
 
@@ -1520,21 +1524,10 @@
     }
     const block = BLOCKS[currentBlock];
 
-    if (lockSelection !== ANSWER[block.category]){
-      deductionMistakes[block.category]++;
-      mgShake('#lock-chip-row');
-      fb.className = 'feedback show warn';
-      fb.textContent = 'Belum tepat — cek lagi clue-nya, lalu pilih kandidat lain.';
-      lockSelection = null;
-      renderLockChips();
-      return;
-    }
-
     finalSelection[block.category] = lockSelection;
-    game1AccuracyPoints += accuracyPointsFor(deductionMistakes[block.category]);
 
     fb.className = 'feedback show ok';
-    fb.textContent = 'Jawaban terkunci. Melangkah ke blok berikutnya…';
+    fb.textContent = 'Jawaban terkunci. Benar atau salahnya baru ketahuan di akhir.';
 
     setTimeout(() => {
       if (currentBlock < BLOCKS.length - 1){
@@ -2070,6 +2063,15 @@
   // ==================================================================
   // FINAL SUBMISSION
   // ==================================================================
+  function restartInvestigation(){
+    finalAttempts++;
+    finalSelection = { rooms: null, elements: null, codes: null };
+    game1AccuracyPoints = 0;
+    const box = document.getElementById('final-result');
+    box.className = 'result-box'; box.innerHTML = '';
+    startBlock(0);
+  }
+
   function goToFinal(){
     renderFinalChips('final-rooms', 'rooms');
     renderFinalChips('final-elements', 'elements');
@@ -2100,6 +2102,9 @@
                      finalSelection.elements === ANSWER.elements &&
                      finalSelection.codes === ANSWER.codes;
     if (correct){
+      if (finalSolved) return;
+      finalSolved = true;
+      game1AccuracyPoints += 3 * accuracyPointsFor(finalAttempts - 1); // poin deduksi dihitung saat jawaban terbukti benar
       stopTimer();
       localStorage.setItem(GAME1_TIME_KEY, String(timerElapsedMs));
       const minutes = timerElapsedMs / 60000;
@@ -2129,7 +2134,7 @@
       scheduleLeaderboardRedirect();
     } else {
       box.className = 'result-box show fail';
-      box.innerHTML = '<h3>Belum tepat</h3><p>Kombinasi ini belum sesuai dengan hasil deduksi. Cek kembali Logic Grid dan coba lagi.</p>';
+      box.innerHTML = '<h3>Belum tepat</h3><p>Ada jawaban terkunci yang keliru, tapi vault tidak memberi tahu yang mana. Investigasi harus diulang dari awal dan waktumu tetap berjalan. Cek lagi tiap clue dengan teliti.</p><div class="cta-row" style="margin-top:18px;"><button class="btn btn-primary" onclick="restartInvestigation()">Ulangi Investigasi</button></div>';
     }
   }
 
