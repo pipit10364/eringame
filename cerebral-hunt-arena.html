@@ -268,34 +268,28 @@
     padding: 26px 28px; margin-bottom: 24px; width: 100%; text-align: center; color: var(--ink-dim);
   }
 
-  /* ---------- Board screen ---------- */
-  .wordbank-grid{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 24px; width: 100%; }
-  @media (max-width: 600px){ .wordbank-grid{ grid-template-columns: repeat(2, 1fr); } }
-  .wordbank-cat{ background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; padding: 14px 10px; text-align: center; }
-  .wordbank-cat-title{ font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; letter-spacing: 0.08em; color: var(--ink-faint); margin-bottom: 8px; }
-  .wordbank-word{ font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; padding: 3px 0; color: var(--ink-faint); letter-spacing: 0.03em; }
-  .wordbank-word.revealed{ color: var(--gold); font-weight: 700; }
-  .wordbank-word.found{ color: var(--emerald); text-decoration: line-through; }
-
-  .ws-board-wrap{ background: var(--bg-panel); border: 1px solid var(--border); border-radius: 6px; padding: 16px; margin-bottom: 22px; display: flex; justify-content: center; overflow-x: auto; width: 100%; }
-  .ws-grid{ display: grid; gap: 3px; user-select: none; -webkit-user-select: none; width: 100%; max-width: 460px; margin: 0 auto; }
-  .ws-cell{
-    aspect-ratio: 1 / 1; width: auto; min-width: 0; height: auto;
-    display: flex; align-items: center; justify-content: center;
-    background: var(--bg-tile); border: 1px solid var(--border-soft); border-radius: 3px;
-    font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: clamp(0.5rem, 2.3vw, 0.9rem);
-    color: var(--ink-dim); touch-action: none; cursor: pointer; transition: background 0.1s ease;
-  }
-  .ws-cell.selecting{ background: rgba(94,234,212,0.28); border-color: var(--cyan); color: var(--ink); }
-  .ws-cell.found{ background: rgba(52,211,153,0.2); border-color: var(--emerald); color: var(--emerald); }
-
-  /* Perangkat sentuh (HP/tablet) beneran, bukan sekadar layar/jendela sempit */
-  @media (hover: none) and (pointer: coarse){
-    #screen-board{ padding-left: 8px; padding-right: 8px; }
-    .ws-board-wrap{ padding: 10px; }
-    .ws-grid{ gap: 2px; }
-    .ws-cell{ font-size: clamp(0.72rem, 3.2vw, 1.1rem); }
-  }
+  /* ---------- Board screen (anagram) ---------- */
+  .token-hint{ text-align:center; color:var(--ink-dim); font-size:0.9rem; margin-bottom:16px; }
+  .stat-chip.tokens .stat-val{ color: var(--gold); }
+  .board-tabs{ display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-bottom:18px; width:100%; }
+  .board-tab{ background:var(--bg-panel); border:1px solid var(--border); color:var(--ink-dim); font-family:'JetBrains Mono',monospace; font-size:0.74rem; letter-spacing:0.04em; border-radius:20px; padding:8px 14px; cursor:pointer; transition:border-color .15s ease, background .15s ease; }
+  .board-tab:hover{ border-color:var(--teal); }
+  .board-tab.active{ border-color:var(--teal); color:var(--ink); background:rgba(45,212,191,0.12); }
+  .board-tab .tab-count{ color:var(--emerald); margin-left:6px; font-weight:700; }
+  .anagram-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:10px; width:100%; margin-bottom:22px; }
+  .anagram-tile{ background:var(--bg-card); border:1px solid var(--border); border-radius:6px; padding:16px 10px; text-align:center; cursor:pointer; font-family:'JetBrains Mono',monospace; font-weight:700; font-size:1.02rem; letter-spacing:0.18em; color:var(--ink); transition:border-color .15s ease, background .15s ease, transform .1s ease; overflow-wrap:anywhere; }
+  .anagram-tile:hover{ border-color:var(--teal); background:rgba(45,212,191,0.08); }
+  .anagram-tile:active{ transform:scale(0.97); }
+  .anagram-tile small{ display:block; margin-top:6px; font-size:0.66rem; letter-spacing:0.08em; color:var(--ink-faint); font-weight:500; }
+  .anagram-tile.solved{ background:rgba(52,211,153,0.15); border-color:var(--emerald); color:var(--emerald); cursor:default; }
+  .anagram-tile.solved:hover{ transform:none; }
+  .solver-backdrop{ position:fixed; inset:0; z-index:200; background:rgba(3,12,10,0.8); display:none; align-items:center; justify-content:center; padding:20px; }
+  .solver-backdrop.show{ display:flex; }
+  .solver-card{ background:var(--bg-panel); border:1px solid var(--gold); border-radius:6px; padding:26px 24px; max-width:420px; width:100%; text-align:center; }
+  .solver-letters{ font-family:'JetBrains Mono',monospace; font-weight:700; font-size:clamp(1.3rem,6vw,1.9rem); letter-spacing:0.2em; color:var(--cyan); margin:8px 0 18px; overflow-wrap:anywhere; }
+  .solver-card input{ width:100%; background:var(--bg-tile); border:1px solid var(--border); border-radius:4px; padding:12px 14px; color:var(--ink); font-family:'JetBrains Mono',monospace; font-size:1.05rem; text-transform:uppercase; text-align:center; letter-spacing:0.12em; }
+  .solver-card input:focus{ outline:none; border-color:var(--teal); }
+  .solver-actions{ display:flex; gap:10px; justify-content:center; margin-top:14px; flex-wrap:wrap; }
 
   /* ---------- End screens ---------- */
   .result-box{ margin: 34px auto 0; text-align: center; background: var(--bg-panel); border: 1px solid var(--border); border-radius: 6px; padding: 34px 28px 27px; max-width: 560px; width: 100%; box-sizing: border-box; }
@@ -355,19 +349,19 @@
     <div class="welcome-wrap">
       <div class="eyebrow-mark">STAGE 02</div>
       <h1 class="welcome-title">Cerebral Hunt Arena</h1>
-      <p class="welcome-sub">Logic meets word hunt. No time to think twice.</p>
+      <p class="welcome-sub">Logic meets anagram hunt. No time to think twice.</p>
 
       <div class="plaque">
         <div class="cipher-label">BRIEFING</div>
         <p class="salutation" style="color:var(--ink);font-weight:700;">Selamat datang kembali, Investigator.</p>
-        <p>Sebuah papan besar penuh huruf menyimpan <strong>12 kata rahasia</strong> tersembunyi di dalamnya. Kamu belum tahu di mana letaknya — sampai kamu membuka petunjuknya sendiri:</p>
+        <p>Ada <strong>6 papan tematik berisi 60 kata</strong> yang hurufnya sudah diacak. Tugasmu menyusun ulang huruf-huruf itu (anagram) — tapi kamu baru boleh membuka satu kata setelah menjawab soal logika:</p>
         <ul>
-          <li><strong>Layar Logika</strong> — jawab soal, setiap jawaban benar membongkar nama satu kata yang tersembunyi di papan.</li>
-          <li><strong>Layar Papan</strong> — geser jari atau klik-tarik lurus (horizontal, vertikal, atau diagonal) menyusuri huruf untuk menemukan kata yang sudah terbongkar namanya.</li>
+          <li><strong>Layar Logika</strong> — jawab soal, setiap jawaban benar memberi 1 kesempatan untuk membuka kata di papan.</li>
+          <li><strong>Layar Papan</strong> — pilih tema, ketuk satu kata acak, lalu susun hurufnya menjadi kata aslinya.</li>
         </ul>
         <p>Kedua layar itu bisa kamu pindah bolak-balik kapan saja. Waktu terus berjalan sejak kamu mulai, dan bonus skor menyusut tiap detik, jadi makin cepat makin baik.</p>
         <div class="warning-box" style="margin-top:16px;padding:16px 18px;border:1px solid rgba(216,185,121,0.4);background:rgba(216,185,121,0.06);border-radius:4px;color:var(--gold);font-size:0.9rem;text-align:left;line-height:1.6;">
-          Temukan semua 12 kata untuk membuka pesan rahasia di akhir arena.
+          Susun 12 kata mana saja dari 60 kata acak untuk membuka pesan rahasia di akhir arena.
         </div>
       </div>
 
@@ -420,6 +414,7 @@
       <div class="arena-stats-row">
         <div class="stat-chip timer js-timer-chip">WAKTU <span class="stat-val js-timer-val">00:00</span></div>
         <div class="stat-chip score">SKOR <span class="stat-val js-score-val">0</span></div>
+        <div class="stat-chip tokens">KESEMPATAN <span class="stat-val js-token-val">0</span></div>
       </div>
       <div class="progress-wrap">
         <div class="progress-label"><span>Kata ditemukan</span><span class="js-progress-text">0 / 12</span></div>
@@ -429,7 +424,7 @@
       <div class="screen-label"><div class="eyebrow-mark">LAYAR LOGIKA</div></div>
 
       <div class="clue-box">
-        Papan menyimpan 12 kata dari 4 tema: Animals, Food &amp; Drinks, Colors, Professions. Jawab benar untuk membongkar nama satu kata, lalu pindah ke Layar Papan untuk mencarinya. Jawaban salah nggak apa-apa — coba lagi sampai benar, waktu jalan terus jadi tetap usahakan cepat.
+        Papan punya 6 tema: Sains &amp; Biologi, Gaming, Musik, Anime &amp; Manga, Musikal &amp; Film, Kuliner &amp; Favorit. Jawab benar untuk dapat 1 kesempatan, lalu pindah ke Layar Papan untuk menyusun satu kata acak. Jawaban salah nggak apa-apa — coba lagi sampai benar, waktu jalan terus jadi tetap usahakan cepat.
       </div>
 
       <div class="logic-card" id="logic-card-active">
@@ -458,6 +453,7 @@
       <div class="arena-stats-row">
         <div class="stat-chip timer js-timer-chip">WAKTU <span class="stat-val js-timer-val">00:00</span></div>
         <div class="stat-chip score">SKOR <span class="stat-val js-score-val">0</span></div>
+        <div class="stat-chip tokens">KESEMPATAN <span class="stat-val js-token-val">0</span></div>
       </div>
       <div class="progress-wrap">
         <div class="progress-label"><span>Kata ditemukan</span><span class="js-progress-text">0 / 12</span></div>
@@ -466,10 +462,26 @@
 
       <div class="screen-label"><div class="eyebrow-mark">LAYAR PAPAN</div></div>
 
-      <div class="panel-tag" style="margin-bottom:14px;">DAFTAR KATA</div>
-      <div class="wordbank-grid" id="wordbank-grid"></div>
+      <p class="token-hint" id="token-hint"></p>
+      <div class="board-tabs" id="board-tabs"></div>
+      <div class="anagram-grid" id="anagram-grid"></div>
+      <div class="cta-row">
+        <button class="btn btn-secondary" onclick="goToLogic()">Ke Layar Logika</button>
+        <button class="btn btn-secondary" onclick="manualFinish()">Selesai &amp; Lihat Skor</button>
+      </div>
+    </div>
+  </div>
 
-      <div class="ws-board-wrap"><div class="ws-grid" id="ws-grid"></div></div>
+  <div class="solver-backdrop" id="solver-backdrop">
+    <div class="solver-card">
+      <div class="panel-tag">SUSUN KATANYA</div>
+      <div class="solver-letters" id="solver-letters"></div>
+      <input type="text" id="solver-input" placeholder="Ketik jawabanmu…" autocomplete="off" autocapitalize="characters" spellcheck="false" onkeydown="if(event.key==='Enter')submitSolver()">
+      <div class="feedback" id="solver-feedback"></div>
+      <div class="solver-actions">
+        <button class="btn btn-primary btn-small" onclick="submitSolver()">Cek</button>
+        <button class="btn btn-secondary btn-small" onclick="closeSolver()">Batal</button>
+      </div>
     </div>
   </div>
 
@@ -487,11 +499,7 @@
   // Supaya "39 POIN" di Game 2 nggak keliatan njomplang jauh dari skor Game 1 yang biasanya 700-900-an.
   const GAME2_SCORE_BASE = 1000;
   const GAME2_SCORE_DECAY_EVERY = 3;
-  // Papan lebih kecil di HP/tablet (device sentuh) biar hurufnya ga kekecilan,
-  // laptop dengan mouse tetap dapet papan 13x13 yang sekarang.
-  const IS_TOUCH_DEVICE = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
-  const GRID_SIZE = IS_TOUCH_DEVICE ? 10 : 13;
-  // Poin per kata ketemu — total 12 kata x 30 = 360, disamakan skalanya dengan
+  // Poin per kata ketemu — total target 12 kata x 30 = 360, disamakan skalanya dengan
   // bonus akurasi Game 1 (7 checks x maks 50 = 350), supaya total Game1 & Game2 nggak njomplang.
   const WORD_POINTS = 30;
 
@@ -537,17 +545,17 @@
     if (score >= 900){
       return {
         title: "The Word Hunt Prodigy ⚡",
-        msg: "Mata dan otakmu jalan bareng dalam kecepatan penuh — soal logika kejawab kilat, kata di papan langsung kesorot begitu muncul di kepala. Ritme mikir dan nyari secepat ini jarang ketemu dalam satu orang."
+        msg: "Mata dan otakmu jalan bareng dalam kecepatan penuh — soal logika kejawab kilat, huruf acak langsung tersusun jadi kata begitu muncul di kepala. Ritme mikir dan nyari secepat ini jarang ketemu dalam satu orang."
       };
     } else if (score >= 800){
       return {
         title: "The Pattern Chaser 🔎",
-        msg: "Kamu gesit bolak-balik antara soal logika dan papan huruf tanpa banyak buang waktu. Koordinasi antara mikir cepat dan menyisir cermat ini yang bikin waktu tempuhmu tetap kencang."
+        msg: "Kamu gesit bolak-balik antara soal logika dan papan anagram tanpa banyak buang waktu. Koordinasi antara mikir cepat dan menyusun huruf dengan cermat ini yang bikin waktu tempuhmu tetap kencang."
       };
     } else if (score >= 700){
       return {
         title: "The Steady Hunter 🧩",
-        msg: "Satu per satu kata berhasil kamu bongkar sampai papan penuh coretan hijau. Kecepatan boleh santai, tapi ketuntasan dan kegigihanmu menyisir tiap sudut papan ini yang paling menonjol."
+        msg: "Satu per satu kata berhasil kamu bongkar sampai papan penuh kotak hijau. Kecepatan boleh santai, tapi ketuntasan dan kegigihanmu menyusun tiap kata di papan ini yang paling menonjol."
       };
     } else {
       return {
@@ -736,19 +744,22 @@
   // DATA
   // ==================================================================
   const CATEGORIES = {
-    animals:      { label: 'ANIMALS',       words: ['CAT','BIRD','MAGPIE'] },
-    food:         { label: 'FOOD & DRINKS', words: ['EGG','SOTO','COFFEE'] },
-    colors:       { label: 'COLORS',        words: ['BLUE','GREEN','ORANGE'] },
-    professions:  { label: 'PROFESSIONS',   words: ['CASTER','SINGER','RESEARCHER'] },
+    sains:   { label: 'SAINS & BIOLOGI',  words: ['GENOME','ENZYME','NUCLEUS','PROTEIN','MITOSIS','RIBOSOME','VACCINE','RESEARCH','MICROSCOPE','CHROMOSOME'] },
+    gaming:  { label: 'GAMING',           words: ['GENSHIN','HONKAI','PERSONA','VALORANT','ASSASSIN','ODYSSEY','METAPHOR','WUTHERING','CHUNITHM','SEKAI'] },
+    musik:   { label: 'MUSIK',            words: ['VOCALOID','UTAITE','PRODUCER','MAFUMAFU','SORARU','KURONEKO','AMATSUKI','MEDICINE','SYUDOU','RHYTHM'] },
+    anime:   { label: 'ANIME & MANGA',    words: ['EVANGELION','STARLIGHT','ATELIER','CHUUYA','NAKAHARA','MANGA','ANIME','BUNGO','REBUILD','ADAPTATION'] },
+    musikal: { label: 'MUSIKAL & FILM',   words: ['PHANTOM','HEATHERS','SUPERSTAR','OVERTURE','MUSICAL','DREAMWORKS','DRAGON','HUNGER','JAKARTA','THEATER'] },
+    kuliner: { label: 'KULINER & FAVORIT',words: ['MENDOAN','BAKMI','PANGSIT','HOTPOT','MUSHROOM','KADIPIRO','BREBES','MAGPIE','MCLAREN','BROTH'] },
   };
 
   const WORD_LIST = [];
   Object.keys(CATEGORIES).forEach(key => {
     CATEGORIES[key].words.forEach(w => WORD_LIST.push({ word: w, catKey: key }));
   });
-  const TOTAL_WORDS = WORD_LIST.length;
+  // Target kata yang harus disusun untuk "Arena Cleared" (skala skor Game 2 tetap sama).
+  const TOTAL_WORDS = 12;
 
-  const LOGIC_BANK = [
+    const LOGIC_BANK = [
     { type: 'number', q: 'Sebuah kultur diawali dari 3 sel. Setiap 20 detik, jumlah sel berlipat dua (1 sel membelah menjadi 2 sel). Setelah 1 menit (60 detik) berlalu, berapa total sel yang ada?', a: 24 },
     { type: 'choice', q: 'Dalam rhythm game, istilah untuk berhasil menekan semua not dengan benar dari awal sampai akhir lagu tanpa meleset sekali pun disebut apa?', options: ['Full Combo','Perfect Score','High Score','Speed Run'], a: 'Full Combo' },
     { type: 'choice', q: 'Lengkapi analogi ini: Sel : Membran = Rumah : ?', options: ['Dinding','Atap','Lantai','Pintu'], a: 'Dinding' },
@@ -788,18 +799,13 @@
   let logicBag = [];
   let currentLogic = null;
 
-  let revealPool = [];
-  let revealedWords = new Set();
+  let tokens = 0;
   let foundWords = new Set();
+  let scrambled = {};
+  let activeBoard = 'sains';
+  let solverWord = null;
 
-  let gridLetters = [];
-  let gridCells = [];
-
-  let selecting = false;
-  let selStart = null;
-  let selPath = [];
-
-  // ==================================================================
+    // ==================================================================
   // LOCK SCREEN
   // ==================================================================
   function checkLock(){
@@ -843,6 +849,7 @@
   }
 
   function goToBoard(){
+    renderBoard();
     showScreen('screen-board');
   }
 
@@ -869,14 +876,16 @@
 
     elapsedSec = 0;
     solvedTotal = 0;
-    revealedWords = new Set();
+    tokens = 0;
     foundWords = new Set();
-    revealPool = shuffleArray(WORD_LIST.map(w => w.word));
+    activeBoard = Object.keys(CATEGORIES)[0];
+    scrambled = {};
+    WORD_LIST.forEach(w => { scrambled[w.word] = scrambleWord(w.word); });
+    closeSolver();
     logicBag = [];
-    refillLogicBag();
+        refillLogicBag();
 
-    buildAndRenderGrid();
-    renderWordbank();
+    renderBoard();
     updateProgress();
     updateStatChips();
     nextLogicQuestion();
@@ -920,6 +929,7 @@
   function updateStatChips(){
     const score = calcLiveScore();
     document.querySelectorAll('.js-score-val').forEach(el => el.textContent = score);
+    document.querySelectorAll('.js-token-val').forEach(el => el.textContent = tokens);
     document.querySelectorAll('.js-timer-chip').forEach(el => el.classList.toggle('low', score <= 150));
   }
 
@@ -940,7 +950,7 @@
   }
 
   function refreshLogicScreenState(){
-    const allRevealed = revealPool.length === 0;
+    const allRevealed = false;
     const card = document.getElementById('logic-card-active');
     const revealedNote = document.getElementById('all-revealed-note');
 
@@ -956,8 +966,6 @@
 
   function nextLogicQuestion(){
     refreshLogicScreenState();
-    if (revealPool.length === 0) return;
-
     if (logicBag.length === 0) refillLogicBag();
     const idx = logicBag.pop();
     currentLogic = LOGIC_BANK[idx];
@@ -985,10 +993,10 @@
   }
 
   function handleCorrect(fb){
+    tokens++;
     updateStatChips();
-    const revealed = revealNextWord();
     fb.className = 'feedback show ok';
-    fb.textContent = revealed ? `Tepat! Kata "${revealed}" baru saja terbongkar.` : 'Tepat! Semua kata sudah terbongkar.';
+    fb.textContent = 'Tepat! Kamu dapat 1 kesempatan untuk membuka kata di papan.';
     setTimeout(() => { nextLogicQuestion(); goToBoard(); }, 900);
   }
 
@@ -1031,14 +1039,6 @@
     }
   }
 
-  function revealNextWord(){
-    if (revealPool.length === 0) return null;
-    const word = revealPool.pop();
-    revealedWords.add(word);
-    renderWordbank();
-    return word;
-  }
-
   function mgShake(selector){
     const el = document.querySelector(selector);
     if (!el) return;
@@ -1048,222 +1048,73 @@
   }
 
   // ==================================================================
-  // WORD BANK
+  // ANAGRAM BOARD
   // ==================================================================
-  function renderWordbank(){
-    const grid = document.getElementById('wordbank-grid');
-    grid.innerHTML = '';
-    Object.keys(CATEGORIES).forEach(key => {
-      const cat = CATEGORIES[key];
-      const card = document.createElement('div');
-      card.className = 'wordbank-cat';
-      const rows = cat.words.map(w => {
-        let cls = '';
-        let label = '???';
-        if (foundWords.has(w)){ cls = 'found'; label = w; }
-        else if (revealedWords.has(w)){ cls = 'revealed'; label = w; }
-        return `<div class="wordbank-word ${cls}">${label}</div>`;
-      }).join('');
-      card.innerHTML = `<div class="wordbank-cat-title">${cat.label}</div>${rows}`;
-      grid.appendChild(card);
-    });
+  function scrambleWord(w){
+    let s = w, tries = 0;
+    while (s === w && tries++ < 20) s = shuffleArray(w.split('')).join('');
+    return s;
   }
 
-  // ==================================================================
-  // WORD SEARCH GRID
-  // ==================================================================
-  function buildGrid(words){
-    const size = GRID_SIZE;
-    const grid = Array.from({ length: size }, () => Array(size).fill(null));
-    const dirs = [[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]];
-    const sorted = [...words].sort((a,b) => b.length - a.length);
+  function renderBoard(){
+    document.getElementById('token-hint').textContent = tokens > 0
+      ? `Kamu punya ${tokens} kesempatan — ketuk satu kata acak untuk menyusunnya.`
+      : 'Belum ada kesempatan. Jawab soal logika dulu untuk membuka satu kata.';
+    document.getElementById('board-tabs').innerHTML = Object.keys(CATEGORIES).map(k => {
+      const cat = CATEGORIES[k];
+      const n = cat.words.filter(w => foundWords.has(w)).length;
+      return `<button class="board-tab${k === activeBoard ? ' active' : ''}" onclick="switchBoard('${k}')">${cat.label}<span class="tab-count">${n}/${cat.words.length}</span></button>`;
+    }).join('');
+    document.getElementById('anagram-grid').innerHTML = CATEGORIES[activeBoard].words.map(w => {
+      const done = foundWords.has(w);
+      return `<div class="anagram-tile${done ? ' solved' : ''}"${done ? '' : ` onclick="openSolver('${w}')"`}>${done ? w : scrambled[w]}<small>${w.length} huruf</small></div>`;
+    }).join('');
+  }
 
-    function validRange(delta, len){
-      if (delta === 1) return [0, size - len];
-      if (delta === -1) return [len - 1, size - 1];
-      return [0, size - 1];
+  function switchBoard(k){ activeBoard = k; renderBoard(); }
+
+  function openSolver(w){
+    if (tokens <= 0){
+      mgShake('#token-hint');
+      document.getElementById('token-hint').textContent = 'Belum ada kesempatan. Jawab soal logika dulu ya.';
+      return;
     }
-
-    sorted.forEach(word => {
-      let placed = false;
-      const shuffledDirs = shuffleArray(dirs);
-      for (const [dr, dc] of shuffledDirs){
-        if (placed) break;
-        const [rMin, rMax] = validRange(dr, word.length);
-        const [cMin, cMax] = validRange(dc, word.length);
-        if (rMin > rMax || cMin > cMax) continue;
-
-        for (let attempt = 0; attempt < 60 && !placed; attempt++){
-          const row = rMin + Math.floor(Math.random() * (rMax - rMin + 1));
-          const col = cMin + Math.floor(Math.random() * (cMax - cMin + 1));
-          let ok = true;
-          const cells = [];
-          for (let i = 0; i < word.length; i++){
-            const r = row + dr * i, c = col + dc * i;
-            const existing = grid[r][c];
-            if (existing && existing !== word[i]){ ok = false; break; }
-            cells.push([r, c]);
-          }
-          if (!ok) continue;
-          cells.forEach(([r, c], i) => { grid[r][c] = word[i]; });
-          placed = true;
-        }
-      }
-      if (!placed){
-        outer:
-        for (let row = 0; row < size; row++){
-          for (let col = 0; col < size; col++){
-            for (const [dr, dc] of dirs){
-              const endR = row + dr * (word.length - 1);
-              const endC = col + dc * (word.length - 1);
-              if (endR < 0 || endR >= size || endC < 0 || endC >= size) continue;
-              const cells = [];
-              let ok = true;
-              for (let i = 0; i < word.length; i++){
-                const r = row + dr * i, c = col + dc * i;
-                if (grid[r][c] && grid[r][c] !== word[i]){ ok = false; break; }
-                cells.push([r, c]);
-              }
-              if (ok){
-                cells.forEach(([r, c], i) => { grid[r][c] = word[i]; });
-                placed = true;
-                break outer;
-              }
-            }
-          }
-        }
-      }
-    });
-
-    const ALPHA = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    for (let r = 0; r < size; r++)
-      for (let c = 0; c < size; c++)
-        if (!grid[r][c]) grid[r][c] = ALPHA[Math.floor(Math.random() * ALPHA.length)];
-
-    return grid;
+    solverWord = w;
+    document.getElementById('solver-letters').textContent = scrambled[w].split('').join(' ');
+    const inp = document.getElementById('solver-input');
+    inp.value = '';
+    document.getElementById('solver-feedback').className = 'feedback';
+    document.getElementById('solver-backdrop').classList.add('show');
+    setTimeout(() => inp.focus(), 50);
   }
 
-  function buildAndRenderGrid(){
-    gridLetters = buildGrid(WORD_LIST.map(w => w.word));
-    const wrap = document.getElementById('ws-grid');
-    wrap.style.gridTemplateColumns = `repeat(${GRID_SIZE}, 1fr)`;
-    wrap.innerHTML = '';
-    gridCells = [];
-    for (let r = 0; r < GRID_SIZE; r++){
-      const rowCells = [];
-      for (let c = 0; c < GRID_SIZE; c++){
-        const cell = document.createElement('div');
-        cell.className = 'ws-cell';
-        cell.textContent = gridLetters[r][c];
-        cell.dataset.r = r;
-        cell.dataset.c = c;
-        cell.addEventListener('pointerdown', onCellDown);
-        wrap.appendChild(cell);
-        rowCells.push(cell);
-      }
-      gridCells.push(rowCells);
+  function closeSolver(){
+    document.getElementById('solver-backdrop').classList.remove('show');
+    solverWord = null;
+  }
+
+  function submitSolver(){
+    if (!solverWord) return;
+    const guess = document.getElementById('solver-input').value.trim().toUpperCase();
+    if (!guess){ mgShake('#solver-input'); return; }
+    if (guess !== solverWord){
+      const fb = document.getElementById('solver-feedback');
+      fb.className = 'feedback show warn';
+      fb.textContent = 'Belum tepat, coba susun lagi.';
+      mgShake('.solver-card');
+      return;
     }
-    document.addEventListener('pointermove', onPointerMove);
-    document.addEventListener('pointerup', onPointerUp);
-  }
-
-  function cellFromPoint(x, y){
-    const wrap = document.getElementById('ws-grid');
-    const rect = wrap.getBoundingClientRect();
-    if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) return null;
-    const cellW = rect.width / GRID_SIZE;
-    const cellH = rect.height / GRID_SIZE;
-    let c = Math.floor((x - rect.left) / cellW);
-    let r = Math.floor((y - rect.top) / cellH);
-    c = Math.min(GRID_SIZE - 1, Math.max(0, c));
-    r = Math.min(GRID_SIZE - 1, Math.max(0, r));
-    return { r, c };
-  }
-
-  function onCellDown(e){
-    const r = parseInt(e.currentTarget.dataset.r);
-    const c = parseInt(e.currentTarget.dataset.c);
-    selecting = true;
-    selStart = { r, c };
-    selPath = [{ r, c }];
-    paintSelection();
-  }
-
-  function onPointerMove(e){
-    if (!selecting) return;
-    const cell = cellFromPoint(e.clientX, e.clientY);
-    if (!cell) return;
-    const path = computeLinePath(selStart, cell);
-    if (path) selPath = path;
-    paintSelection();
-  }
-
-  function onPointerUp(){
-    if (!selecting) return;
-    selecting = false;
-    tryMatchSelection();
-    clearTempSelection();
-    selPath = [];
-    selStart = null;
-  }
-
-  function computeLinePath(start, end){
-    const dR = end.r - start.r;
-    const dC = end.c - start.c;
-    if (dR === 0 && dC === 0) return [start];
-    const isStraight = dR === 0 || dC === 0 || Math.abs(dR) === Math.abs(dC);
-    if (!isStraight) return null;
-    const steps = Math.max(Math.abs(dR), Math.abs(dC));
-    const stepR = dR === 0 ? 0 : dR / Math.abs(dR);
-    const stepC = dC === 0 ? 0 : dC / Math.abs(dC);
-    const path = [];
-    for (let i = 0; i <= steps; i++){
-      path.push({ r: start.r + stepR * i, c: start.c + stepC * i });
-    }
-    return path;
-  }
-
-  function paintSelection(){
-    for (let r = 0; r < GRID_SIZE; r++)
-      for (let c = 0; c < GRID_SIZE; c++)
-        if (!gridCells[r][c].classList.contains('found'))
-          gridCells[r][c].classList.remove('selecting');
-    selPath.forEach(({ r, c }) => {
-      if (!gridCells[r][c].classList.contains('found'))
-        gridCells[r][c].classList.add('selecting');
-    });
-  }
-
-  function clearTempSelection(){
-    for (let r = 0; r < GRID_SIZE; r++)
-      for (let c = 0; c < GRID_SIZE; c++)
-        if (!gridCells[r][c].classList.contains('found'))
-          gridCells[r][c].classList.remove('selecting');
-  }
-
-  function tryMatchSelection(){
-    if (selPath.length < 2) return;
-    const forward = selPath.map(({ r, c }) => gridLetters[r][c]).join('');
-    const backward = forward.split('').reverse().join('');
-
-    let matched = null;
-    revealedWords.forEach(w => {
-      if (foundWords.has(w)) return;
-      if (w === forward || w === backward) matched = w;
-    });
-    if (!matched) return;
-
-    foundWords.add(matched);
+    foundWords.add(solverWord);
     solvedTotal++;
+    tokens--;
+    closeSolver();
     updateStatChips();
     updateProgress();
-    renderWordbank();
-    selPath.forEach(({ r, c }) => gridCells[r][c].classList.add('found'));
-
+    renderBoard();
     if (solvedTotal >= TOTAL_WORDS){
       clearInterval(timerHandle);
       endGame(true);
-    } else if (revealPool.length > 0){
+    } else if (tokens === 0){
       setTimeout(() => { goToLogic(); }, 700);
     }
   }
