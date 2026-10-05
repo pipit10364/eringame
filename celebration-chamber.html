@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="config.js"></script>
 <title>Claim Your Prize</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&family=Fredoka:wght@400;500;600&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
@@ -13,28 +14,30 @@
 <script src="recovery.js"></script>
 <style>
   :root{
-    --bg: #061a15;
-    --bg-panel: #0c2721;
-    --bg-card: #123830;
-    --bg-tile: #0d2a24;
-    --border: #1e4a3f;
-    --border-soft: #17392f;
-    --teal: #2dd4bf;
-    --emerald: #34d399;
-    --cyan: #5eead4;
-    --ink: #eaf6f3;
-    --ink-dim: #83ab9d;
-    --ink-faint: #4c7669;
+    /* Palet Prize: biru malam + emas, sengaja beda dari game (hijau) dan misi (krem).
+       Nama --teal/--cyan di halaman ini sekarang berisi emas. */
+    --bg: #0a1228;
+    --bg-panel: #101a38;
+    --bg-card: #162250;
+    --bg-tile: #0d1633;
+    --border: #2c3b72;
+    --border-soft: #1f2b58;
+    --teal: #e7c46f;
+    --emerald: #7ee0b5;
+    --cyan: #f6dfa4;
+    --ink: #f1f2ff;
+    --ink-dim: #a9b2dc;
+    --ink-faint: #8f99c6;
     --struck: #e8827a;
-    --gold: #d8b979;
+    --gold: #e7c46f;
     --pink: #f0a8c0;
-    --glow: 0 0 40px rgba(45, 212, 191, 0.15);
+    --glow: 0 0 40px rgba(231, 196, 111, 0.18);
   }
   *{box-sizing:border-box; margin:0; padding:0;}
   body{
     background:
-      radial-gradient(circle at 15% 10%, rgba(45,212,191,0.08), transparent 45%),
-      radial-gradient(circle at 85% 90%, rgba(94,234,212,0.08), transparent 45%),
+      radial-gradient(circle at 15% 10%, rgba(231,196,111,0.08), transparent 45%),
+      radial-gradient(circle at 85% 90%, rgba(110,140,255,0.10), transparent 45%),
       var(--bg);
     color: var(--ink); font-family: 'Manrope', sans-serif; min-height: 100vh; line-height: 1.5;
   }
@@ -69,7 +72,7 @@
     padding: 15px 34px; cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease; letter-spacing: 0.01em;
   }
   .btn-primary{ background: linear-gradient(120deg, var(--teal), var(--cyan)); color: #04141a; }
-  .btn-primary:hover{ transform: translateY(-2px); box-shadow: 0 10px 30px rgba(45,212,191,0.25); }
+  .btn-primary:hover{ transform: translateY(-2px); box-shadow: 0 10px 30px rgba(231,196,111,0.25); }
   .btn-primary:active{ transform: scale(0.97); }
   .btn-primary:disabled{ opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
   .btn-secondary{
@@ -111,14 +114,14 @@
   .podium-slot.place-1 .podium-bar{ height:96px; border-color: var(--gold); background: rgba(216,185,121,0.12); }
   .podium-slot.place-2 .podium-bar{ height:68px; } .podium-slot.place-3 .podium-bar{ height:46px; }
   .podium-slot.me .podium-name{ color: var(--teal); }
-  .podium-slot.me .podium-bar{ border-color: var(--teal); box-shadow: 0 0 14px rgba(45,212,191,0.35); }
+  .podium-slot.me .podium-bar{ border-color: var(--teal); box-shadow: 0 0 14px rgba(231,196,111,0.35); }
   .lb-list-wrap{ background: var(--bg-panel); border:1px solid var(--border); border-radius:6px; padding: 8px 4px; max-height: 320px; overflow-y:auto; }
   .leaderboard-row{ display:flex; align-items:center; gap:12px; padding:10px 14px; border-bottom:1px solid var(--border-soft); font-size: 0.9rem; }
   .leaderboard-row:last-child{ border-bottom: none; }
   .lb-rank{ width:32px; color: var(--ink-faint); font-family:'JetBrains Mono', monospace; }
   .lb-name{ flex:1; text-align:left; font-weight:600; }
   .lb-score{ color: var(--teal); font-family:'JetBrains Mono', monospace; }
-  .leaderboard-row.me{ background: rgba(45,212,191,0.08); border-radius:4px; }
+  .leaderboard-row.me{ background: rgba(231,196,111,0.08); border-radius:4px; }
   .leaderboard-row.me .lb-name{ color: var(--teal); }
   .leaderboard-row.me .lb-rank{ color: var(--teal); }
   .leaderboard-loading, .leaderboard-empty{ color: var(--ink-faint); font-size: 0.88rem; text-align: center; padding: 12px 0; }
@@ -143,13 +146,13 @@
     font-weight: 700; color: var(--ink); background: var(--bg-tile); border: 1px solid var(--border-soft);
     border-radius: 4px; caret-color: var(--teal);
   }
-  .pin-digit:focus{ outline: none; border-color: var(--teal); box-shadow: 0 0 0 2px rgba(45,212,191,0.25); }
+  .pin-digit:focus{ outline: none; border-color: var(--teal); box-shadow: 0 0 0 2px rgba(231,196,111,0.25); }
   @keyframes shakeX{10%,90%{transform:translateX(-1px);}20%,80%{transform:translateX(2px);}30%,50%,70%{transform:translateX(-4px);}40%,60%{transform:translateX(4px);}}
   .key-box{ margin-top: 26px; text-align:left; display:flex; flex-direction:column; gap:10px; }
   .key-row{ display:flex; align-items:center; gap:10px; }
   .key-row label{ flex:0 0 130px; font-size:0.8rem; color: var(--ink-dim); }
   .key-input{ flex:1; min-width:0; background: var(--bg-panel); border:1px solid var(--border); border-radius:8px; padding:10px 12px; color: var(--ink); font-family:'JetBrains Mono', monospace; font-size:1rem; letter-spacing:0.18em; text-align:center; }
-  .key-input:focus{ outline:none; border-color: var(--teal); box-shadow:0 0 0 2px rgba(45,212,191,0.25); }
+  .key-input:focus{ outline:none; border-color: var(--teal); box-shadow:0 0 0 2px rgba(231,196,111,0.25); }
   .key-input.bad{ border-color: var(--struck); }
   .pin-feedback{ margin-top: 16px; font-size: 0.86rem; min-height: 1.4em; }
   .pin-feedback.warn{ color: var(--struck); }
@@ -245,6 +248,7 @@
   }
   .back-to-menu-btn:hover{ color: var(--teal); border-color: var(--teal); }
   @media (max-width: 480px){ .back-to-menu-btn{ top: 8px; left: 8px; font-size: 0.68rem; padding: 5px 10px; } }
+  @media (prefers-reduced-motion: reduce){ *,*::before,*::after{ animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; scroll-behavior:auto !important; } }
 </style>
 </head>
 <body>
@@ -263,8 +267,8 @@
       </div>
       <div class="username-box" id="username-box" style="display:none;">
         <label class="username-label" for="username-input">Input your name</label>
-        <input type="text" id="username-input" class="username-input" placeholder="contoh: erin.larasati" maxlength="20" autocomplete="off">
-        <div class="username-hint">Pakai username sosmed kamu biar gampang dikenali di leaderboard.</div>
+        <input type="text" id="username-input" class="username-input" placeholder="contoh: erinlarasati" maxlength="20" autocomplete="off" autocapitalize="off" spellcheck="false">
+        <div class="username-hint">Pakai username sosmed kamu tanpa titik atau simbol, biar gampang dikenali di leaderboard.</div>
         <div class="username-feedback" id="username-feedback"></div>
       </div>
       <div class="cta-row">
@@ -331,16 +335,16 @@
       <div class="cake-scene">
         <div class="cake-svg-wrap">
           <svg viewBox="0 0 200 180" xmlns="http://www.w3.org/2000/svg">
-            <ellipse cx="100" cy="162" rx="78" ry="10" fill="#04120e"/>
-            <rect x="30" y="120" width="140" height="40" rx="6" fill="#123830" stroke="#1e4a3f"/>
-            <rect x="30" y="120" width="140" height="10" fill="#2dd4bf" opacity="0.5"/>
-            <rect x="45" y="80" width="110" height="42" rx="6" fill="#0d2a24" stroke="#1e4a3f"/>
-            <rect x="45" y="80" width="110" height="9" fill="#5eead4" opacity="0.5"/>
-            <rect x="62" y="45" width="76" height="38" rx="6" fill="#123830" stroke="#1e4a3f"/>
+            <ellipse cx="100" cy="162" rx="78" ry="10" fill="#050a1a"/>
+            <rect x="30" y="120" width="140" height="40" rx="6" fill="#162250" stroke="#2c3b72"/>
+            <rect x="30" y="120" width="140" height="10" fill="#e7c46f" opacity="0.5"/>
+            <rect x="45" y="80" width="110" height="42" rx="6" fill="#0d1633" stroke="#2c3b72"/>
+            <rect x="45" y="80" width="110" height="9" fill="#f6dfa4" opacity="0.5"/>
+            <rect x="62" y="45" width="76" height="38" rx="6" fill="#162250" stroke="#2c3b72"/>
             <rect x="62" y="45" width="76" height="8" fill="#d8b979" opacity="0.55"/>
-            <g id="candle-1"><rect x="78" y="26" width="6" height="20" rx="2" fill="#eaf6f3"/><path class="flame" d="M81 12 C 85 18, 85 22, 81 26 C 77 22, 77 18, 81 12 Z" fill="#f0a8c0"/><ellipse class="smoke" data-smoke="1" cx="81" cy="10" rx="4" ry="6" fill="#83ab9d"/></g>
-            <g id="candle-2"><rect x="97" y="20" width="6" height="26" rx="2" fill="#eaf6f3"/><path class="flame" d="M100 6 C 104 12, 104 16, 100 20 C 96 16, 96 12, 100 6 Z" fill="#d8b979"/><ellipse class="smoke" data-smoke="2" cx="100" cy="4" rx="4" ry="6" fill="#83ab9d"/></g>
-            <g id="candle-3"><rect x="116" y="26" width="6" height="20" rx="2" fill="#eaf6f3"/><path class="flame" d="M119 12 C 123 18, 123 22, 119 26 C 115 22, 115 18, 119 12 Z" fill="#5eead4"/><ellipse class="smoke" data-smoke="3" cx="119" cy="10" rx="4" ry="6" fill="#83ab9d"/></g>
+            <g id="candle-1"><rect x="78" y="26" width="6" height="20" rx="2" fill="#eaf6f3"/><path class="flame" d="M81 12 C 85 18, 85 22, 81 26 C 77 22, 77 18, 81 12 Z" fill="#f0a8c0"/><ellipse class="smoke" data-smoke="1" cx="81" cy="10" rx="4" ry="6" fill="#a9b2dc"/></g>
+            <g id="candle-2"><rect x="97" y="20" width="6" height="26" rx="2" fill="#eaf6f3"/><path class="flame" d="M100 6 C 104 12, 104 16, 100 20 C 96 16, 96 12, 100 6 Z" fill="#d8b979"/><ellipse class="smoke" data-smoke="2" cx="100" cy="4" rx="4" ry="6" fill="#a9b2dc"/></g>
+            <g id="candle-3"><rect x="116" y="26" width="6" height="20" rx="2" fill="#eaf6f3"/><path class="flame" d="M119 12 C 123 18, 123 22, 119 26 C 115 22, 115 18, 119 12 Z" fill="#7ee0d3"/><ellipse class="smoke" data-smoke="3" cx="119" cy="10" rx="4" ry="6" fill="#a9b2dc"/></g>
           </svg>
         </div>
         <button class="btn btn-secondary" id="blow-btn" onclick="blowCandles()" style="margin-top:18px;">🎈 Tiup Lilinnya</button>
@@ -424,7 +428,7 @@
   // ==================================================================
   // CONFIG
   // ==================================================================
-  const STAGE_UNLOCK_AT = new Date('2024-01-01T00:00:00'); // TESTING: dibuka sementara, ganti balik ke jadwal aslinya sebelum hari-H
+  const STAGE_UNLOCK_AT = EG_CONFIG.unlockDate('prize'); // jadwal asli di config.js
 
   // 20 set kombinasi PIN, tiap set beda soal & beda kode — supaya orang ga bisa saling contek.
   // Tiap orang otomatis dapat 1 set berdasarkan username-nya (konsisten tiap dia buka lagi).
@@ -440,7 +444,7 @@
   {
     "pin": "120413",
     "hints": [
-      "Jumlah kandidat per kategori di Case Roster Molecular Museum.",
+      "Jumlah seluruh kandidat dari ketiga kategori di Case Roster Molecular Museum.",
       "Jumlah huruf pada kata kategori Animals yang tersembunyi di Cerebral Hunt Arena: \"BIRD\".",
       "Nomor clue Mendatar di Lexicon Vault yang jawabannya adalah salah satu ungkapan ikonik Erin selama CoC."
     ]
@@ -472,7 +476,7 @@
   {
     "pin": "120620",
     "hints": [
-      "Jumlah kandidat per kategori di Case Roster Molecular Museum.",
+      "Jumlah seluruh kandidat dari ketiga kategori di Case Roster Molecular Museum.",
       "Jumlah huruf pada kata kategori Food & Drinks yang tersembunyi di Cerebral Hunt Arena: \"COFFEE\".",
       "Nomor clue Menurun di Lexicon Vault yang jawabannya adalah tipe kepribadian (MBTI) Erin."
     ]
@@ -504,7 +508,7 @@
   {
     "pin": "120626",
     "hints": [
-      "Jumlah kandidat per kategori di Case Roster Molecular Museum.",
+      "Jumlah seluruh kandidat dari ketiga kategori di Case Roster Molecular Museum.",
       "Jumlah huruf pada kata kategori Professions yang tersembunyi di Cerebral Hunt Arena: \"CASTER\".",
       "Nomor clue Mendatar di Lexicon Vault yang jawabannya adalah universitas impian Erin untuk melanjutkan kuliah."
     ]
@@ -536,7 +540,7 @@
   {
     "pin": "120428",
     "hints": [
-      "Jumlah kandidat per kategori di Case Roster Molecular Museum.",
+      "Jumlah seluruh kandidat dari ketiga kategori di Case Roster Molecular Museum.",
       "Jumlah huruf pada kata kategori Animals yang tersembunyi di Cerebral Hunt Arena: \"BIRD\".",
       "Nomor clue Menurun di Lexicon Vault yang jawabannya adalah les yang paling sulit buat Erin."
     ]
@@ -568,7 +572,7 @@
   {
     "pin": "120634",
     "hints": [
-      "Jumlah kandidat per kategori di Case Roster Molecular Museum.",
+      "Jumlah seluruh kandidat dari ketiga kategori di Case Roster Molecular Museum.",
       "Jumlah huruf pada kata kategori Food & Drinks yang tersembunyi di Cerebral Hunt Arena: \"COFFEE\".",
       "Nomor clue Mendatar di Lexicon Vault yang jawabannya adalah ujian masuk universitas di Tiongkok yang lebih ketat dari OSN."
     ]
@@ -620,7 +624,7 @@
   const USERNAME_KEY = 'eg_username_v1';
   const GAME4_DONE_KEY = 'eg_game4_done_v1'; // dibaca hub (index.html) buat tanda checkmark stage 4
 
-  function isValidUsername(u){ return /^[a-z_.]{3,20}$/.test(u); }
+  function isValidUsername(u){ return /^[a-z0-9]{3,20}$/.test(u); }
   function getStoredUsername(){ return localStorage.getItem(USERNAME_KEY); }
   function initUsernameField(){
     const box = document.getElementById('username-box');
@@ -628,7 +632,7 @@
     if (stored && isValidUsername(stored)){ box.style.display = 'none'; return; }
     box.style.display = 'block';
     const input = document.getElementById('username-input');
-    input.addEventListener('input', () => { input.value = input.value.replace(/[^a-z_.]/g, ''); updateUsernameFeedback(); });
+    input.addEventListener('input', () => { input.value = input.value.toLowerCase().replace(/[^a-z0-9]/g, ''); updateUsernameFeedback(); });
     updateUsernameFeedback();
   }
   function updateUsernameFeedback(){
@@ -639,7 +643,7 @@
     const val = input.value.trim();
     const valid = isValidUsername(val);
     if (!val){ fb.textContent=''; fb.className='username-feedback'; }
-    else if (!valid){ fb.textContent='Gunakan 3–20 karakter: huruf kecil a-z, titik (.), underscore (_).'; fb.className='username-feedback show warn'; }
+    else if (!valid){ fb.textContent='Gunakan huruf kecil a-z dan angka 0-9, panjang 3-20 karakter, tanpa spasi atau simbol.'; fb.className='username-feedback show warn'; }
     else { fb.textContent='Nama siap dipakai ✓'; fb.className='username-feedback show ok'; }
   }
   function escapeHtml(str){ return String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
@@ -844,7 +848,8 @@
   }
 
   function launchConfetti(){
-    const colors = ['#2dd4bf','#5eead4','#34d399','#d8b979','#f0a8c0'];
+    if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const colors = ['#e7c46f','#f6dfa4','#f0a8c0','#7ee0d3','#ffffff'];
     for (let i=0;i<80;i++){
       const piece = document.createElement('div');
       piece.className = 'confetti-piece';
