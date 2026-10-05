@@ -160,6 +160,7 @@
     </div>
   </div>
 
+<script src="recovery.js"></script>
 <script>
   const USERNAME_KEY = 'eg_username_v1';
   function isValidUsername(u){ return /^[a-z_.]{3,20}$/.test(u); }
@@ -207,6 +208,7 @@
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
     window.scrollTo(0,0);
+    if (id === 'screen-select' && window.EgRecovery) setTimeout(() => EgRecovery.ensure(getStoredUsername()), 500);
   }
 
   // ====== HUB: daftar banner. Ubah teks/tanggal di sini. ======
