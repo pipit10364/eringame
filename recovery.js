@@ -34,6 +34,7 @@
       + '.egr-q{font-weight:700;color:#17332d;background:#e3f4f1;border-radius:10px;padding:10px 12px;margin-bottom:10px;word-break:break-word}'
       + '.egr-in{width:100%;border:1px solid #e6e0d1;border-radius:12px;padding:11px 13px;font:600 .95rem Nunito,system-ui,sans-serif;color:#17332d;margin-bottom:10px}'
       + '.egr-row{display:flex;gap:8px;margin-top:4px}.egr-btn{flex:1;border:1px solid #0f9d8e;background:#0f9d8e;color:#fff;font:700 .9rem Nunito,system-ui,sans-serif;padding:11px;border-radius:12px;cursor:pointer}'
+      + '.egr-in::placeholder{font-size:.8rem}'
       + '.egr-btn.g{background:#fff;color:#0b7a6e}.egr-btn:disabled{opacity:.5}.egr-msg{min-height:1.3em;font-size:.84rem;color:#b3413a;margin-bottom:6px}.egr-msg.ok{color:#0b7a6e}';
     document.head.appendChild(st);
   }
@@ -53,7 +54,7 @@
       if ((await db.ref('recoveryHints/' + u).once('value')).exists()){ localStorage.setItem(KEY(u), '1'); return; }
     } catch (e) { return; }
     const m = modal('<h2>Amankan hadiahmu 🔐</h2><p>Hari perayaan masih lama. Buat satu pertanyaan pemulihan dari kamu sendiri, supaya kalau lupa kunci misi kamu tetap bisa klaim hadiah. Jangan pakai data yang terlalu pribadi.</p>'
-      + '<input class="egr-in" id="egq" maxlength="80" placeholder="Pertanyaanmu, mis. Nama kucing pertamaku" autocomplete="off">'
+      + '<input class="egr-in" id="egq" maxlength="80" placeholder="Pertanyaanmu (mis. nama kucing)" autocomplete="off">'
       + '<input class="egr-in" id="ega" maxlength="40" placeholder="Jawabanmu (min. 5 karakter)" autocomplete="off">'
       + '<div class="egr-msg" id="egm"></div><div class="egr-row"><button class="egr-btn g" id="egs">Nanti saja</button><button class="egr-btn" id="egv">Simpan</button></div>');
     const say = (t, ok) => { const e = m.$('#egm'); e.textContent = t; e.className = 'egr-msg' + (ok ? ' ok' : ''); };

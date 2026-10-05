@@ -136,9 +136,10 @@
   .stage-more{ position: absolute; right: 10px; bottom: 10px; width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--border); background: var(--bg-tile); color: var(--ink-dim); font-size: 1.1rem; cursor: pointer; line-height: 1; }
   .stage-more:hover, .stage-more:focus-visible{ border-color: var(--teal); color: var(--teal); outline: none; }
   .select-tip{ margin: 14px auto 0; max-width: 560px; color: var(--ink-dim); font-size: 0.84rem; }
-  .stage-card.prize{ background: #101a38; border-color: #5b4d27; }
+  .stage-card.prize{ background: #11211e; border-color: #5b4d27; }
   .stage-card.prize:hover{ border-color: #e7c46f; }
   .stage-card.prize .stage-num{ color: #e7c46f; }
+  .username-input::placeholder{ font-size: 0.8rem; }
 </style>
 </head>
 <body>
@@ -232,7 +233,7 @@
     ]},
     { label:'GAMES', note:'Mainkan untuk membuka kode hadiah.', items:[
       { num:'GAME 01', title:'The Secret of the<br>Molecular Museum', blurb:'Deduksi & logic grid. Pecahkan kombinasi vault utama.', href:'molecular-museum.html', openAt:EG_CONFIG.OPEN_AT.game1, doneKey:'eg_game1_score_v1' },
-      { num:'GAME 02', title:'Cerebral Hunt Arena', blurb:'Jawab soal logika, temukan 12 kata tersembunyi di papan huruf.', href:'cerebral-hunt-arena.html', openAt:EG_CONFIG.OPEN_AT.game2, doneKey:'eg_game2_score_v1' },
+      { num:'GAME 02', title:'Cerebral Hunt Arena', blurb:'Jawab soal logika, lalu susun anagram dari 60 kata bertema Erin.', href:'cerebral-hunt-arena.html', openAt:EG_CONFIG.OPEN_AT.game2, doneKey:'eg_game2_score_v1' },
       { num:'GAME 03', title:'Lexicon Vault', blurb:'Satu grid, 36 kunci. Semua tentang Erin.', href:'lexicon-vault.html', openAt:EG_CONFIG.OPEN_AT.game3, doneKey:'eg_game3_best_score_v1' },
     ]},
     { label:'PRIZE', note:'Kado untuk Erin menantimu.', items:[
