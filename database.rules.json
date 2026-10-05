@@ -2,12 +2,10 @@
   "rules": {
     ".read": false,
     ".write": false,
-
     "leaderboard": {
       ".read": true,
       ".write": true
     },
-
     "codes": {
       "$code": {
         ".read": true,
@@ -15,15 +13,14 @@
         ".validate": "newData.hasChildren(['username','app','valid','at']) && newData.child('app').val().matches(/^(twibbon|letter|photobooth)$/)"
       }
     },
-
     "letters": {
+      ".read": "auth != null && root.child('claims/'+auth.uid).exists() || auth.uid === 'b8KLqkxnrmPlnHuiRWewJKWSlek1'",
       "$username": {
         ".read": "auth.uid === 'b8KLqkxnrmPlnHuiRWewJKWSlek1'",
         ".write": "(!data.exists() && newData.exists()) || auth.uid === 'b8KLqkxnrmPlnHuiRWewJKWSlek1'",
         ".validate": "newData.hasChildren(['text','at']) && newData.child('text').isString() && newData.child('text').val().length <= 1500 && (!newData.child('photo').exists() || (newData.child('photo').isString() && newData.child('photo').val().length < 200000))"
       }
     },
-
     "missions": {
       "$username": {
         "$app": {
@@ -31,6 +28,21 @@
           ".write": "(!data.exists() && newData.exists()) || auth.uid === 'b8KLqkxnrmPlnHuiRWewJKWSlek1'"
         }
       }
+    },
+    "claims": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid || auth.uid === 'b8KLqkxnrmPlnHuiRWewJKWSlek1'",
+        ".write": "(auth != null && auth.uid === $uid && !data.exists() && root.child('codes/'+newData.child('twibbon').val()+'/username').val() === newData.child('username').val() && root.child('codes/'+newData.child('twibbon').val()+'/app').val() === 'twibbon' && root.child('codes/'+newData.child('twibbon').val()+'/valid').val() === true && root.child('codes/'+newData.child('letter').val()+'/username').val() === newData.child('username').val() && root.child('codes/'+newData.child('letter').val()+'/app').val() === 'letter' && root.child('codes/'+newData.child('letter').val()+'/valid').val() === true && root.child('codes/'+newData.child('photobooth').val()+'/username').val() === newData.child('username').val() && root.child('codes/'+newData.child('photobooth').val()+'/app').val() === 'photobooth' && root.child('codes/'+newData.child('photobooth').val()+'/valid').val() === true) || auth.uid === 'b8KLqkxnrmPlnHuiRWewJKWSlek1'",
+        ".validate": "newData.hasChildren(['username','twibbon','letter','photobooth','at'])"
+      }
+    },
+    "videos": {
+      ".read": "auth != null && root.child('claims/'+auth.uid).exists() || auth.uid === 'b8KLqkxnrmPlnHuiRWewJKWSlek1'",
+      ".write": "auth.uid === 'b8KLqkxnrmPlnHuiRWewJKWSlek1'"
+    },
+    "fanart": {
+      ".read": "auth != null && root.child('claims/'+auth.uid).exists() || auth.uid === 'b8KLqkxnrmPlnHuiRWewJKWSlek1'",
+      ".write": "auth.uid === 'b8KLqkxnrmPlnHuiRWewJKWSlek1'"
     }
   }
 }
