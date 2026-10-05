@@ -3,12 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Celebration Chamber — Stage 04</title>
+<title>Claim Your Prize</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&family=Fredoka:wght@400;500;600&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
 <!-- Firebase (leaderboard finalize only — Game 4 tidak menambah skor) -->
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
 <style>
   :root{
     --bg: #061a15;
@@ -143,6 +144,12 @@
   }
   .pin-digit:focus{ outline: none; border-color: var(--teal); box-shadow: 0 0 0 2px rgba(45,212,191,0.25); }
   @keyframes shakeX{10%,90%{transform:translateX(-1px);}20%,80%{transform:translateX(2px);}30%,50%,70%{transform:translateX(-4px);}40%,60%{transform:translateX(4px);}}
+  .key-box{ margin-top: 26px; text-align:left; display:flex; flex-direction:column; gap:10px; }
+  .key-row{ display:flex; align-items:center; gap:10px; }
+  .key-row label{ flex:0 0 130px; font-size:0.8rem; color: var(--ink-dim); }
+  .key-input{ flex:1; min-width:0; background: var(--bg-panel); border:1px solid var(--border); border-radius:8px; padding:10px 12px; color: var(--ink); font-family:'JetBrains Mono', monospace; font-size:1rem; letter-spacing:0.18em; text-align:center; }
+  .key-input:focus{ outline:none; border-color: var(--teal); box-shadow:0 0 0 2px rgba(45,212,191,0.25); }
+  .key-input.bad{ border-color: var(--struck); }
   .pin-feedback{ margin-top: 16px; font-size: 0.86rem; min-height: 1.4em; }
   .pin-feedback.warn{ color: var(--struck); }
   .pin-feedback.ok{ color: var(--emerald); }
@@ -181,6 +188,30 @@
   .gift-overlay-fallback{ text-align:center; color: var(--ink-faint); font-size:0.82rem; margin-top:10px; }
   .gift-overlay-fallback a{ color: var(--teal); }
 
+  .gift-body{ display:none; flex:1; max-width:900px; margin:0 auto; width:100%; overflow:auto; }
+  .gift-body.on{ display:block; }
+  .gift-msg{ color: var(--ink-dim); text-align:center; padding: 40px 12px; font-size:0.95rem; }
+  .wall{ column-width: 250px; column-gap: 14px; }
+  .lp{ --pi:#17332d; --pa:#0b7a6e; break-inside: avoid; margin-bottom:14px; border-radius:16px; padding:14px 14px 10px; border:1px solid rgba(0,0,0,.12); color: var(--pi); }
+  .lp-polos{ background:#fffdf7; }
+  .lp-garis{ background:repeating-linear-gradient(#fffdf7 0 31px,#e9e2cf 31px 32px); }
+  .lp-titik{ background:radial-gradient(#d3ccb5 1px,transparent 1px) 0 0/18px 18px,#fffdf7; }
+  .lp-teal{ background:linear-gradient(160deg,#e6f6f3,#fbf8f1); }
+  .lp-tealtua{ background:linear-gradient(160deg,#0f8f81,#0b6f64); --pi:#fbf8f1; --pa:#f1dcaa; }
+  .lp-malam{ background:linear-gradient(160deg,#12382f,#0a211c); --pi:#eaf6f3; --pa:#d8b979; }
+  .lp-emas{ background:linear-gradient(160deg,#f4e6bf,#ead29b); }
+  .lf-sans{ font-family:'Fredoka',sans-serif; font-size:1rem; } .lf-hand{ font-family:'Caveat',cursive; font-size:1.35rem; } .lf-serif{ font-family:'Cormorant Garamond',serif; font-size:1.2rem; font-weight:600; }
+  .lp img{ width:100%; border-radius:10px; display:block; margin-bottom:12px; }
+  .lp .g, .lp .sg{ color: var(--pa); line-height:32px; } .lp .sg{ text-align:right; }
+  .lp .t{ white-space:pre-wrap; word-break:break-word; line-height:32px; }
+  .lp a{ display:block; color: var(--pa); font-weight:700; text-decoration:underline; line-height:30px; }
+  .yt-holder{ position:relative; padding-top:56.25%; background:#000; border-radius:10px; overflow:hidden; }
+  .yt-holder iframe{ position:absolute; inset:0; width:100%; height:100%; }
+  .v-cap{ margin:12px 0 8px; color: var(--ink); font-weight:700; text-align:center; }
+  .v-list{ display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-top:12px; }
+  .v-item{ background: var(--bg-panel); border:1px solid var(--border); color: var(--ink-dim); border-radius:20px; padding:7px 13px; font-size:0.82rem; cursor:pointer; }
+  .v-item.on{ border-color: var(--teal); color: var(--teal); }
+
   /* ---------- Confetti ---------- */
   .confetti-piece{ position:fixed; top:-20px; width:8px; height:14px; z-index:70; pointer-events:none; animation: confetti-fall linear forwards; }
   @keyframes confetti-fall{ to{ transform: translateY(110vh) rotate(540deg); opacity:0.3; } }
@@ -203,18 +234,18 @@
 </style>
 </head>
 <body>
-  <a href="index.html" class="back-to-menu-btn" title="Kembali ke Menu Utama">← Menu</a>
+  <a href="index.html#menu" class="back-to-menu-btn" title="Kembali ke Menu Utama">← Menu</a>
 
   <!-- ================= LOCK / WELCOME SCREEN ================= -->
   <div class="screen active" id="screen-welcome">
     <div class="welcome-wrap">
-      <div class="eyebrow-mark">STAGE 04</div>
-      <h1 class="welcome-title">Celebration Chamber</h1>
-      <p class="welcome-sub">The last room. One more combination.</p>
+      <div class="eyebrow-mark">PRIZE</div>
+      <h1 class="welcome-title">Claim Your Prize</h1>
+      <p class="welcome-sub">The last door. Bring all your keys.</p>
       <div class="plaque">
         <div class="cipher-label">BRIEFING</div>
         <p class="salutation" style="color:var(--ink);font-weight:700;">Selamat, Investigator. Kamu sudah sampai di pintu terakhir.</p>
-        <p>Pintu ini terkunci dengan <strong>kombinasi 6 digit</strong> yang tersusun dari tiga ruang yang sudah kamu lewati. Kumpulkan potongannya, susun jadi satu PIN, dan masuklah.</p>
+        <p>Pintu ini terkunci dengan <strong>kombinasi 6 digit</strong> yang tersusun dari tiga ruang yang sudah kamu lewati. Kumpulkan potongannya, susun jadi satu PIN. Siapkan juga <strong>tiga kunci misi</strong> dari Portrait Atelier, Letter Sanctum, dan Polaroid Parlor, lalu masuklah.</p>
       </div>
       <div class="username-box" id="username-box" style="display:none;">
         <label class="username-label" for="username-input">Input your name</label>
@@ -263,6 +294,12 @@
           <input class="pin-digit" data-idx="4" maxlength="1" inputmode="numeric">
           <input class="pin-digit" data-idx="5" maxlength="1" inputmode="numeric">
         </div>
+      </div>
+      <div class="eyebrow-mark" style="margin-top:28px;">KUNCI MISI</div>
+      <div class="key-box">
+        <div class="key-row"><label for="key-twibbon">Portrait Atelier</label><input class="key-input" id="key-twibbon" maxlength="8" inputmode="numeric" placeholder="8 digit" autocomplete="off"></div>
+        <div class="key-row"><label for="key-letter">Letter Sanctum</label><input class="key-input" id="key-letter" maxlength="8" inputmode="numeric" placeholder="8 digit" autocomplete="off"></div>
+        <div class="key-row"><label for="key-photobooth">Polaroid Parlor</label><input class="key-input" id="key-photobooth" maxlength="8" inputmode="numeric" placeholder="8 digit" autocomplete="off"></div>
       </div>
       <div class="pin-feedback" id="pin-feedback"></div>
       <div class="cta-row">
@@ -342,8 +379,9 @@
       <span class="gift-overlay-title" id="gift-overlay-title">Hadiah</span>
       <button class="gift-overlay-close" onclick="closeGift()">Tutup ✕</button>
     </div>
-    <div class="gift-overlay-frame"><iframe id="gift-overlay-iframe" src="" title="Hadiah untuk Erin"></iframe></div>
-    <div class="gift-overlay-fallback">Kalau ga muncul, <a id="gift-overlay-link" href="#" target="_blank" rel="noopener">buka di tab baru</a>.</div>
+    <div class="gift-body" id="gift-body"></div>
+    <div class="gift-overlay-frame" id="gift-frame"><iframe id="gift-overlay-iframe" src="" title="Hadiah untuk Erin"></iframe></div>
+    <div class="gift-overlay-fallback" id="gift-fallback">Kalau ga muncul, <a id="gift-overlay-link" href="#" target="_blank" rel="noopener">buka di tab baru</a>.</div>
   </div>
 
   <!-- ================= CLOSING SCREEN ================= -->
@@ -556,6 +594,8 @@
   let db = null;
   try { firebase.initializeApp(firebaseConfig); db = firebase.database(); }
   catch (e) { console.warn('Firebase belum dikonfigurasi.', e); }
+  let auth = null;
+  try { auth = firebase.auth(); auth.signInAnonymously().catch(e => console.warn('Anonymous auth belum aktif:', e)); } catch (e) { console.warn(e); }
 
   const USERNAME_KEY = 'eg_username_v1';
   const GAME4_DONE_KEY = 'eg_game4_done_v1'; // dibaca hub (index.html) buat tanda checkmark stage 4
@@ -670,26 +710,55 @@
     });
   });
 
-  function checkPin(){
+  // Kunci misi: harus ada di database, jenisnya cocok, milik username ini, dan masih valid.
+  const MISSION_KEYS = [
+    ['twibbon', 'Portrait Atelier', 'key-twibbon'],
+    ['letter', 'Letter Sanctum', 'key-letter'],
+    ['photobooth', 'Polaroid Parlor', 'key-photobooth'],
+  ];
+  document.querySelectorAll('.key-input').forEach(k => k.addEventListener('input', () => {
+    k.value = k.value.replace(/[^0-9]/g, ''); k.classList.remove('bad');
+  }));
+  async function verifyMissionKeys(){
+    if (!db) return { ok:false, msg:'Database belum tersambung. Coba muat ulang halaman.' };
+    const u = getStoredUsername();
+    const codes = {};
+    for (const [app, name, id] of MISSION_KEYS){
+      const el = document.getElementById(id), code = el.value.trim();
+      if (!/^[0-9]{8}$/.test(code)) return { ok:false, el, msg:'Isi kunci ' + name + ' (8 digit) dulu ya.' };
+      let v = null;
+      try { v = (await db.ref('codes/' + code).once('value')).val(); }
+      catch (e) { return { ok:false, el, msg:'Gagal memeriksa kunci ' + name + '. Coba lagi sebentar.' }; }
+      if (!v || v.app !== app || v.username !== u) return { ok:false, el, msg:'Kunci ' + name + ' belum cocok. Cek lagi ya.' };
+      if (v.valid !== true) return { ok:false, el, msg:'Kunci ' + name + ' tidak lagi berlaku. Hubungi admin ya.' };
+      codes[app] = code;
+    }
+    return { ok:true, codes };
+  }
+
+  // Pengesahan klaim di server: aturan database membaca ulang ketiga kunci, lalu mengizinkan akun anonim ini membuka hadiah.
+  async function writeClaim(codes){
+    try {
+      if (!auth) return false;
+      const user = auth.currentUser || (await auth.signInAnonymously()).user;
+      const ref = db.ref('claims/' + user.uid);
+      if ((await ref.once('value')).exists()) return true;
+      await ref.set({ username:getStoredUsername(), twibbon:codes.twibbon, letter:codes.letter, photobooth:codes.photobooth, at:Date.now() });
+      return true;
+    } catch (e) { console.warn('Klaim gagal:', e); return false; }
+  }
+
+  let checking = false;
+  async function checkPin(){
+    if (checking) return;
     const entered = pinInputs.map(i => i.value).join('');
     const fb = document.getElementById('pin-feedback');
     if (entered.length < 6){
-      fb.textContent = 'Isi semua 6 digitnya dulu ya.';
+      fb.textContent = 'Isi semua 6 digit PIN-nya dulu ya.';
       fb.className = 'pin-feedback warn';
       return;
     }
-    if (entered === mySet.pin){
-      fb.textContent = 'PIN benar. Pintu terbuka...';
-      fb.className = 'pin-feedback ok';
-      finalizeLeaderboardEntry();
-      localStorage.setItem(GAME4_DONE_KEY, '1');
-      setTimeout(() => {
-        showScreen('screen-cake');
-        const audio = document.getElementById('bday-audio');
-        audio.play().catch(() => {});
-        launchConfetti();
-      }, 500);
-    } else {
+    if (entered !== mySet.pin){
       fb.textContent = 'PIN belum tepat. Coba cek lagi petunjuk tiap ruangnya.';
       fb.className = 'pin-feedback warn';
       document.querySelectorAll('.pin-group').forEach(g => {
@@ -698,7 +767,32 @@
       });
       pinInputs.forEach(i => i.value = '');
       pinInputs[0].focus();
+      return;
     }
+    checking = true;
+    const btn = document.getElementById('pin-submit-btn'); btn.disabled = true;
+    fb.textContent = 'PIN benar. Memeriksa kunci misi...'; fb.className = 'pin-feedback';
+    const r = await verifyMissionKeys();
+    checking = false; btn.disabled = false;
+    if (!r.ok){
+      fb.textContent = r.msg; fb.className = 'pin-feedback warn';
+      if (r.el){ r.el.classList.add('bad'); r.el.focus(); }
+      return;
+    }
+    if (!(await writeClaim(r.codes))){
+      fb.textContent = 'Kuncinya cocok, tapi klaim belum bisa disahkan. Muat ulang halaman lalu coba lagi ya.'; fb.className = 'pin-feedback warn';
+      return;
+    }
+    fb.textContent = 'Semua kunci cocok. Pintu terbuka...';
+    fb.className = 'pin-feedback ok';
+    finalizeLeaderboardEntry();
+    localStorage.setItem(GAME4_DONE_KEY, '1');
+    setTimeout(() => {
+      showScreen('screen-cake');
+      const audio = document.getElementById('bday-audio');
+      audio.play().catch(() => {});
+      launchConfetti();
+    }, 500);
   }
 
   // ==================================================================
@@ -728,15 +822,89 @@
   // ==================================================================
   // GIFTS
   // ==================================================================
+  const $g = id => document.getElementById(id);
+  let ytPlayer = null;
+  function showGiftBody(title){
+    $g('gift-overlay-title').textContent = title;
+    $g('gift-frame').style.display = 'none'; $g('gift-fallback').style.display = 'none';
+    const body = $g('gift-body'); body.className = 'gift-body on'; body.innerHTML = '<div class="gift-msg">Memuat…</div>';
+    $g('gift-overlay').classList.add('active');
+    return body;
+  }
+  function giftMsg(body, text){ body.innerHTML = ''; const d = document.createElement('div'); d.className = 'gift-msg'; d.textContent = text; body.appendChild(d); }
+
   function openGift(key){
-    document.getElementById('gift-overlay-title').textContent = GIFT_TITLES[key];
-    document.getElementById('gift-overlay-iframe').src = GIFT_URLS[key];
-    document.getElementById('gift-overlay-link').href = GIFT_URLS[key];
-    document.getElementById('gift-overlay').classList.add('active');
+    if (key === 'letter') return openLetterWall();
+    if (key === 'video') return openVideos();
+    $g('gift-frame').style.display = ''; $g('gift-fallback').style.display = ''; $g('gift-body').className = 'gift-body';
+    $g('gift-overlay-title').textContent = GIFT_TITLES[key];
+    $g('gift-overlay-iframe').src = GIFT_URLS[key];
+    $g('gift-overlay-link').href = GIFT_URLS[key];
+    $g('gift-overlay').classList.add('active');
   }
   function closeGift(){
-    document.getElementById('gift-overlay').classList.remove('active');
-    document.getElementById('gift-overlay-iframe').src = '';
+    $g('gift-overlay').classList.remove('active');
+    $g('gift-overlay-iframe').src = '';
+    if (ytPlayer && ytPlayer.destroy){ try { ytPlayer.destroy(); } catch (e) {} ytPlayer = null; }
+    $g('gift-body').className = 'gift-body'; $g('gift-body').innerHTML = '';
+  }
+
+  // ---- Wall surat ----
+  const PAPER_KEYS = ['polos','garis','titik','teal','tealtua','malam','emas'], FONT_KEYS = ['sans','hand','serif'];
+  async function openLetterWall(){
+    const body = showGiftBody(GIFT_TITLES.letter);
+    try {
+      const val = (await db.ref('letters').once('value')).val() || {};
+      const list = Object.keys(val).map(u => Object.assign({ user:u }, val[u])).sort((a,b) => (a.at||0) - (b.at||0));
+      if (!list.length){ giftMsg(body, 'Belum ada surat.'); return; }
+      const wall = document.createElement('div'); wall.className = 'wall';
+      list.forEach(L => {
+        const paper = PAPER_KEYS.includes(L.paper) ? L.paper : 'polos', font = FONT_KEYS.includes(L.font) ? L.font : 'sans';
+        const c = document.createElement('div'); c.className = 'lp lp-' + paper + ' lf-' + font;
+        if (typeof L.photo === 'string' && L.photo.startsWith('data:image/jpeg;base64,')){ const im = document.createElement('img'); im.src = L.photo; im.alt = ''; c.appendChild(im); }
+        const g = document.createElement('div'); g.className = 'g'; g.textContent = 'Untuk Erin,'; c.appendChild(g);
+        const t = document.createElement('div'); t.className = 't'; t.textContent = String(L.text || ''); c.appendChild(t);
+        (Array.isArray(L.links) ? L.links : []).slice(0,3).forEach(l => {
+          if (!l || !/^https?:\/\//i.test(l.url || '')) return;
+          const a = document.createElement('a'); a.href = l.url; a.target = '_blank'; a.rel = 'noopener noreferrer'; a.textContent = '↗ ' + String(l.label || 'Tautan').slice(0,40); c.appendChild(a);
+        });
+        const sg = document.createElement('div'); sg.className = 'sg'; sg.textContent = '— ' + L.user; c.appendChild(sg);
+        wall.appendChild(c);
+      });
+      body.innerHTML = ''; body.appendChild(wall);
+    } catch (e) { console.warn(e); giftMsg(body, 'Surat belum bisa dibuka. Pastikan kamu sudah klaim hadiah ya.'); }
+  }
+
+  // ---- Video (YouTube unlisted) ----
+  function loadYT(){
+    return new Promise(res => {
+      if (window.YT && YT.Player) return res();
+      window.onYouTubeIframeAPIReady = () => res();
+      const sc = document.createElement('script'); sc.src = 'https://www.youtube.com/iframe_api'; document.head.appendChild(sc);
+    });
+  }
+  async function openVideos(){
+    const body = showGiftBody(GIFT_TITLES.video);
+    try {
+      const val = (await db.ref('videos').once('value')).val() || {};
+      const items = Object.values(val).filter(v => v && /^[\w-]{11}$/.test(v.yt || '')).sort((a,b) => (a.order||0) - (b.order||0));
+      if (!items.length){ giftMsg(body, 'Belum ada video.'); return; }
+      await loadYT();
+      body.innerHTML = '<div class="yt-holder"><div id="yt"></div></div><div class="v-cap" id="v-cap"></div><div class="cta-row" style="margin-top:0"><button class="btn btn-primary" id="v-play">▶ Putar semua</button></div><div class="v-list" id="v-list"></div>';
+      let cur = 0;
+      const mark = () => {
+        $g('v-cap').textContent = 'Dari ' + (items[cur].username || '');
+        [...$g('v-list').children].forEach((b,i) => b.classList.toggle('on', i === cur));
+      };
+      const play = i => { cur = i; ytPlayer.loadVideoById(items[i].yt); mark(); };
+      items.forEach((v,i) => { const b = document.createElement('button'); b.className = 'v-item'; b.textContent = v.username || ('Video ' + (i+1)); b.onclick = () => play(i); $g('v-list').appendChild(b); });
+      ytPlayer = new YT.Player('yt', {
+        videoId: items[0].yt, playerVars: { rel:0, playsinline:1, modestbranding:1 },
+        events: { onStateChange: e => { if (e.data === YT.PlayerState.ENDED && cur < items.length - 1) play(cur + 1); } }
+      });
+      $g('v-play').onclick = () => play(0);
+      mark();
+    } catch (e) { console.warn(e); giftMsg(body, 'Video belum bisa dibuka. Pastikan kamu sudah klaim hadiah ya.'); }
   }
 
   // ==================================================================
