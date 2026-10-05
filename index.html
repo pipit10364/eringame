@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="config.js"></script>
 <title>For Erin — Start</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
@@ -19,7 +20,7 @@
     --cyan: #5eead4;
     --ink: #eaf6f3;
     --ink-dim: #83ab9d;
-    --ink-faint: #4c7669;
+    --ink-faint: #7ca493;
     --gold: #d8b979;
     --glow: 0 0 40px rgba(45, 212, 191, 0.15);
   }
@@ -129,6 +130,15 @@
   .stage-card.locked{ cursor: not-allowed; opacity: 0.62; border-style: dashed; }
   .stage-card.locked:hover{ transform:none; border-color: var(--border); }
   .stage-lock{ margin-top: 12px; font-size: 0.76rem; color: var(--gold); font-family:'JetBrains Mono', monospace; border-top:1px solid var(--border-soft); padding-top:10px; line-height:1.55; }
+  @media (prefers-reduced-motion: reduce){ *,*::before,*::after{ animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; scroll-behavior:auto !important; } }
+  .stage-item{ position: relative; display: flex; }
+  .stage-item .stage-card{ flex: 1; padding-bottom: 46px; }
+  .stage-more{ position: absolute; right: 10px; bottom: 10px; width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--border); background: var(--bg-tile); color: var(--ink-dim); font-size: 1.1rem; cursor: pointer; line-height: 1; }
+  .stage-more:hover, .stage-more:focus-visible{ border-color: var(--teal); color: var(--teal); outline: none; }
+  .select-tip{ margin: 14px auto 0; max-width: 560px; color: var(--ink-dim); font-size: 0.84rem; }
+  .stage-card.prize{ background: #101a38; border-color: #5b4d27; }
+  .stage-card.prize:hover{ border-color: #e7c46f; }
+  .stage-card.prize .stage-num{ color: #e7c46f; }
 </style>
 </head>
 <body>
@@ -142,8 +152,8 @@
       <p class="opening-tagline">Three missions. Three games. One unforgettable prize.</p>
       <div class="username-box" id="username-box" style="display:none;">
         <label class="username-label" for="username-input">Input your name</label>
-        <input type="text" id="username-input" class="username-input" placeholder="contoh: erin.larasati" maxlength="20" autocomplete="off">
-        <div class="username-hint">Pakai username sosmed kamu biar gampang dikenali di leaderboard.</div>
+        <input type="text" id="username-input" class="username-input" placeholder="contoh: erinlarasati" maxlength="20" autocomplete="off" autocapitalize="off" spellcheck="false">
+        <div class="username-hint">Pakai username sosmed kamu tanpa titik atau simbol, biar gampang dikenali di leaderboard.</div>
         <div class="username-feedback" id="username-feedback"></div>
       </div>
       <button class="game-start-btn" onclick="handleGameStart()">GAME START</button>
@@ -156,6 +166,7 @@
       <div class="eyebrow-mark">CHOOSE YOUR PATH</div>
       <h1 class="select-title">Tiga Misi, Tiga Game, Satu Hadiah</h1>
       <p class="select-sub">Urutan bebas. Selesaikan misi untuk mendapat kunci, mainkan game untuk membuka kode, lalu klaim Prize.</p>
+      <p class="select-tip">Tip: buka tiap stage di tab baru (tombol &#8942; di kartu, atau klik kanan di laptop). Jadi catatan dari stage lain tetap bisa kamu cek tanpa mengulang dari awal.</p>
       <div id="hub"></div>
     </div>
   </div>
@@ -163,7 +174,7 @@
 <script src="recovery.js"></script>
 <script>
   const USERNAME_KEY = 'eg_username_v1';
-  function isValidUsername(u){ return /^[a-z_.]{3,20}$/.test(u); }
+  function isValidUsername(u){ return /^[a-z0-9]{3,20}$/.test(u); }
   function getStoredUsername(){ return localStorage.getItem(USERNAME_KEY); }
   function initUsernameField(){
     const box = document.getElementById('username-box');
@@ -171,7 +182,7 @@
     if (stored && isValidUsername(stored)){ box.style.display = 'none'; return; }
     box.style.display = 'block';
     const input = document.getElementById('username-input');
-    input.addEventListener('input', () => { input.value = input.value.replace(/[^a-z_.]/g, ''); updateUsernameFeedback(); });
+    input.addEventListener('input', () => { input.value = input.value.toLowerCase().replace(/[^a-z0-9]/g, ''); updateUsernameFeedback(); });
     updateUsernameFeedback();
   }
   function updateUsernameFeedback(){
@@ -182,7 +193,7 @@
     const val = input.value.trim();
     const valid = isValidUsername(val);
     if (!val){ fb.textContent=''; fb.className='username-feedback'; }
-    else if (!valid){ fb.textContent='Gunakan 3–20 karakter: huruf kecil a-z, titik (.), underscore (_).'; fb.className='username-feedback show warn'; }
+    else if (!valid){ fb.textContent='Gunakan huruf kecil a-z dan angka 0-9, panjang 3-20 karakter, tanpa spasi atau simbol.'; fb.className='username-feedback show warn'; }
     else { fb.textContent='Nama siap dipakai ✓'; fb.className='username-feedback show ok'; }
   }
   function mgShake(selector){
@@ -212,26 +223,25 @@
   }
 
   // ====== HUB: daftar banner. Ubah teks/tanggal di sini. ======
-  // openAt: tanggal buka (WIB). ready:false = belum dibuat ("soon"). Tambahkan ?unlock=1 di URL untuk uji coba.
+  // openAt: tanggal buka (WIB). ready:false = belum dibuat ("soon").
   const HUB = [
     { label:'MISSIONS', note:'Selesaikan misi, dapatkan kuncinya.', items:[
       { num:'MISSION 01', title:'Portrait Atelier', blurb:'Pasang twibbon-mu dan bingkai satu kenangan untuk Erin.', href:'twibbon.html', doneKey:'eg_mission_twibbon_v1' },
       { num:'MISSION 02', title:'Letter Sanctum', blurb:'Tulis surat untuk Erin. Semua surat baru terbuka di akhir.', href:'letter.html', doneKey:'eg_mission_letter_v1' },
-      { num:'MISSION 03', title:'Polaroid Parlor', blurb:'Photo booth dengan template spesial, hanya di hari-H.', href:'photobooth.html', openAt:'2026-11-17T00:00:00+07:00', doneKey:'eg_mission_photobooth_v1' },
+      { num:'MISSION 03', title:'Polaroid Parlor', blurb:'Photo booth dengan template spesial, hanya di hari-H.', href:'photobooth.html', openAt:EG_CONFIG.OPEN_AT.photobooth, doneKey:'eg_mission_photobooth_v1' },
     ]},
     { label:'GAMES', note:'Mainkan untuk membuka kode hadiah.', items:[
-      { num:'GAME 01', title:'The Secret of the<br>Molecular Museum', blurb:'Deduksi & logic grid. Pecahkan kombinasi vault utama.', href:'molecular-museum.html', doneKey:'eg_game1_score_v1' },
-      { num:'GAME 02', title:'Cerebral Hunt Arena', blurb:'Jawab soal logika, temukan 12 kata tersembunyi di papan huruf.', href:'cerebral-hunt-arena.html', doneKey:'eg_game2_score_v1' },
-      { num:'GAME 03', title:'Lexicon Vault', blurb:'Satu grid, 36 kunci. Semua tentang Erin.', href:'lexicon-vault.html', doneKey:'eg_game3_best_score_v1' },
+      { num:'GAME 01', title:'The Secret of the<br>Molecular Museum', blurb:'Deduksi & logic grid. Pecahkan kombinasi vault utama.', href:'molecular-museum.html', openAt:EG_CONFIG.OPEN_AT.game1, doneKey:'eg_game1_score_v1' },
+      { num:'GAME 02', title:'Cerebral Hunt Arena', blurb:'Jawab soal logika, temukan 12 kata tersembunyi di papan huruf.', href:'cerebral-hunt-arena.html', openAt:EG_CONFIG.OPEN_AT.game2, doneKey:'eg_game2_score_v1' },
+      { num:'GAME 03', title:'Lexicon Vault', blurb:'Satu grid, 36 kunci. Semua tentang Erin.', href:'lexicon-vault.html', openAt:EG_CONFIG.OPEN_AT.game3, doneKey:'eg_game3_best_score_v1' },
     ]},
     { label:'PRIZE', note:'Kado untuk Erin menantimu.', items:[
-      { num:'PRIZE', title:'Claim Your Prize', blurb:'Masukkan kode dari 3 game dan 3 kunci misi untuk membuka hadiahnya.', href:'celebration-chamber.html', openAt:'2026-11-17T00:00:00+07:00', doneKey:'eg_game4_done_v1', hint:'🔒 butuh kode Game 01–03 &amp; kunci 3 misi' },
+      { num:'PRIZE', title:'Claim Your Prize', blurb:'Masukkan kode dari 3 game dan 3 kunci misi untuk membuka hadiahnya.', href:'celebration-chamber.html', openAt:EG_CONFIG.OPEN_AT.prize, prize:true, doneKey:'eg_game4_done_v1', hint:'🔒 butuh kode Game 01–03 &amp; kunci 3 misi' },
     ]},
   ];
 
-  // Saat testing: false = semua banner terbuka. Ubah ke true menjelang hari-H agar kunci tanggal aktif.
-  const LOCKS_ENABLED = false;
-  const BYPASS = !LOCKS_ENABLED || new URLSearchParams(location.search).get('unlock') === '1';
+  // Mode testing dan jadwal buka diatur di config.js (TESTING_OPEN).
+  const BYPASS = EG_CONFIG.TESTING_OPEN;
   function fmtWIB(iso){
     return new Date(iso).toLocaleString('en-GB', { day:'numeric', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit', timeZone:'Asia/Jakarta' }) + ' WIB';
   }
@@ -256,7 +266,10 @@
             <div class="stage-title">${it.title}</div>
             <div class="stage-blurb">${it.blurb}</div>
             ${lock ? `<div class="stage-lock">🔒 ${lock}</div>` : (it.hint ? `<div class="stage-hint">${it.hint}</div>` : '')}`;
-          return lock ? `<div class="stage-card locked">${inner}</div>` : `<a class="stage-card" href="${it.href}">${inner}</a>`;
+          const cls = it.prize ? ' prize' : '';
+          const card = lock ? `<div class="stage-card locked${cls}">${inner}</div>` : `<a class="stage-card${cls}" href="${it.href}">${inner}</a>`;
+          const more = lock ? '' : `<button type="button" class="stage-more" aria-label="Buka di tab baru" title="Buka di tab baru" onclick="window.open('${it.href}','_blank','noopener')">&#8942;</button>`;
+          return `<div class="stage-item">${card}${more}</div>`;
         }).join('')}</div>
       </section>`).join('');
   }
