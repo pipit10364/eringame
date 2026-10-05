@@ -169,7 +169,7 @@
   .bday-name{ color: var(--gold); font-weight:700; }
 
   /* ---------- Gift menu ---------- */
-  .gift-grid{ margin-top: 30px; display:grid; grid-template-columns: repeat(3, minmax(180px, 1fr)); gap: 16px; width: 100%; max-width: 780px; }
+  .gift-grid{ margin-top: 30px; display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; width: 100%; max-width: 860px; }
   .gift-card{
     background: var(--bg-panel); border:1px solid var(--border); border-radius: 10px; padding: 26px 18px; text-align:center;
     cursor:pointer; transition: transform 0.15s ease, border-color 0.15s ease;
@@ -212,6 +212,19 @@
   .v-list{ display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-top:12px; }
   .v-item{ background: var(--bg-panel); border:1px solid var(--border); color: var(--ink-dim); border-radius:20px; padding:7px 13px; font-size:0.82rem; cursor:pointer; }
   .v-item.on{ border-color: var(--teal); color: var(--teal); }
+
+  .fgrid{ display:grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap:12px; }
+  .fthumb{ position:relative; aspect-ratio:1/1; border:1px solid var(--border); border-radius:12px; overflow:hidden; background: var(--bg-panel); padding:0; cursor:pointer; }
+  .fthumb.v{ aspect-ratio:16/9; }
+  .fthumb img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .fthumb span{ position:absolute; left:0; right:0; bottom:0; padding:18px 9px 7px; font-size:0.76rem; text-align:left; color:#fff; background:linear-gradient(transparent, rgba(0,0,0,.78)); }
+  .fthumb.v::after{ content:'▶'; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-size:1.4rem; color:#fff; background:rgba(0,0,0,.45); width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center; padding-left:3px; }
+  .fbar{ display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:10px; color: var(--ink-dim); font-size:0.84rem; }
+  .fview img{ max-width:100%; max-height:66vh; object-fit:contain; display:block; margin:0 auto; border-radius:10px; }
+  .fcap{ text-align:center; margin-top:10px; color: var(--ink); font-weight:700; }
+  .fnav{ display:flex; gap:8px; justify-content:center; margin-top:12px; flex-wrap:wrap; }
+  .fbtn{ background:none; border:1px solid var(--border); color: var(--ink-dim); border-radius:8px; padding:8px 14px; cursor:pointer; font-size:0.84rem; }
+  .fbtn:disabled{ opacity:.4; cursor:default; } .fbtn.on{ border-color: var(--teal); color: var(--teal); }
 
   /* ---------- Confetti ---------- */
   .confetti-piece{ position:fixed; top:-20px; width:8px; height:14px; z-index:70; pointer-events:none; animation: confetti-fall linear forwards; }
@@ -367,6 +380,11 @@
           <div class="gift-icon">🎬</div>
           <div class="gift-title">Video</div>
           <div class="gift-blurb">Video spesial buat Erin.</div>
+        </div>
+        <div class="gift-card" onclick="openGift('fanart')">
+          <div class="gift-icon">🎨</div>
+          <div class="gift-title">Fanart</div>
+          <div class="gift-blurb">Karya-karya untuk Erin dari komunitas.</div>
         </div>
       </div>
       <div class="cta-row">
@@ -579,7 +597,7 @@
     scrapbook: 'https://heyzine.com/GANTI_DENGAN_LINK_HEYZINE_KAMU',
     video: 'https://drive.google.com/GANTI_DENGAN_LINK_VIDEO_KAMU',
   };
-  const GIFT_TITLES = { letter: 'Surat untuk Erin', scrapbook: 'Scrapbook', video: 'Video untuk Erin' };
+  const GIFT_TITLES = { letter: 'Surat untuk Erin', scrapbook: 'Scrapbook', video: 'Video untuk Erin', fanart: 'Fanart untuk Erin' };
 
   // ==================================================================
   // FIREBASE — HARUS SAMA PERSIS dengan file game lain
@@ -856,6 +874,7 @@
   function openGift(key){
     if (key === 'letter') return openLetterWall();
     if (key === 'video') return openVideos();
+    if (key === 'fanart') return openFanart();
     $g('gift-frame').style.display = ''; $g('gift-fallback').style.display = ''; $g('gift-body').className = 'gift-body';
     $g('gift-overlay-title').textContent = GIFT_TITLES[key];
     $g('gift-overlay-iframe').src = GIFT_URLS[key];
@@ -865,6 +884,7 @@
   function closeGift(){
     $g('gift-overlay').classList.remove('active');
     $g('gift-overlay-iframe').src = '';
+    if (window._egKey){ document.removeEventListener('keydown', window._egKey); window._egKey = null; }
     if (ytPlayer && ytPlayer.destroy){ try { ytPlayer.destroy(); } catch (e) {} ytPlayer = null; }
     $g('gift-body').className = 'gift-body'; $g('gift-body').innerHTML = '';
   }
@@ -903,6 +923,48 @@
       const sc = document.createElement('script'); sc.src = 'https://www.youtube.com/iframe_api'; document.head.appendChild(sc);
     });
   }
+  const mk = (t, c, txt) => { const e = document.createElement(t); if (c) e.className = c; if (txt != null) e.textContent = txt; return e; };
+  function bar(body, backFn, label){
+    body.innerHTML = '';
+    const b = mk('div', 'fbar'), back = mk('button', 'fbtn', backFn.txt); back.onclick = backFn.fn;
+    b.append(back, mk('span', '', label)); body.appendChild(b);
+  }
+  function navRow(prevFn, nextFn, i, n){
+    const r = mk('div', 'fnav'), p = mk('button', 'fbtn', '‹ Sebelumnya'), x = mk('button', 'fbtn', 'Berikutnya ›');
+    p.disabled = i <= 0; x.disabled = i >= n - 1; p.onclick = prevFn; x.onclick = nextFn; r.append(p, x); return r;
+  }
+
+  // ---- Fanart: folder -> tampilan besar, ganti manual ----
+  async function openFanart(){
+    const body = showGiftBody(GIFT_TITLES.fanart);
+    try {
+      const val = (await db.ref('fanart').once('value')).val() || {};
+      const items = Object.values(val).filter(v => v && /^[\w.-]+\.(jpe?g|png|webp)$/i.test(v.file || '')).sort((a,b) => (a.order||0) - (b.order||0));
+      if (!items.length){ giftMsg(body, 'Belum ada fanart.'); return; }
+      const src = it => 'assets/fanart/' + it.file;
+      const grid = () => {
+        if (window._egKey){ document.removeEventListener('keydown', window._egKey); window._egKey = null; }
+        body.innerHTML = ''; const g = mk('div', 'fgrid');
+        items.forEach((it, i) => { const c = mk('button', 'fthumb'); const im = new Image(); im.loading = 'lazy'; im.alt = ''; im.src = src(it); c.append(im, mk('span', '', String(it.artist || ''))); c.onclick = () => view(i); g.appendChild(c); });
+        body.appendChild(g);
+      };
+      const view = i => {
+        bar(body, { txt:'← Semua fanart', fn:grid }, (i+1) + ' / ' + items.length);
+        const w = mk('div', 'fview'), im = new Image(); im.alt = ''; im.src = src(items[i]); w.appendChild(im); body.appendChild(w);
+        body.appendChild(mk('div', 'fcap', 'Karya ' + String(items[i].artist || '')));
+        body.appendChild(navRow(() => view(i-1), () => view(i+1), i, items.length));
+        [i-1, i+1].forEach(j => { if (items[j]){ const pre = new Image(); pre.src = src(items[j]); } });
+        if (window._egKey) document.removeEventListener('keydown', window._egKey);
+        window._egKey = e => { if (e.key === 'ArrowLeft' && i > 0) view(i-1); if (e.key === 'ArrowRight' && i < items.length-1) view(i+1); };
+        document.addEventListener('keydown', window._egKey);
+        let x0 = null; im.addEventListener('touchstart', e => { x0 = e.touches[0].clientX; }, { passive:true });
+        im.addEventListener('touchend', e => { if (x0 === null) return; const dx = e.changedTouches[0].clientX - x0; x0 = null; if (dx > 50 && i > 0) view(i-1); if (dx < -50 && i < items.length-1) view(i+1); });
+      };
+      grid();
+    } catch (e) { console.warn(e); giftMsg(body, 'Fanart belum bisa dibuka. Pastikan kamu sudah klaim hadiah ya.'); }
+  }
+
+  // ---- Video (YouTube unlisted): folder -> pemutar, lanjut manual atau otomatis (pilihan) ----
   async function openVideos(){
     const body = showGiftBody(GIFT_TITLES.video);
     try {
@@ -910,20 +972,27 @@
       const items = Object.values(val).filter(v => v && /^[\w-]{11}$/.test(v.yt || '')).sort((a,b) => (a.order||0) - (b.order||0));
       if (!items.length){ giftMsg(body, 'Belum ada video.'); return; }
       await loadYT();
-      body.innerHTML = '<div class="yt-holder"><div id="yt"></div></div><div class="v-cap" id="v-cap"></div><div class="cta-row" style="margin-top:0"><button class="btn btn-primary" id="v-play">▶ Putar semua</button></div><div class="v-list" id="v-list"></div>';
-      let cur = 0;
-      const mark = () => {
-        $g('v-cap').textContent = 'Dari ' + (items[cur].username || '');
-        [...$g('v-list').children].forEach((b,i) => b.classList.toggle('on', i === cur));
+      let auto = false;
+      const stop = () => { if (ytPlayer && ytPlayer.destroy){ try { ytPlayer.destroy(); } catch (e) {} ytPlayer = null; } };
+      const grid = () => {
+        stop(); body.innerHTML = ''; const g = mk('div', 'fgrid');
+        items.forEach((it, i) => { const c = mk('button', 'fthumb v'); const im = new Image(); im.loading = 'lazy'; im.alt = ''; im.src = 'https://i.ytimg.com/vi/' + it.yt + '/hqdefault.jpg'; c.append(im, mk('span', '', 'Dari ' + String(it.username || ''))); c.onclick = () => watch(i); g.appendChild(c); });
+        body.appendChild(g);
       };
-      const play = i => { cur = i; ytPlayer.loadVideoById(items[i].yt); mark(); };
-      items.forEach((v,i) => { const b = document.createElement('button'); b.className = 'v-item'; b.textContent = v.username || ('Video ' + (i+1)); b.onclick = () => play(i); $g('v-list').appendChild(b); });
-      ytPlayer = new YT.Player('yt', {
-        videoId: items[0].yt, playerVars: { rel:0, playsinline:1, modestbranding:1 },
-        events: { onStateChange: e => { if (e.data === YT.PlayerState.ENDED && cur < items.length - 1) play(cur + 1); } }
-      });
-      $g('v-play').onclick = () => play(0);
-      mark();
+      const watch = i => {
+        stop(); bar(body, { txt:'← Semua video', fn:grid }, (i+1) + ' / ' + items.length);
+        const h = mk('div', 'yt-holder'), d = mk('div'); d.id = 'yt'; h.appendChild(d); body.appendChild(h);
+        body.appendChild(mk('div', 'v-cap', 'Dari ' + String(items[i].username || '')));
+        const nav = navRow(() => watch(i-1), () => watch(i+1), i, items.length);
+        const t = mk('button', 'fbtn' + (auto ? ' on' : ''), 'Lanjut otomatis: ' + (auto ? 'nyala' : 'mati'));
+        t.onclick = () => { auto = !auto; t.className = 'fbtn' + (auto ? ' on' : ''); t.textContent = 'Lanjut otomatis: ' + (auto ? 'nyala' : 'mati'); };
+        nav.appendChild(t); body.appendChild(nav);
+        ytPlayer = new YT.Player('yt', {
+          videoId: items[i].yt, playerVars: { autoplay:1, rel:0, playsinline:1, modestbranding:1 },
+          events: { onReady: e => e.target.playVideo(), onStateChange: e => { if (e.data === YT.PlayerState.ENDED && auto && i < items.length - 1) watch(i + 1); } }
+        });
+      };
+      grid();
     } catch (e) { console.warn(e); giftMsg(body, 'Video belum bisa dibuka. Pastikan kamu sudah klaim hadiah ya.'); }
   }
 
