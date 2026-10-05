@@ -5,22 +5,22 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Letter Sanctum — Mission 02</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Caveat:wght@500;700&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Cormorant+Garamond:wght@600;700&family=Caveat:wght@500;700&family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
 <style>
   :root{--bg:#fbf8f1;--panel:#fff;--ink:#17332d;--dim:#5d7a72;--faint:#93a8a1;--line:#e6e0d1;--teal:#0f9d8e;--teal-d:#0b7a6e;--teal-soft:#e3f4f1;--gold:#b8975a}
   *{box-sizing:border-box;margin:0;padding:0}
-  body{background:radial-gradient(circle at 12% 8%,rgba(15,157,142,.07),transparent 40%),var(--bg);color:var(--ink);font-family:'Manrope',sans-serif;line-height:1.55;min-height:100vh;padding:28px 16px 60px}
+  body{background:radial-gradient(circle at 12% 8%,rgba(15,157,142,.07),transparent 40%),var(--bg);color:var(--ink);font-family:'Nunito',sans-serif;line-height:1.55;min-height:100vh;padding:28px 16px 60px}
   .wrap{max-width:600px;margin:0 auto}
-  .back{display:block;text-align:center;font:600 .8rem Manrope,sans-serif;color:var(--teal-d);text-decoration:none;margin-bottom:14px}
-  .eyebrow{font-family:'JetBrains Mono',monospace;font-size:.72rem;letter-spacing:.14em;color:var(--gold);text-align:center}
-  h1{font-family:'Cormorant Garamond',serif;font-weight:700;font-size:clamp(1.9rem,6vw,2.5rem);text-align:center;margin-top:8px;line-height:1.15}
+  .back{display:block;text-align:center;font:600 .8rem Nunito,sans-serif;color:var(--teal-d);text-decoration:none;margin-bottom:14px}
+  .eyebrow{font-family:'Fredoka',sans-serif;font-size:.72rem;letter-spacing:.14em;color:var(--gold);text-align:center}
+  h1{font-family:'Fredoka',sans-serif;font-weight:700;font-size:clamp(1.9rem,6vw,2.5rem);text-align:center;margin-top:8px;line-height:1.15}
   .sub{text-align:center;color:var(--dim);font-size:.95rem;margin:10px auto 20px;max-width:440px}
-  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:0 6px 24px rgba(23,51,45,.05);margin-top:14px}
-  .lbl{font:700 .72rem 'JetBrains Mono',monospace;letter-spacing:.1em;color:var(--gold);margin-bottom:8px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:16px;box-shadow:0 6px 24px rgba(23,51,45,.05);margin-top:14px}
+  .lbl{font:600 .78rem 'Fredoka',sans-serif;letter-spacing:.1em;color:var(--gold);margin-bottom:8px}
   .chips{display:flex;gap:8px;flex-wrap:wrap}
-  .chip{border:1px solid var(--line);background:#fff;color:var(--dim);font:600 .82rem Manrope,sans-serif;padding:8px 13px;border-radius:20px;cursor:pointer}
+  .chip{border:1px solid var(--line);background:#fff;color:var(--dim);font:600 .82rem Nunito,sans-serif;padding:8px 13px;border-radius:20px;cursor:pointer}
   .chip.on{background:var(--teal-soft);border-color:var(--teal);color:var(--teal-d)}
   .paper{border:1px solid var(--line);border-radius:12px;padding:18px 18px 14px;box-shadow:0 4px 16px rgba(23,51,45,.06)}
   .p-polos{background:#fffdf7}
@@ -36,7 +36,7 @@
   textarea::placeholder{color:var(--pi);opacity:.5}
   .f-serif{font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:600}
   .f-hand{font-family:'Caveat',cursive;font-size:1.5rem;font-weight:500}
-  .f-sans{font-family:'Manrope',sans-serif;font-size:1rem}
+  .f-sans{font-family:'Fredoka',sans-serif;font-size:1.05rem;font-weight:400}
   .greet{line-height:32px;color:var(--pa)}
   textarea{width:100%;min-height:250px;border:0;background:transparent;resize:vertical;font:inherit;line-height:32px;color:var(--pi);outline:none}
   .sign{text-align:right;line-height:32px;color:var(--pa)}
@@ -44,12 +44,12 @@
   .pimg{margin:0 0 14px;display:none;position:relative}
   .pimg img{width:100%;border-radius:8px;display:block}
   .pimg button{position:absolute;top:8px;right:8px}
-  .btn{border:1px solid var(--teal);background:var(--teal);color:#fff;font:600 .92rem Manrope,sans-serif;padding:12px 14px;border-radius:10px;cursor:pointer}
+  .btn{border:1px solid var(--teal);background:var(--teal);color:#fff;font:600 .92rem Nunito,sans-serif;padding:12px 14px;border-radius:14px;cursor:pointer}
   .btn.ghost{background:#fff;color:var(--teal-d)}
   .btn.small{padding:7px 11px;font-size:.8rem}
   .btn:disabled{opacity:.45;cursor:not-allowed}
   .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
-  input[type=text],input[type=url]{flex:1;min-width:130px;border:1px solid var(--line);border-radius:10px;padding:10px 12px;font:500 .9rem Manrope,sans-serif;color:var(--ink);background:#fff}
+  input[type=text],input[type=url]{flex:1;min-width:130px;border:1px solid var(--line);border-radius:10px;padding:10px 12px;font:500 .9rem Nunito,sans-serif;color:var(--ink);background:#fff}
   .linkli{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:.88rem}
   .linkli a{color:var(--teal-d);font-weight:600;text-decoration:underline;word-break:break-all}
   .hint{font-size:.8rem;color:var(--faint);margin-top:8px}
@@ -57,7 +57,7 @@
   .overlay{position:fixed;inset:0;background:rgba(23,51,45,.55);display:none;align-items:center;justify-content:center;padding:18px;z-index:10}
   .overlay.on{display:flex}
   .modal{background:var(--panel);border-radius:16px;padding:22px;max-width:420px;width:100%;text-align:center}
-  .modal h2{font-family:'Cormorant Garamond',serif;font-size:1.6rem}
+  .modal h2{font-family:'Fredoka',sans-serif;font-size:1.6rem}
   .modal p{color:var(--dim);font-size:.9rem}
   .code{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:1.7rem;letter-spacing:.22em;color:var(--teal-d);background:var(--teal-soft);border:1px dashed var(--teal);border-radius:10px;padding:14px;margin:14px 0}
 </style>
@@ -76,7 +76,7 @@
   </div>
 
   <div class="card">
-    <div class="paper p-polos f-serif" id="paper">
+    <div class="paper p-polos f-sans" id="paper">
       <div class="pimg" id="pimg"><img id="pimgEl" alt="Foto suratmu"><button class="btn ghost small" id="pdel">Hapus foto</button></div>
       <div class="greet">Untuk Erin,</div>
       <textarea id="text" maxlength="1500" placeholder="Tulis suratmu di sini..."></textarea>
@@ -110,7 +110,7 @@
   <div id="viewPrev" style="display:none">
     <div class="card">
       <div class="lbl">PRATINJAU · BEGINI SURATMU AKAN TAMPIL</div>
-      <div class="paper p-polos f-serif" id="pvPaper">
+      <div class="paper p-polos f-sans" id="pvPaper">
         <div id="pvPhoto"></div>
         <div class="greet">Untuk Erin,</div>
         <div class="ptext" id="pvText"></div>
@@ -147,9 +147,9 @@
   try { firebase.initializeApp(firebaseConfig); db = firebase.database(); } catch(e){ console.warn(e); }
   const $ = id => document.getElementById(id);
   const USERNAME_KEY = 'eg_username_v1';
-  const st = { paper:'polos', font:'serif', photo:null, links:[] };
+  const st = { paper:'polos', font:'sans', photo:null, links:[] };
   const PAPERS = [['polos','Polos'],['garis','Bergaris'],['titik','Titik'],['teal','Teal pucat'],['tealtua','Teal pekat'],['malam','Hijau malam'],['emas','Emas hangat']];
-  const FONTS = [['serif','Klasik'],['hand','Tulisan tangan'],['sans','Modern']];
+  const FONTS = [['sans','Ceria'],['hand','Tulisan tangan'],['serif','Klasik']];
 
   function chips(box, list, key){
     list.forEach(([v,l]) => {
