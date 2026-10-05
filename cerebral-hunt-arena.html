@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="config.js"></script>
 <title>Cerebral Hunt Arena — Stage 2</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
@@ -22,7 +23,7 @@
     --cyan: #5eead4;
     --ink: #eaf6f3;
     --ink-dim: #83ab9d;
-    --ink-faint: #4c7669;
+    --ink-faint: #7ca493;
     --struck: #e8827a;
     --gold: #d8b979;
     --glow: 0 0 40px rgba(45, 212, 191, 0.15);
@@ -343,6 +344,7 @@
   }
   .back-to-menu-btn:hover{ color: var(--teal); border-color: var(--teal); }
   @media (max-width: 480px){ .back-to-menu-btn{ top: 8px; left: 8px; font-size: 0.68rem; padding: 5px 10px; } }
+  @media (prefers-reduced-motion: reduce){ *,*::before,*::after{ animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; scroll-behavior:auto !important; } }
 </style>
 </head>
 <body>
@@ -371,8 +373,8 @@
 
       <div class="username-box" id="username-box" style="display:none;">
         <label class="username-label" for="username-input">Input your name</label>
-        <input type="text" id="username-input" class="username-input" placeholder="contoh: erin.larasati" maxlength="20" autocomplete="off">
-        <div class="username-hint">Pakai username sosmed kamu biar gampang dikenali, dan samakan dengan yang dipakai di Game 1.</div>
+        <input type="text" id="username-input" class="username-input" placeholder="contoh: erinlarasati" maxlength="20" autocomplete="off" autocapitalize="off" spellcheck="false">
+        <div class="username-hint">Pakai username sosmed kamu tanpa titik atau simbol, dan samakan dengan yang dipakai di Game 1.</div>
         <div class="username-feedback" id="username-feedback"></div>
         <div class="username-confirm" id="username-confirm" style="display:none;">
           <p class="username-confirm-text" id="username-confirm-text"></p>
@@ -480,7 +482,7 @@
   // ==================================================================
   // CONFIG
   // ==================================================================
-  const STAGE_UNLOCK_AT = new Date('2024-01-01T00:00:00'); // TESTING: dibuka sementara, ganti balik ke 2026-11-17T12:00:00 sebelum hari-H
+  const STAGE_UNLOCK_AT = EG_CONFIG.unlockDate('game2'); // jadwal asli di config.js
   // Skor disamakan skalanya dengan Game 1: mulai dari 1000, berkurang 1 poin tiap 3 detik.
   // Supaya "39 POIN" di Game 2 nggak keliatan njomplang jauh dari skor Game 1 yang biasanya 700-900-an.
   const GAME2_SCORE_BASE = 1000;
@@ -556,7 +558,7 @@
   }
 
   function isValidUsername(u){
-    return /^[a-z_.]{3,20}$/.test(u);
+    return /^[a-z0-9]{3,20}$/.test(u);
   }
 
   function getStoredUsername(){
@@ -574,7 +576,7 @@
     box.style.display = 'block';
     const input = document.getElementById('username-input');
     input.addEventListener('input', () => {
-      input.value = input.value.replace(/[^a-z_.]/g, '');
+      input.value = input.value.toLowerCase().replace(/[^a-z0-9]/g, '');
       updateUsernameFeedback();
     });
     updateUsernameFeedback();
@@ -591,7 +593,7 @@
       fb.textContent = '';
       fb.className = 'username-feedback';
     } else if (!valid){
-      fb.textContent = 'Gunakan 3–20 karakter: huruf kecil a-z, titik (.), underscore (_).';
+      fb.textContent = 'Gunakan huruf kecil a-z dan angka 0-9, panjang 3-20 karakter, tanpa spasi atau simbol.';
       fb.className = 'username-feedback show warn';
     } else {
       fb.textContent = 'Nama siap dipakai ✓';
