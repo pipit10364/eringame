@@ -249,6 +249,22 @@
   .back-to-menu-btn:hover{ color: var(--teal); border-color: var(--teal); }
   @media (max-width: 480px){ .back-to-menu-btn{ top: 8px; left: 8px; font-size: 0.68rem; padding: 5px 10px; } }
   @media (prefers-reduced-motion: reduce){ *,*::before,*::after{ animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; scroll-behavior:auto !important; } }
+  /* ---------- Dua pintu ---------- */
+  .door-steps{ margin-top:22px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
+  .door-chip{ font-family:'JetBrains Mono', monospace; font-size:0.7rem; letter-spacing:0.06em; color:var(--ink-faint); border:1px solid var(--border-soft); border-radius:20px; padding:7px 14px; }
+  .door-chip.active{ color:var(--gold); border-color:var(--gold); background:rgba(231,196,111,0.08); }
+  .door-chip.done{ color:var(--emerald); border-color:var(--emerald); }
+  .door-panel{ display:none; }
+  .door-panel.on{ display:block; }
+  .door-desc{ margin-top:18px; color:var(--ink-dim); font-size:0.9rem; line-height:1.6; }
+  .pin-rooms{ margin-top:22px; display:flex; flex-direction:column; gap:12px; text-align:left; }
+  .pin-room{ background:var(--bg-panel); border:1px solid var(--border); border-radius:8px; padding:14px 16px; display:flex; flex-direction:column; gap:12px; }
+  .pin-room.right{ border-color:var(--emerald); background:rgba(126,224,181,0.06); }
+  .pin-room.wrong{ border-color:var(--struck); animation:shakeX 0.4s ease; }
+  .pin-room-head{ display:flex; align-items:center; gap:10px; }
+  .pin-room-status{ margin-left:auto; font-family:'JetBrains Mono', monospace; font-size:0.74rem; color:var(--emerald); }
+  .pin-room .pin-group{ background:none; border:none; padding:0; align-self:flex-start; }
+  .key-input.ok{ border-color:var(--emerald); }
   .username-input::placeholder{ font-size: 0.8rem; }
 </style>
 </head>
@@ -260,11 +276,11 @@
     <div class="welcome-wrap">
       <div class="eyebrow-mark">PRIZE</div>
       <h1 class="welcome-title">Claim Your Prize</h1>
-      <p class="welcome-sub">The last door. Bring all your keys.</p>
+      <p class="welcome-sub">Two doors. Bring all your keys.</p>
       <div class="plaque">
         <div class="cipher-label">BRIEFING</div>
         <p class="salutation" style="color:var(--ink);font-weight:700;">Selamat, Investigator. Kamu sudah sampai di pintu terakhir.</p>
-        <p>Pintu ini terkunci dengan <strong>kombinasi 6 digit</strong> yang tersusun dari tiga ruang yang sudah kamu lewati. Kumpulkan potongannya, susun jadi satu PIN. Siapkan juga <strong>tiga kunci misi</strong> dari Portrait Atelier, Letter Sanctum, dan Polaroid Parlor, lalu masuklah.</p>
+        <p>Ada <strong>dua pintu</strong> menuju hadiah. Satu terbuka dengan <strong>tiga kunci misi</strong> dari Portrait Atelier, Letter Sanctum, dan Polaroid Parlor. Satunya terbuka dengan <strong>PIN 6 digit</strong> yang tersusun dari tiga ruang game yang sudah kamu lewati. Tiap pintu diperiksa terpisah, jadi kamu bisa tahu bagian mana yang sudah benar.</p>
       </div>
       <div class="username-box" id="username-box" style="display:none;">
         <label class="username-label" for="username-input">Input your name</label>
@@ -293,37 +309,60 @@
     </div>
   </div>
 
-  <!-- ================= PIN SCREEN ================= -->
+  <!-- ================= DOOR SCREEN (dua pintu) ================= -->
   <div class="screen" id="screen-pin">
     <div class="welcome-wrap">
-      <div class="eyebrow-mark">KOMBINASI VAULT</div>
-      <h1 class="welcome-title">Susun PIN-nya</h1>
-      <div class="eyebrow-mark" id="pin-set-badge" style="margin-top:6px;">SET —/20</div>
-      <div class="pin-hints" id="pin-hints"></div>
-      <div class="pin-groups" id="pin-groups">
-        <div class="pin-group" data-group="0">
-          <input class="pin-digit" data-idx="0" maxlength="1" inputmode="numeric">
-          <input class="pin-digit" data-idx="1" maxlength="1" inputmode="numeric">
+      <div class="eyebrow-mark">DUA PINTU</div>
+      <h1 class="welcome-title" id="door-title">Buka Pintunya</h1>
+      <div class="door-steps" id="door-steps"></div>
+      <div class="eyebrow-mark" id="pin-set-badge" style="margin-top:14px;">SET —/20</div>
+
+      <div class="door-panel" id="panel-keys">
+        <p class="door-desc">Masukkan tiga kunci misi (8 digit) dari misi yang sudah kamu selesaikan. Tiap kunci diperiksa sendiri-sendiri.</p>
+        <div class="key-box">
+          <div class="key-row"><label for="key-twibbon">Portrait Atelier</label><input class="key-input" id="key-twibbon" maxlength="8" inputmode="numeric" placeholder="8 digit" autocomplete="off"></div>
+          <div class="key-row"><label for="key-letter">Letter Sanctum</label><input class="key-input" id="key-letter" maxlength="8" inputmode="numeric" placeholder="8 digit" autocomplete="off"></div>
+          <div class="key-row"><label for="key-photobooth">Polaroid Parlor</label><input class="key-input" id="key-photobooth" maxlength="8" inputmode="numeric" placeholder="8 digit" autocomplete="off"></div>
         </div>
-        <div class="pin-group" data-group="1">
-          <input class="pin-digit" data-idx="2" maxlength="1" inputmode="numeric">
-          <input class="pin-digit" data-idx="3" maxlength="1" inputmode="numeric">
-        </div>
-        <div class="pin-group" data-group="2">
-          <input class="pin-digit" data-idx="4" maxlength="1" inputmode="numeric">
-          <input class="pin-digit" data-idx="5" maxlength="1" inputmode="numeric">
+        <div style="margin-top:12px;text-align:center"><button type="button" class="leaderboard-link" id="recover-btn">Lupa kunci misi? Pulihkan dengan pertanyaan</button></div>
+        <div class="pin-feedback" id="keys-feedback"></div>
+        <div class="cta-row">
+          <button class="btn btn-primary" id="keys-submit-btn" onclick="checkKeys()">Buka Pintu</button>
         </div>
       </div>
-      <div class="eyebrow-mark" style="margin-top:28px;">KUNCI MISI</div>
-      <div class="key-box">
-        <div class="key-row"><label for="key-twibbon">Portrait Atelier</label><input class="key-input" id="key-twibbon" maxlength="8" inputmode="numeric" placeholder="8 digit" autocomplete="off"></div>
-        <div class="key-row"><label for="key-letter">Letter Sanctum</label><input class="key-input" id="key-letter" maxlength="8" inputmode="numeric" placeholder="8 digit" autocomplete="off"></div>
-        <div class="key-row"><label for="key-photobooth">Polaroid Parlor</label><input class="key-input" id="key-photobooth" maxlength="8" inputmode="numeric" placeholder="8 digit" autocomplete="off"></div>
-      </div>
-      <div style="margin-top:12px;text-align:center"><button type="button" class="leaderboard-link" id="recover-btn">Lupa kunci misi? Pulihkan dengan pertanyaan</button></div>
-      <div class="pin-feedback" id="pin-feedback"></div>
-      <div class="cta-row">
-        <button class="btn btn-primary" id="pin-submit-btn" onclick="checkPin()">Buka Pintu</button>
+
+      <div class="door-panel" id="panel-pin">
+        <p class="door-desc">Tiap ruang menyimpan dua digit PIN. Ruang yang sudah benar akan terkunci hijau, jadi kamu cukup memperbaiki yang masih salah.</p>
+        <div class="pin-rooms" id="pin-rooms">
+        <div class="pin-room" data-room="0">
+          <div class="pin-room-head"><span class="pin-hint-src">Ruang 1</span><span class="pin-room-status"></span></div>
+          <div class="pin-hint-text" id="pin-hint-0"></div>
+          <div class="pin-group" data-group="0">
+            <input class="pin-digit" data-idx="0" maxlength="1" inputmode="numeric">
+            <input class="pin-digit" data-idx="1" maxlength="1" inputmode="numeric">
+          </div>
+        </div>
+        <div class="pin-room" data-room="1">
+          <div class="pin-room-head"><span class="pin-hint-src">Ruang 2</span><span class="pin-room-status"></span></div>
+          <div class="pin-hint-text" id="pin-hint-1"></div>
+          <div class="pin-group" data-group="1">
+            <input class="pin-digit" data-idx="2" maxlength="1" inputmode="numeric">
+            <input class="pin-digit" data-idx="3" maxlength="1" inputmode="numeric">
+          </div>
+        </div>
+        <div class="pin-room" data-room="2">
+          <div class="pin-room-head"><span class="pin-hint-src">Ruang 3</span><span class="pin-room-status"></span></div>
+          <div class="pin-hint-text" id="pin-hint-2"></div>
+          <div class="pin-group" data-group="2">
+            <input class="pin-digit" data-idx="4" maxlength="1" inputmode="numeric">
+            <input class="pin-digit" data-idx="5" maxlength="1" inputmode="numeric">
+          </div>
+        </div>
+        </div>
+        <div class="pin-feedback" id="pin-feedback"></div>
+        <div class="cta-row">
+          <button class="btn btn-primary" id="pin-submit-btn" onclick="checkPin()">Buka Pintu</button>
+        </div>
       </div>
     </div>
   </div>
@@ -698,11 +737,72 @@
     const idx = hashStringToInt(username) % QUESTION_SETS.length;
     mySet = QUESTION_SETS[idx];
     document.getElementById('pin-set-badge').textContent = `SET ${idx + 1}/${QUESTION_SETS.length}`;
-    const hintsEl = document.getElementById('pin-hints');
-    const labels = ['Ruang 1', 'Ruang 2', 'Ruang 3'];
-    hintsEl.innerHTML = mySet.hints.map((h, i) => `
-      <div class="pin-hint-row"><span class="pin-hint-src">${labels[i]}</span><span class="pin-hint-text">${escapeHtml(h)}</span></div>
-    `).join('');
+    mySet.hints.forEach((h, i) => { const el = document.getElementById('pin-hint-' + i); if (el) el.textContent = h; });
+  }
+
+  // ==================================================================
+  // DUA PINTU
+  // Urutan pintu diatur di sini. ['keys','pin'] = kunci misi dulu, lalu PIN game.
+  // Mau pertanyaan game dulu? Tukar jadi ['pin','keys'].
+  // ==================================================================
+  const DOOR_ORDER = ['keys', 'pin'];
+  const DOOR_NAMES = { keys: 'Kunci Misi', pin: 'PIN Game' };
+  const DOOR_TITLES = { keys: 'Buka dengan Kunci Misi', pin: 'Susun PIN-nya' };
+  let doorState = { keys: false, pin: false, rooms: ['', '', ''] };
+  function doorStoreKey(){ return 'eg_prize_doors_v1_' + (getStoredUsername() || 'guest'); }
+  function loadDoors(){
+    doorState = { keys: false, pin: false, rooms: ['', '', ''] };
+    try {
+      const d = JSON.parse(localStorage.getItem(doorStoreKey()) || 'null');
+      if (d) doorState = { keys: !!d.keys, pin: !!d.pin, rooms: (Array.isArray(d.rooms) && d.rooms.length === 3) ? d.rooms.map(x => /^[0-9]{2}$/.test(x) ? x : '') : ['', '', ''] };
+    } catch (e) {}
+  }
+  function saveDoors(){ try { localStorage.setItem(doorStoreKey(), JSON.stringify(doorState)); } catch (e) {} }
+  function currentDoor(){ return DOOR_ORDER.find(d => !doorState[d]) || null; }
+  function renderDoors(){
+    const cur = currentDoor();
+    document.getElementById('door-steps').innerHTML = DOOR_ORDER.map((d, i) =>
+      `<span class="door-chip ${doorState[d] ? 'done' : (d === cur ? 'active' : '')}">PINTU ${i + 1} · ${DOOR_NAMES[d].toUpperCase()}${doorState[d] ? ' ✓' : ''}</span>`).join('');
+    ['keys', 'pin'].forEach(d => document.getElementById('panel-' + d).classList.toggle('on', d === cur));
+    if (!cur) return;
+    const n = DOOR_ORDER.indexOf(cur) + 1;
+    document.getElementById('door-title').textContent = DOOR_TITLES[cur];
+    document.getElementById('keys-submit-btn').textContent = 'Buka Pintu ' + n;
+    document.getElementById('pin-submit-btn').textContent = 'Buka Pintu ' + n;
+  }
+  function focusDoor(){
+    const cur = currentDoor();
+    if (cur === 'pin'){ const f = pinInputs.find(i => !i.disabled); if (f) f.focus(); }
+    else if (cur === 'keys'){ const f = document.getElementById('key-twibbon'); if (f && !f.disabled) f.focus(); }
+  }
+  function applyRooms(){
+    for (let r = 0; r < 3; r++){
+      const room = document.querySelector(`.pin-room[data-room="${r}"]`);
+      const a = pinInputs[2 * r], b = pinInputs[2 * r + 1], v = doorState.rooms[r];
+      if (v){
+        a.value = v[0]; b.value = v[1]; a.disabled = b.disabled = true;
+        room.classList.add('right'); room.querySelector('.pin-room-status').textContent = '✓ benar';
+      } else {
+        a.disabled = b.disabled = false;
+        room.classList.remove('right'); room.querySelector('.pin-room-status').textContent = '';
+      }
+    }
+  }
+  function afterDoor(){
+    if (currentDoor()){
+      setTimeout(() => { renderDoors(); window.scrollTo(0, 0); focusDoor(); }, 800);
+    } else {
+      setTimeout(finishDoors, 700);
+    }
+  }
+  function finishDoors(){
+    try { localStorage.removeItem(doorStoreKey()); } catch (e) {}
+    finalizeLeaderboardEntry();
+    localStorage.setItem(GAME4_DONE_KEY, '1');
+    showScreen('screen-cake');
+    const audio = document.getElementById('bday-audio');
+    audio.play().catch(() => {});
+    launchConfetti();
   }
 
   function enterPinScreen(){
@@ -716,12 +816,16 @@
       usernameBox.style.display = 'none';
     }
     assignQuestionSet();
+    loadDoors();
+    applyRooms();
     showScreen('screen-pin');
-    setTimeout(() => { document.querySelector('.pin-digit[data-idx="0"]').focus(); }, 50);
+    if (!currentDoor()){ finishDoors(); return; }
+    renderDoors();
+    setTimeout(focusDoor, 50);
   }
 
   // ==================================================================
-  // PIN ENTRY
+  // INPUT PIN (Pintu "PIN Game", diperiksa per ruang)
   // ==================================================================
   const pinInputs = Array.from(document.querySelectorAll('.pin-digit'));
   pinInputs.forEach((inp, i) => {
@@ -735,30 +839,43 @@
     });
   });
 
+  // ==================================================================
+  // KUNCI MISI (Pintu "Kunci Misi", diperiksa per kunci)
+  // ==================================================================
   // Kunci misi: harus ada di database, jenisnya cocok, milik username ini, dan masih valid.
   const MISSION_KEYS = [
     ['twibbon', 'Portrait Atelier', 'key-twibbon'],
     ['letter', 'Letter Sanctum', 'key-letter'],
     ['photobooth', 'Polaroid Parlor', 'key-photobooth'],
   ];
-  document.querySelectorAll('.key-input').forEach(k => k.addEventListener('input', () => {
-    k.value = k.value.replace(/[^0-9]/g, ''); k.classList.remove('bad');
-  }));
+  document.querySelectorAll('.key-input').forEach(k => {
+    k.addEventListener('input', () => { k.value = k.value.replace(/[^0-9]/g, ''); k.classList.remove('bad', 'ok'); });
+    k.addEventListener('keydown', ev => { if (ev.key === 'Enter') checkKeys(); });
+  });
   async function verifyMissionKeys(){
     if (!db) return { ok:false, msg:'Database belum tersambung. Coba muat ulang halaman.' };
     const u = getStoredUsername();
-    const codes = {};
+    const codes = {}, okN = [], emptyN = [], badN = [], expiredN = [];
+    let netErr = false, firstBad = null;
     for (const [app, name, id] of MISSION_KEYS){
       const el = document.getElementById(id), code = el.value.trim();
-      if (!/^[0-9]{8}$/.test(code)) return { ok:false, el, msg:'Isi kunci ' + name + ' (8 digit) dulu ya.' };
+      el.classList.remove('ok', 'bad');
+      const fail = (list) => { list.push(name); el.classList.add('bad'); if (!firstBad) firstBad = el; };
+      if (!/^[0-9]{8}$/.test(code)){ fail(emptyN); continue; }
       let v = null;
       try { v = (await db.ref('codes/' + code).once('value')).val(); }
-      catch (e) { return { ok:false, el, msg:'Gagal memeriksa kunci ' + name + '. Coba lagi sebentar.' }; }
-      if (!v || v.app !== app || v.username !== u) return { ok:false, el, msg:'Kunci ' + name + ' belum cocok. Cek lagi ya.' };
-      if (v.valid !== true) return { ok:false, el, msg:'Kunci ' + name + ' tidak lagi berlaku. Hubungi admin ya.' };
-      codes[app] = code;
+      catch (e) { netErr = true; fail(badN); continue; }
+      if (!v || v.app !== app || v.username !== u){ fail(badN); continue; }
+      if (v.valid !== true){ fail(expiredN); continue; }
+      el.classList.add('ok'); okN.push(name); codes[app] = code;
     }
-    return { ok:true, codes };
+    if (okN.length === MISSION_KEYS.length) return { ok:true, codes };
+    const parts = [];
+    if (okN.length) parts.push(okN.join(', ') + ' sudah cocok ✓.');
+    if (emptyN.length) parts.push(emptyN.join(', ') + ' belum diisi lengkap (8 digit).');
+    if (badN.length) parts.push(netErr ? 'Gagal memeriksa ' + badN.join(', ') + '. Coba lagi sebentar.' : badN.join(', ') + ' belum cocok. Cek lagi ya.');
+    if (expiredN.length) parts.push(expiredN.join(', ') + ' tidak lagi berlaku. Hubungi admin ya.');
+    return { ok:false, el:firstBad, msg: parts.join(' ') };
   }
 
   // Pengesahan klaim di server: aturan database membaca ulang ketiga kunci, lalu mengizinkan akun anonim ini membuka hadiah.
@@ -777,47 +894,32 @@
 
   let recoveredHash = null;
   document.getElementById('recover-btn').onclick = async () => {
-    const u = getStoredUsername(), fb = document.getElementById('pin-feedback');
+    const u = getStoredUsername(), fb = document.getElementById('keys-feedback');
     if (!u || !window.EgRecovery) return;
     const h = await EgRecovery.ask(u);
     if (!h) return;
     recoveredHash = h;
-    document.querySelectorAll('.key-input').forEach(k => { k.value = ''; k.disabled = true; k.placeholder = 'dipulihkan ✓'; k.classList.remove('bad'); });
-    fb.textContent = 'Pemulihan berhasil. Isi PIN-nya lalu buka pintu.'; fb.className = 'pin-feedback ok';
+    document.querySelectorAll('.key-input').forEach(k => { k.value = ''; k.disabled = true; k.placeholder = 'dipulihkan ✓'; k.classList.remove('bad', 'ok'); });
+    fb.textContent = 'Pemulihan berhasil. Tekan tombol Buka Pintu.'; fb.className = 'pin-feedback ok';
   };
 
   let checking = false;
-  async function checkPin(){
-    if (checking) return;
-    const entered = pinInputs.map(i => i.value).join('');
-    const fb = document.getElementById('pin-feedback');
-    if (entered.length < 6){
-      fb.textContent = 'Isi semua 6 digit PIN-nya dulu ya.';
-      fb.className = 'pin-feedback warn';
-      return;
-    }
-    if (entered !== mySet.pin){
-      fb.textContent = 'PIN belum tepat. Coba cek lagi petunjuk tiap ruangnya.';
-      fb.className = 'pin-feedback warn';
-      document.querySelectorAll('.pin-group').forEach(g => {
-        g.classList.add('wrong');
-        setTimeout(() => g.classList.remove('wrong'), 400);
-      });
-      pinInputs.forEach(i => i.value = '');
-      pinInputs[0].focus();
-      return;
-    }
+  async function checkKeys(){
+    if (checking || currentDoor() !== 'keys') return;
+    const fb = document.getElementById('keys-feedback');
     checking = true;
-    const btn = document.getElementById('pin-submit-btn'); btn.disabled = true;
-    fb.textContent = 'PIN benar. Memeriksa kunci misi...'; fb.className = 'pin-feedback';
+    const btn = document.getElementById('keys-submit-btn'); btn.disabled = true;
+    fb.textContent = 'Memeriksa kunci misi...'; fb.className = 'pin-feedback';
     const r = recoveredHash ? { ok:true, rh:recoveredHash } : await verifyMissionKeys();
-    checking = false; btn.disabled = false;
     if (!r.ok){
+      checking = false; btn.disabled = false;
       fb.textContent = r.msg; fb.className = 'pin-feedback warn';
-      if (r.el){ r.el.classList.add('bad'); r.el.focus(); }
+      if (r.el) r.el.focus();
       return;
     }
-    if (!(await writeClaim(r.rh ? { rh:r.rh } : r.codes))){
+    const claimed = await writeClaim(r.rh ? { rh:r.rh } : r.codes);
+    checking = false; btn.disabled = false;
+    if (!claimed){
       if (r.rh){
         recoveredHash = null;
         document.querySelectorAll('.key-input').forEach(k => { k.disabled = false; k.placeholder = '8 digit'; });
@@ -826,16 +928,45 @@
       fb.className = 'pin-feedback warn';
       return;
     }
-    fb.textContent = 'Semua kunci cocok. Pintu terbuka...';
-    fb.className = 'pin-feedback ok';
-    finalizeLeaderboardEntry();
-    localStorage.setItem(GAME4_DONE_KEY, '1');
-    setTimeout(() => {
-      showScreen('screen-cake');
-      const audio = document.getElementById('bday-audio');
-      audio.play().catch(() => {});
-      launchConfetti();
-    }, 500);
+    doorState.keys = true; saveDoors();
+    fb.textContent = 'Semua kunci cocok. Pintu terbuka ✓'; fb.className = 'pin-feedback ok';
+    afterDoor();
+  }
+
+  function checkPin(){
+    if (currentDoor() !== 'pin') return;
+    const fb = document.getElementById('pin-feedback');
+    const wrongR = [], emptyR = [];
+    for (let r = 0; r < 3; r++){
+      if (doorState.rooms[r]) continue;
+      const pair = pinInputs[2 * r].value + pinInputs[2 * r + 1].value;
+      if (pair.length < 2){ emptyR.push(r); continue; }
+      if (pair === mySet.pin.slice(2 * r, 2 * r + 2)) doorState.rooms[r] = pair;
+      else wrongR.push(r);
+    }
+    saveDoors();
+    applyRooms();
+    wrongR.forEach(r => {
+      const room = document.querySelector(`.pin-room[data-room="${r}"]`);
+      room.classList.add('wrong');
+      setTimeout(() => room.classList.remove('wrong'), 400);
+      pinInputs[2 * r].value = ''; pinInputs[2 * r + 1].value = '';
+    });
+    if (!wrongR.length && !emptyR.length){
+      doorState.pin = true; saveDoors();
+      fb.textContent = 'PIN tepat. Pintu terbuka ✓'; fb.className = 'pin-feedback ok';
+      afterDoor();
+      return;
+    }
+    const okR = doorState.rooms.map((v, i) => v ? i : -1).filter(i => i >= 0);
+    const nm = list => list.map(i => 'Ruang ' + (i + 1)).join(', ');
+    const parts = [];
+    if (okR.length) parts.push(nm(okR) + ' sudah benar ✓.');
+    if (wrongR.length) parts.push(nm(wrongR) + ' belum tepat, cek petunjuknya lagi.');
+    if (emptyR.length) parts.push(nm(emptyR) + ' belum diisi (2 digit).');
+    fb.textContent = parts.join(' '); fb.className = 'pin-feedback warn';
+    const f = wrongR.length ? pinInputs[2 * wrongR[0]] : pinInputs[2 * emptyR[0]];
+    if (f) f.focus();
   }
 
   // ==================================================================
