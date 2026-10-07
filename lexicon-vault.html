@@ -401,7 +401,8 @@
 
       <div class="cta-row">
         <button class="btn btn-secondary" onclick="showScreen('screen-end')">Kembali ke Skor</button>
-        <button class="btn btn-primary" onclick="startVault()">Main Lagi</button>
+        <button class="btn btn-secondary" onclick="startVault()">Main Lagi</button>
+        <button class="btn btn-primary" onclick="goToNextGame()">Lanjut ke Game 4 →</button>
       </div>
     </div>
   </div>
@@ -1028,7 +1029,7 @@
     showScreen('screen-end');
     const el = document.getElementById('end-content');
 
-    submitFinalLeaderboardScore(elapsedSec*1000, correctWords, finalScore);
+    pendingScoreWrite = submitFinalLeaderboardScore(elapsedSec*1000, correctWords, finalScore);
     const isBest = checkAndUpdateBestScore(GAME3_BEST_SCORE_KEY, finalScore);
     const won = correctWords >= TOTAL_ENTRIES;
 
@@ -1068,6 +1069,11 @@
         </div>
       `;
     }
+    const redirectNote = document.createElement('p');
+    redirectNote.className = 'score-redirect-note';
+    redirectNote.id = 'score-redirect-note';
+    el.appendChild(redirectNote);
+    scheduleLeaderboardRedirect();
   }
 
   function launchConfetti(){
@@ -1120,8 +1126,40 @@
   }
 
   function openLeaderboard(){
+    clearTimeout(scoreRedirectTimer);
+    clearInterval(scoreRedirectCountdownTimer);
     showScreen('screen-leaderboard');
     renderLeaderboardPage();
+  }
+
+  let scoreRedirectTimer = null;
+  let scoreRedirectCountdownTimer = null;
+  let pendingScoreWrite = Promise.resolve();
+
+  // Setelah skor muncul, leaderboard terbuka sendiri beberapa detik kemudian.
+  // Menunggu penulisan skor ke database selesai (maks. 4 detik) supaya skor baru sudah ikut tampil.
+  function scheduleLeaderboardRedirect(){
+    clearTimeout(scoreRedirectTimer);
+    clearInterval(scoreRedirectCountdownTimer);
+    const endScreen = document.getElementById('screen-end');
+    const stillOnEnd = () => endScreen.classList.contains('active');
+    let remaining = 3;
+    const noteEl = document.getElementById('score-redirect-note');
+    if (noteEl) noteEl.textContent = `Menuju leaderboard dalam ${remaining} detik…`;
+    scoreRedirectCountdownTimer = setInterval(() => {
+      remaining--;
+      if (noteEl) noteEl.textContent = remaining > 0 ? `Menuju leaderboard dalam ${remaining} detik…` : 'Membuka leaderboard…';
+      if (remaining <= 0) clearInterval(scoreRedirectCountdownTimer);
+    }, 1000);
+    scoreRedirectTimer = setTimeout(async () => {
+      clearInterval(scoreRedirectCountdownTimer);
+      if (!stillOnEnd()) return;
+      await Promise.race([Promise.resolve(pendingScoreWrite).catch(() => {}), new Promise(r => setTimeout(r, 4000))]);
+      if (!stillOnEnd()) return;
+      if (noteEl) noteEl.textContent = '';
+      showScreen('screen-leaderboard');
+      renderLeaderboardPage();
+    }, 3000);
   }
 
   const PODIUM_MEDALS = ['🥇', '🥈', '🥉'];

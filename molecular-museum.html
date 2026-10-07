@@ -940,10 +940,15 @@
 
   let scoreRedirectTimer = null;
   let scoreRedirectCountdownTimer = null;
+  let pendingScoreWrite = Promise.resolve();
 
+  // Setelah skor muncul, leaderboard terbuka sendiri beberapa detik kemudian.
+  // Menunggu penulisan skor ke database selesai (maks. 4 detik) supaya skor baru sudah ikut tampil.
   function scheduleLeaderboardRedirect(){
     clearTimeout(scoreRedirectTimer);
     clearInterval(scoreRedirectCountdownTimer);
+    const endScreen = document.getElementById('screen-final');
+    const stillOnEnd = () => endScreen.classList.contains('active');
     let remaining = 3;
     const noteEl = document.getElementById('score-redirect-note');
     if (noteEl) noteEl.textContent = `Menuju leaderboard dalam ${remaining} detik…`;
@@ -952,8 +957,12 @@
       if (noteEl) noteEl.textContent = remaining > 0 ? `Menuju leaderboard dalam ${remaining} detik…` : 'Membuka leaderboard…';
       if (remaining <= 0) clearInterval(scoreRedirectCountdownTimer);
     }, 1000);
-    scoreRedirectTimer = setTimeout(() => {
+    scoreRedirectTimer = setTimeout(async () => {
       clearInterval(scoreRedirectCountdownTimer);
+      if (!stillOnEnd()) return;
+      await Promise.race([Promise.resolve(pendingScoreWrite).catch(() => {}), new Promise(r => setTimeout(r, 4000))]);
+      if (!stillOnEnd()) return;
+      if (noteEl) noteEl.textContent = '';
       showScreen('screen-leaderboard');
       renderLeaderboardPage();
     }, 3000);
@@ -2122,7 +2131,7 @@
       const score1 = timeScore1 + game1AccuracyPoints;
       localStorage.setItem(GAME1_SCORE_KEY, String(score1));
       const isBest = checkAndUpdateBestScore(GAME1_BEST_SCORE_KEY, score1);
-      submitPartialLeaderboardScore(score1, timerElapsedMs);
+      pendingScoreWrite = submitPartialLeaderboardScore(score1, timerElapsedMs);
       box.className = 'result-box show success';
       box.innerHTML = `
         <div class="result-time">WAKTU TEMPUH: ${formatMs(timerElapsedMs)}</div>

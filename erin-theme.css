@@ -131,3 +131,38 @@ button:disabled { cursor: not-allowed; }
   .key-input { width: 100%; }
 }
 @media (prefers-reduced-motion: reduce) { *,*::before,*::after { animation: none !important; transition: none !important; } .opening-kicker,.opening-line,.opening-name,.opening-tagline,.game-start-btn { opacity: 1; } }
+/* ---------- Perataan (konsisten per layar) ---------- */
+/* Layar hasil: kartu skor & catatan ikut rata kiri seperti judul dan tombolnya. */
+.welcome-wrap .result-box { margin-left: 0; margin-right: 0; }
+.welcome-wrap .result-subnote { text-align: left; margin-left: 0; margin-right: 0; max-width: 560px; }
+.welcome-wrap .result-box .result-subnote { text-align: center; max-width: none; margin-left: auto; margin-right: auto; }
+/* Layar yang isinya di tengah (leaderboard, papan anagram): tombolnya ikut di tengah. */
+.leaderboard-page-wrap .cta-row,
+.arena-wrap .cta-row { justify-content: center; }
+/* Layar kue: semuanya di tengah. */
+#screen-cake .welcome-wrap { text-align: center; }
+#screen-cake .eyebrow-mark { justify-content: center; }
+#screen-cake .welcome-title { margin-left: auto; margin-right: auto; }
+#screen-cake .cta-row { justify-content: center; }
+/* Api lilin: titik putar di dasar api itu sendiri, bukan di dasar seluruh gambar (api sempat terpotong di atas). */
+.flame { transform-box: fill-box; }
+/* Tombol di bawah layar Game 1: beri jarak antar tombol. */
+.round-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+.round-actions[style*="text-align:center"] { justify-content: center; }
+
+/* ---------- Layar pembuka di HP: pakai gambar potret ---------- */
+@media (max-width: 700px) {
+  :root { --opening-image: url('assets/erin-still-life-mobile.jpg'); }
+  #screen-opening { background-size: cover; background-position: right center; }
+  /* Kolom teks dibatasi supaya tidak menabrak foto polaroid dan kunci di sisi kanan gambar. */
+  .opening-wrap .username-box { max-width: 62vw; }
+  .opening-wrap .username-hint { max-width: 62vw; font-size: 12px; }
+  .opening-wrap .game-start-btn { max-width: 62vw; }
+  .opening-name { font-size: 42px; max-width: 62vw; }
+  .opening-tagline { max-width: 62vw; }
+  .opening-line { max-width: 62vw; }
+}
+@media (max-width: 360px) {
+  .opening-wrap .username-box, .opening-wrap .username-hint, .opening-wrap .game-start-btn { max-width: 56vw; }
+  .opening-name { font-size: 38px; }
+}
