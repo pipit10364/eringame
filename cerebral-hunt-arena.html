@@ -328,6 +328,10 @@
     40%,60%{ transform: translateX(4px); }
   }
   .shake{ animation: shake 0.45s; }
+  /* Getaran halus khusus jawaban yang salah (hanya kolom jawabannya, bukan seluruh kartu). */
+  @keyframes nudge{ 20%,60%{ transform: translateX(-3px); } 40%,80%{ transform: translateX(3px); } }
+  .nudge{ animation: nudge 0.3s; }
+  .feedback.info{ background: rgba(45,212,191,0.08); color: var(--ink-dim); border: 1px solid var(--border); }
 
   .back-to-menu-btn{
     position: fixed; top: 14px; left: 14px; z-index: 100;
@@ -1019,10 +1023,10 @@
     setTimeout(() => { nextLogicQuestion(); goToBoard(); }, 900);
   }
 
-  function handleWrong(fb){
+  function handleWrong(fb, el){
     fb.className = 'feedback show warn';
     fb.textContent = 'Belum tepat, coba lagi.';
-    mgShake('#logic-card-active');
+    mgNudge(el);
   }
 
   function submitLogic(){
@@ -1032,7 +1036,10 @@
     const fb = document.getElementById('logic-feedback');
 
     if (!raw.trim()){
-      mgShake('#logic-input');
+      // Kolom masih kosong: jangan bergetar (terkesan salah), cukup arahkan untuk mengisi.
+      fb.className = 'feedback show info';
+      fb.textContent = 'Isi jawabanmu dulu ya.';
+      input.focus();
       return;
     }
 
@@ -1045,7 +1052,7 @@
     }
 
     if (correct) handleCorrect(fb);
-    else handleWrong(fb);
+    else handleWrong(fb, input);
   }
 
   function submitChoice(btnEl, chosen){
@@ -1054,8 +1061,15 @@
     if (chosen === currentLogic.a){
       handleCorrect(fb);
     } else {
-      handleWrong(fb);
+      handleWrong(fb, btnEl);
     }
+  }
+
+  function mgNudge(el){
+    if (!el) return;
+    el.classList.remove('nudge');
+    void el.offsetWidth;
+    el.classList.add('nudge');
   }
 
   function mgShake(selector){
@@ -1094,7 +1108,6 @@
 
   function openSolver(w){
     if (tokens <= 0){
-      mgShake('#token-hint');
       document.getElementById('token-hint').textContent = 'Belum ada kesempatan. Jawab soal logika dulu ya.';
       return;
     }
@@ -1115,12 +1128,18 @@
   function submitSolver(){
     if (!solverWord) return;
     const guess = document.getElementById('solver-input').value.trim().toUpperCase();
-    if (!guess){ mgShake('#solver-input'); return; }
+    if (!guess){
+      const fb0 = document.getElementById('solver-feedback');
+      fb0.className = 'feedback show info';
+      fb0.textContent = 'Ketik susunan hurufnya dulu ya.';
+      document.getElementById('solver-input').focus();
+      return;
+    }
     if (guess !== solverWord){
       const fb = document.getElementById('solver-feedback');
       fb.className = 'feedback show warn';
       fb.textContent = 'Belum tepat, coba susun lagi.';
-      mgShake('.solver-card');
+      mgNudge(document.getElementById('solver-input'));
       return;
     }
     foundWords.add(solverWord);
