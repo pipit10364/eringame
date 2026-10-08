@@ -253,7 +253,7 @@
   .xw-cell.active{ background: rgba(45,212,191,0.22); }
   .xw-cell.inword{ background: rgba(45,212,191,0.09); }
   .xw-cell.filled input{ color: var(--cyan); }
-  .xw-cell.wrong{ background: rgba(232,130,122,0.16); }
+  .xw-cell.wrong{ background: rgba(232,130,122,0.38); border-color: var(--struck); }
   .xw-cell.wrong input{ color: var(--struck); }
 
   .xw-current-clue-bar{
@@ -268,6 +268,10 @@
   }
 
   .xw-clue-list-btn{ display:none; }
+  .xw-current-clue-bar .ccb-close{ flex:0 0 auto; background:none; border:none; color: var(--ink-dim); font-size:1rem; line-height:1; padding:4px 2px; cursor:pointer; }
+  .xw-check-feedback{ display:none; margin-top:12px; font-size:0.88rem; color: var(--ink-dim); text-align:center; }
+  .xw-check-feedback.show{ display:block; }
+  .xw-check-feedback.warn{ color: var(--struck); }
 
   .xw-clue-overlay{
     display:none; position:fixed; inset:0; background: rgba(3,10,8,0.88); z-index:50;
@@ -318,7 +322,16 @@
   @media (max-width: 859px){
     .xw-clues-col{ display:none; }
     .xw-layout{ flex-direction:column; align-items:center; }
-    .xw-current-clue-bar{ display:flex; }
+    /* Soal tampil sebagai pop-up di bawah layar (di atas keyboard), jadi tidak perlu scroll ke atas. */
+    .xw-current-clue-bar{
+      display:flex; position:fixed; left:12px; right:12px; width:auto; max-width:none; margin:0; z-index:45;
+      bottom: calc(12px + var(--kb, 0px) + env(safe-area-inset-bottom, 0px)); align-items:flex-start;
+      border-color: var(--teal); box-shadow: 0 10px 32px rgba(0,0,0,0.6); padding:12px 14px;
+      transform: translateY(24px); opacity:0; pointer-events:none; transition: transform .2s ease, opacity .2s ease;
+    }
+    .xw-current-clue-bar.show{ transform:none; opacity:1; pointer-events:auto; }
+    .xw-current-clue-bar .ccb-text{ line-height:1.45; max-height:30vh; overflow-y:auto; }
+    #screen-vault .arena-wrap{ padding-bottom: 170px; }
     .xw-clue-list-btn{
       display:inline-flex; margin-top:10px;
     }
@@ -402,7 +415,7 @@
       <div class="cta-row">
         <button class="btn btn-secondary" onclick="showScreen('screen-end')">Kembali ke Skor</button>
         <button class="btn btn-secondary" onclick="startVault()">Main Lagi</button>
-        <button class="btn btn-primary" onclick="goToNextGame()">Lanjut ke Game 4 →</button>
+        <button class="btn btn-primary" onclick="goToNextGame()">Open Your Prize →</button>
       </div>
     </div>
   </div>
@@ -421,6 +434,7 @@
         <span class="ccb-num" id="ccb-num">—</span>
         <span class="ccb-text" id="ccb-text">Ketuk kotak untuk mulai</span>
         <button type="button" class="ccb-dir" id="ccb-dir-btn" onclick="toggleDirection()">⇄ arah</button>
+        <button type="button" class="ccb-close" aria-label="Tutup soal" onclick="hideClueBar()">✕</button>
       </div>
 
       <div class="xw-layout">
@@ -430,8 +444,9 @@
           </div>
           <div class="cta-row" style="margin-top:16px;">
             <button class="btn btn-secondary xw-clue-list-btn" onclick="openClueOverlay()">📋 Daftar Soal</button>
-            <button class="btn btn-secondary" onclick="manualFinish()">Selesai &amp; Cek Jawaban</button>
+            <button class="btn btn-primary" id="xw-check-btn" onclick="checkAnswers()">Cek Jawaban</button>
           </div>
+          <div class="xw-check-feedback" id="xw-check-feedback"></div>
         </div>
         <div class="xw-clues-col" id="xw-clues-col"></div>
       </div>
@@ -611,7 +626,7 @@
   [null,null,null,null,null,'N',null,null,null,null,null,'W',null,'A',null,'L','A','R','A','S','A','T','I',null],
   [null,null,null,null,null,'I',null,null,null,null,null,'A',null,'S',null,null,null,null,null,null,null,'S',null,null],
   [null,null,null,null,null,'S',null,null,null,null,null,'Y','U','K','I',null,'W','O','L','F','C','U','T',null],
-  [null,null,null,null,null,'S',null,null,null,null,null,'C','#','E',null,null,null,null,null,null,null,'M',null,null],
+  [null,null,null,null,null,'S',null,null,null,null,null,'C',null,'E',null,null,null,null,null,null,null,'M',null,null],
   [null,null,null,null,null,null,null,null,'J','A','K','A','R','T','A',null,'B','I','O','C','H','E','M',null],
   [null,null,null,null,null,null,null,null,null,null,null,'L',null,null,null,null,'A',null,null,null,null,null,null,null],
   [null,null,null,null,null,null,null,null,null,null,null,'L',null,null,null,null,'G','A','O','K','A','O',null,null],
@@ -646,7 +661,7 @@
   "8D": "Nama tim yang dipimpin Erin sebagai kapten di CoC",
   "9D": "Game esports yang disukai Erin",
   "11D": "Medali yang diraih Erin di OSN 2023",
-  "14D": "Jenis soto favorit Erin",
+  "14D": "Nama warung soto favorit Erin (tanpa kata 'soto')",
   "15D": "Tanggal Erin tereliminasi setelah revival",
   "20D": "Tipe kepribadian (MBTI) Erin",
   "21D": "Karakter favorit Erin di Bungo Stray Dogs",
@@ -798,7 +813,10 @@
   // ==================================================================
   // SELECTION / HIGHLIGHT
   // ==================================================================
+  let lastCell = null;
   function onCellFocus(r,c){
+    lastCell = { r, c };
+    setTimeout(() => { if (cellInputs[r] && cellInputs[r][c]) ensureCellVisible(cellInputs[r][c]); }, 160);
     const cell = cellEntryIdx[r][c];
     let idx = null;
     if (currentEntryIdx !== null){
@@ -830,8 +848,8 @@
     if (currentEntryIdx === null) return;
     const cur = ENTRIES[currentEntryIdx];
     const focusedInput = document.activeElement;
-    const r = parseInt(focusedInput?.dataset?.r ?? cur.r, 10);
-    const c = parseInt(focusedInput?.dataset?.c ?? cur.c, 10);
+    const r = parseInt(focusedInput?.dataset?.r ?? lastCell?.r ?? cur.r, 10);
+    const c = parseInt(focusedInput?.dataset?.c ?? lastCell?.c ?? cur.c, 10);
     const cell = cellEntryIdx[r][c];
     const otherIdx = cur.dir === 'A' ? cell.D : cell.A;
     if (otherIdx !== null) setActiveEntry(otherIdx);
@@ -860,6 +878,36 @@
     });
     document.getElementById('ccb-num').textContent = `${e.num}${e.dir}`;
     document.getElementById('ccb-text').textContent = e.clue;
+    showClueBar();
+  }
+
+  // Pop-up soal (HP): muncul tiap kotak diketuk, bisa ditutup, muncul lagi di ketukan berikutnya.
+  function showClueBar(){ document.getElementById('xw-current-clue-bar').classList.add('show'); }
+  function hideClueBar(){ document.getElementById('xw-current-clue-bar').classList.remove('show'); }
+  (function initClueBar(){
+    const bar = document.getElementById('xw-current-clue-bar');
+    // Tombol di pop-up tidak boleh mencuri fokus supaya keyboard tidak menutup.
+    bar.addEventListener('mousedown', ev => ev.preventDefault());
+    // Naikkan pop-up tepat di atas keyboard (iOS & Android).
+    const vv = window.visualViewport;
+    if (vv){
+      const sync = () => {
+        const kb = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+        document.documentElement.style.setProperty('--kb', kb + 'px');
+      };
+      vv.addEventListener('resize', sync); vv.addEventListener('scroll', sync); sync();
+    }
+  })();
+  // Pastikan kotak yang aktif tidak tertutup pop-up.
+  function ensureCellVisible(input){
+    const bar = document.getElementById('xw-current-clue-bar');
+    if (!bar || getComputedStyle(bar).position !== 'fixed') return;
+    const rect = input.getBoundingClientRect();
+    const barTop = bar.getBoundingClientRect().top;
+    const vvTop = window.visualViewport ? window.visualViewport.offsetTop : 0;
+    if (rect.bottom > barTop - 8 || rect.top < vvTop + 8){
+      input.scrollIntoView({ block:'center', inline:'nearest' });
+    }
   }
 
   // ==================================================================
@@ -870,6 +918,8 @@
     cellInputs[r][c].value = v.slice(-1);
     const filled = !!cellInputs[r][c].value;
     cellInputs[r][c].parentElement.classList.toggle('filled', filled);
+    cellInputs[r][c].parentElement.classList.remove('wrong');
+    const chk = document.getElementById('xw-check-feedback'); if (chk){ chk.className = 'xw-check-feedback'; chk.textContent = ''; }
     updateClueDots();
     updateProgress();
     if (cellInputs[r][c].value && currentEntryIdx !== null){
@@ -933,17 +983,32 @@
     document.querySelectorAll('.js-progress-val').forEach(el => el.textContent = `${filled} / ${total}`);
   }
 
-  function maybeAutoFinish(){
-    let allFilled = true;
-    for (let r=0;r<R;r++) for (let c=0;c<C;c++){
-      if (isLetterCell(r,c) && !cellInputs[r][c].value){ allFilled = false; break; }
+  // Tombol hanya "Cek Jawaban" (selalu sama), jadi tidak ada lagi yang perlu diubah di sini.
+  function maybeAutoFinish(){}
+
+  // Cek jawaban: kotak yang terisi tapi salah jadi merah (kapan pun, tidak harus semua terisi).
+  // Kalau semua kotak benar, game selesai.
+  function checkAnswers(){
+    const fb = document.getElementById('xw-check-feedback');
+    let wrong = 0, empty = 0;
+    for (let r=0; r<R; r++) for (let c=0; c<C; c++){
+      if (!isLetterCell(r,c)) continue;
+      const input = cellInputs[r][c], cell = input.parentElement;
+      cell.classList.remove('wrong');
+      if (!input.value){ empty++; continue; }
+      if (input.value !== PUZZLE_ROWS[r][c]){ wrong++; cell.classList.add('wrong'); }
     }
-    // Cek jawaban hanya di akhir: kalau semua kotak terisi, tombol selesai disorot, tidak otomatis selesai.
-    document.querySelectorAll('button[onclick="manualFinish()"]').forEach(b => {
-      b.classList.toggle('btn-primary', allFilled);
-      b.classList.toggle('btn-secondary', !allFilled);
-      b.textContent = allFilled ? 'Semua terisi, Selesai & Cek Jawaban' : 'Selesai & Cek Jawaban';
-    });
+    if (wrong === 0 && empty === 0){ manualFinish(); return; }
+    const parts = [];
+    if (wrong > 0) parts.push(`${wrong} kotak masih salah (warna merah).`);
+    else parts.push('Belum ada yang salah.');
+    if (empty > 0) parts.push(`${empty} kotak belum terisi.`);
+    fb.textContent = parts.join(' ');
+    fb.className = 'xw-check-feedback show' + (wrong > 0 ? ' warn' : '');
+    if (wrong > 0){
+      const first = document.querySelector('.xw-cell.wrong');
+      if (first) first.scrollIntoView({ block:'center', inline:'nearest', behavior:'smooth' });
+    }
   }
 
   // ==================================================================
@@ -1043,9 +1108,9 @@
           <p class="result-subnote">Waktu: ${timeScore} poin · Jawaban benar (${correctWords}/${TOTAL_ENTRIES}): ${wordScore} poin</p>
           ${isBest ? '<div class="high-score-badge">🏆 Rekor Pribadi Baru</div>' : ''}
         </div>
-        <p class="result-subnote">Skor sementara Game 1 + Game 2 + Game 3 sudah dikirim ke leaderboard — masih akan digabung sama Game 4.</p>
+        <p class="result-subnote">Skor Game 1 + Game 2 + Game 3 sudah masuk leaderboard. Skor finalmu ditandai setelah kamu membuka Prize.</p>
         <div class="cta-row">
-          <button class="btn btn-primary" onclick="goToNextGame()">Lanjut ke Game 4 →</button>
+          <button class="btn btn-primary" onclick="goToNextGame()">Open Your Prize →</button>
           <button class="btn btn-secondary" onclick="startVault()">Main Lagi</button>
           <button class="btn btn-secondary" onclick="openLeaderboard()">Lihat Leaderboard</button>
         </div>
@@ -1060,10 +1125,10 @@
           <div class="result-score-big">${finalScore}<span class="result-score-unit">Poin</span></div>
           <p class="result-subnote">Waktu: ${timeScore} poin · Jawaban benar (${correctWords}/${TOTAL_ENTRIES}): ${wordScore} poin</p>
           <h3>${correctWords} dari ${TOTAL_ENTRIES} jawaban benar</h3>
-          <p>Belum semua benar, tapi poin dari jawaban yang sudah benar tetap dikirim ke leaderboard. Kamu tetap bisa lanjut ke Game 4, atau main lagi dulu buat kejar skor yang lebih tinggi.</p>
+          <p>Belum semua benar, tapi poin dari jawaban yang sudah benar tetap dikirim ke leaderboard. Kamu tetap bisa membuka Prize, atau main lagi dulu buat kejar skor yang lebih tinggi.</p>
         </div>
         <div class="cta-row">
-          <button class="btn btn-primary" onclick="goToNextGame()">Lanjut ke Game 4 →</button>
+          <button class="btn btn-primary" onclick="goToNextGame()">Open Your Prize →</button>
           <button class="btn btn-secondary" onclick="startVault()">Main Lagi</button>
           <button class="btn btn-secondary" onclick="openLeaderboard()">Lihat Leaderboard</button>
         </div>
