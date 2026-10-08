@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="config.js"></script>
+<script src="erin-audio.js"></script>
+<script>window.EgAudio=window.EgAudio||new Proxy({},{get:function(){return function(){}}});</script>
 <title>Claim Your Prize</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&family=Fredoka:wght@400;500;600&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
@@ -809,9 +811,21 @@
     localStorage.setItem(GAME4_DONE_KEY, '1');
     showScreen('screen-cake');
     const audio = document.getElementById('bday-audio');
+    audio.muted = EgAudio.isMuted();
+    // lagu ulang tahun pelan dulu selama suara Erin, lalu naik pelan-pelan
+    audio.volume = 0.25;
     audio.play().catch(() => {});
+    setTimeout(() => {
+      let v = 0.25;
+      const up = setInterval(() => { v = Math.min(1, v + 0.1); audio.volume = v; if (v >= 1) clearInterval(up); }, 150);
+    }, 3200);
+    EgAudio.prize();
     launchConfetti();
   }
+  window.addEventListener('eg-sound-change', ev => {
+    const a = document.getElementById('bday-audio');
+    if (a) a.muted = ev.detail.muted;
+  });
 
   function enterPinScreen(){
     if (new Date() < STAGE_UNLOCK_AT) return;
@@ -921,6 +935,7 @@
     const r = recoveredHash ? { ok:true, rh:recoveredHash } : await verifyMissionKeys();
     if (!r.ok){
       checking = false; btn.disabled = false;
+      EgAudio.wrong({ voice: false });
       fb.textContent = r.msg; fb.className = 'pin-feedback warn';
       if (r.el) r.el.focus();
       return;
@@ -937,6 +952,7 @@
       return;
     }
     doorState.keys = true; saveDoors();
+    if (currentDoor()) EgAudio.door();
     fb.textContent = 'Semua kunci cocok. Pintu terbuka ✓'; fb.className = 'pin-feedback ok';
     afterDoor();
   }
@@ -945,11 +961,12 @@
     if (currentDoor() !== 'pin') return;
     const fb = document.getElementById('pin-feedback');
     const wrongR = [], emptyR = [];
+    let newRight = 0;
     for (let r = 0; r < 3; r++){
       if (doorState.rooms[r]) continue;
       const pair = pinInputs[2 * r].value + pinInputs[2 * r + 1].value;
       if (pair.length < 2){ emptyR.push(r); continue; }
-      if (pair === mySet.pin.slice(2 * r, 2 * r + 2)) doorState.rooms[r] = pair;
+      if (pair === mySet.pin.slice(2 * r, 2 * r + 2)){ doorState.rooms[r] = pair; newRight++; }
       else wrongR.push(r);
     }
     saveDoors();
@@ -960,8 +977,11 @@
       setTimeout(() => room.classList.remove('wrong'), 400);
       pinInputs[2 * r].value = ''; pinInputs[2 * r + 1].value = '';
     });
+    if (wrongR.length) EgAudio.wrong({ voice: false });
+    else if (newRight && emptyR.length) EgAudio.cling();
     if (!wrongR.length && !emptyR.length){
       doorState.pin = true; saveDoors();
+      if (currentDoor()) EgAudio.door();
       fb.textContent = 'PIN tepat. Pintu terbuka ✓'; fb.className = 'pin-feedback ok';
       afterDoor();
       return;

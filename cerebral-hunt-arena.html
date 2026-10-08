@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="config.js"></script>
+<script src="erin-audio.js"></script>
+<script>window.EgAudio=window.EgAudio||new Proxy({},{get:function(){return function(){}}});</script>
 <title>Cerebral Hunt Arena — Stage 2</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
@@ -864,6 +866,7 @@
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
     window.scrollTo(0,0);
+    if (id === 'screen-leaderboard') EgAudio.whoosh();
   }
 
   function goToLogic(){
@@ -872,6 +875,7 @@
   }
 
   function goToBoard(){
+    EgAudio.tap();
     renderBoard();
     showScreen('screen-board');
   }
@@ -880,6 +884,7 @@
   // ARENA START / RESET
   // ==================================================================
   function startArena(){
+    EgAudio.start('arena');
     if (new Date() < STAGE_UNLOCK_AT) return;
     clearTimeout(scoreRedirectTimer);
     clearInterval(scoreRedirectCountdownTimer);
@@ -1016,6 +1021,7 @@
   }
 
   function handleCorrect(fb){
+    EgAudio.right();
     tokens++;
     updateStatChips();
     fb.className = 'feedback show ok';
@@ -1024,6 +1030,7 @@
   }
 
   function handleWrong(fb, el){
+    EgAudio.wrong();
     fb.className = 'feedback show warn';
     fb.textContent = 'Belum tepat, coba lagi.';
     mgNudge(el);
@@ -1108,10 +1115,12 @@
 
   function openSolver(w){
     if (tokens <= 0){
+      EgAudio.nope();
       document.getElementById('token-hint').textContent = 'Belum ada kesempatan. Jawab soal logika dulu ya.';
       return;
     }
     solverWord = w;
+    EgAudio.tap();
     document.getElementById('solver-letters').textContent = scrambled[w].split('').join(' ');
     const inp = document.getElementById('solver-input');
     inp.value = '';
@@ -1139,10 +1148,12 @@
       const fb = document.getElementById('solver-feedback');
       fb.className = 'feedback show warn';
       fb.textContent = 'Belum tepat, coba susun lagi.';
+      EgAudio.wrong();
       mgNudge(document.getElementById('solver-input'));
       return;
     }
     foundWords.add(solverWord);
+    EgAudio.found();
     solvedTotal++;
     tokens--;
     closeSolver();
@@ -1166,6 +1177,7 @@
   }
 
   function endGame(won){
+    if (won) EgAudio.win(); else EgAudio.finish();
     clearInterval(timerHandle);
     const timeScore = calcLiveTimeScore();
     const wordScore = solvedTotal * WORD_POINTS;
