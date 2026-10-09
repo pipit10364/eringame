@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="config.js"></script>
+<script src="erin-audio.js"></script>
+<script>window.EgAudio=window.EgAudio||new Proxy({},{get:function(){return function(){}}});</script>
 <title>For Erin — Start</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
@@ -211,6 +213,7 @@
     el.style.animation = 'none'; void el.offsetWidth; el.style.animation = 'shakeX 0.4s ease';
   }
   initUsernameField();
+  EgAudio.music('opening'); // lagu pembuka: layar depan dan menu pakai lagu yang sama
 
   function handleGameStart(){
     const usernameBox = document.getElementById('username-box');

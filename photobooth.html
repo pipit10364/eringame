@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="config.js"></script>
+<script>window.EG_NO_SOUND_BTN=true;</script>
+<script src="erin-audio.js"></script>
+<script>window.EgAudio=window.EgAudio||new Proxy({},{get:function(){return function(){}}});</script>
 <title>Polaroid Parlor — Mission 03</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700&family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
@@ -195,7 +198,19 @@
   };
   const OPEN_AT = EG_CONFIG.OPEN_AT.photobooth;
   if (!EG_CONFIG.TESTING_OPEN && Date.now() < new Date(OPEN_AT).getTime()){
-    document.querySelector('.wrap').innerHTML = '<a href="index.html#menu" style="display:block;text-align:center;font:600 .8rem Nunito,sans-serif;color:#0b7a6e;text-decoration:none;margin-bottom:14px">← Kembali ke menu</a><div class="card" style="text-align:center"><div class="eyebrow">MISSION 03 · POLAROID PARLOR</div><h1>Belum dibuka</h1><p class="sub">Polaroid Parlor can be accessed at 17 November 2026, 07:00 WIB.</p></div>';
+    EgAudio.showButton();
+    EgAudio.music('waiting-photobooth'); // musik selama menunggu photobooth dibuka
+    document.querySelector('.wrap').innerHTML = '<a href="index.html#menu" style="display:block;text-align:center;font:600 .8rem Nunito,sans-serif;color:#0b7a6e;text-decoration:none;margin-bottom:14px">← Kembali ke menu</a><div class="card" style="text-align:center"><div class="eyebrow">MISSION 03 · POLAROID PARLOR</div><h1>Belum dibuka</h1><p class="sub">Polaroid Parlor can be accessed at 17 November 2026, 07:00 WIB.</p><p class="sub" id="pbTimer" style="font:700 1.5rem ui-monospace,Menlo,monospace;letter-spacing:.06em;margin-top:4px"></p></div>';
+    // hitung mundur; begitu waktunya tiba, halaman terbuka sendiri
+    const openMs = new Date(OPEN_AT).getTime(), pbEl = document.getElementById('pbTimer');
+    const pad = n => String(n).padStart(2, '0');
+    const pbTick = () => {
+      const r = openMs - Date.now();
+      if (r <= 0){ clearInterval(pbIv); EgAudio.stopMusic(1.2); EgAudio.door(); pbEl.textContent = 'Terbuka!'; setTimeout(() => location.reload(), 1500); return; }
+      const t = Math.floor(r / 1000), d = Math.floor(t / 86400);
+      pbEl.textContent = (d > 0 ? d + 'h ' : '') + pad(Math.floor(t % 86400 / 3600)) + ':' + pad(Math.floor(t % 3600 / 60)) + ':' + pad(t % 60);
+    };
+    const pbIv = setInterval(pbTick, 1000); pbTick();
     return;
   }
   let db = null;

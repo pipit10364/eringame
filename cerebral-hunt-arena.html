@@ -833,6 +833,7 @@
     // ==================================================================
   // LOCK SCREEN
   // ==================================================================
+  let lockWasActive = new Date() < STAGE_UNLOCK_AT;
   function checkLock(){
     const now = new Date();
     const startBtn = document.getElementById('start-btn');
@@ -840,6 +841,7 @@
     const timerEl = document.getElementById('lock-timer');
 
     if (now >= STAGE_UNLOCK_AT){
+      if (lockWasActive){ lockWasActive = false; EgAudio.stopMusic(1.5); EgAudio.door(); }
       startBtn.disabled = false;
       note.textContent = 'Game 2 sudah terbuka. Selamat berjuang!';
       timerEl.textContent = '';
@@ -857,6 +859,7 @@
   }
   checkLock();
   setInterval(checkLock, 1000);
+  if (lockWasActive) EgAudio.music('waiting-2'); // musik selama menunggu game dibuka
   initUsernameField();
 
   // ==================================================================

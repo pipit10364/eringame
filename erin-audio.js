@@ -1,13 +1,14 @@
 /* erin-audio.js: suara, musik latar, dan getar untuk semua game.
    - Klip suara Erin: assets/sfx/*.mp3
-   - Musik latar (opsional): assets/music/museum.mp3, arena.mp3, vault.mp3 (kalau file belum ada, game tetap jalan tanpa musik)
+   - Musik latar: assets/music/*.mp3 (opening, closing, waiting-1/2/3/photobooth, museum, arena, vault).
+     File yang tidak ada dilewati begitu saja (game tetap jalan tanpa musik).
    - Efek cling/buzz/dll dibuat langsung oleh browser (tanpa file).
    - Tombol 🔊/🔇 di pojok kanan atas; pilihannya diingat di browser. */
 (function (w) {
   'use strict';
   var MUTE_KEY = 'eg_sound_muted_v1';
   var SFX_BASE = 'assets/sfx/', MUSIC_BASE = 'assets/music/';
-  var MUSIC_VOL = 0.22;       // volume musik latar (0 sampai 1)
+  var MUSIC_VOL = 0.5;        // volume musik latar (0 sampai 1). Semua lagu sudah disamakan ke ±-17 LUFS
   var VOICE_COOLDOWN = 7000;  // jeda minimal antar suara Erin (ms)
   var VOICE = {
     start:  ['let-me-cook'],
@@ -25,7 +26,8 @@
   try { muted = localStorage.getItem(MUTE_KEY) === '1'; } catch (e) {}
   var buffers = {}, pending = {};
   var lastVoiceAt = 0, lastVoiceName = '', wrongStreak = 0;
-  var musicSrc = null, musicName = null, musicFailed = {};
+  var musicCur = null, musicName = null, musicFailed = {}, pendingMusic = null, schedToken = 0, posTimer = null;
+  var POS_KEY = 'eg_music_pos_v1';
 
   function ensure() {
     if (!ctx) {
@@ -136,37 +138,81 @@
   };
   var NOTES = { red: 261.63, blue: 329.63, green: 392.0, yellow: 523.25 };
 
-  // ---------- musik latar ----------
-  function music(name) {
-    if (muted && !ctx) { /* tetap siapkan nanti saat unmute */ }
-    if (!ensure() || musicFailed[name]) return;
-    if (musicName === name) return;
-    stopMusic(0.4);
-    musicName = name;
-    var mine = name;
-    fetch(MUSIC_BASE + name + '.mp3')
-      .then(function (r) { if (!r.ok) throw new Error('404'); return r.arrayBuffer(); })
-      .then(decode)
-      .then(function (buf) {
-        if (musicName !== mine) return;
-        var s = ctx.createBufferSource(); s.buffer = buf; s.loop = true;
-        var g = ctx.createGain(); g.gain.value = 0.0001;
-        s.connect(g); g.connect(musicDuck); s.start();
-        g.gain.linearRampToValueAtTime(1, ctx.currentTime + 1.8);
-        musicSrc = { src: s, gain: g };
-      })
-      .catch(function () { musicFailed[mine] = true; if (musicName === mine) musicName = null; });
+  // ---------- musik latar (di-stream, hemat memori) ----------
+  function readPos() { try { return JSON.parse(localStorage.getItem(POS_KEY) || 'null'); } catch (e) { return null; } }
+  function savePos() {
+    if (!musicCur || !musicCur.el || musicCur.el.paused) return;
+    try { localStorage.setItem(POS_KEY, JSON.stringify({ name: musicCur.name, t: musicCur.el.currentTime, at: Date.now() })); } catch (e) {}
   }
-  function stopMusic(sec) {
-    musicName = null;
-    if (!musicSrc || !ctx) return;
-    var m = musicSrc; musicSrc = null;
-    sec = sec || 1.2;
+  function music(name) {
+    schedToken++;                       // batalkan jadwal musik yang belum jalan
+    if (musicFailed[name]) return;
+    if (musicName === name) return;     // sudah main / sedang disiapkan
+    if (!ensure()) return;
+    startMusic(name);
+  }
+  function scheduleMusic(name, delay) {
+    var tok = ++schedToken;
+    setTimeout(function () { if (tok === schedToken) music(name); }, delay);
+  }
+  function startMusic(name) {
+    killMusic(0.5);
+    musicName = name;
+    var a = new Audio();
+    a.loop = true; a.preload = 'auto';
+    a.src = MUSIC_BASE + name + '.mp3';
+    var node = ctx.createMediaElementSource(a);
+    var g = ctx.createGain(); g.gain.value = 0.0001;
+    node.connect(g); g.connect(musicDuck);
+    var cur = { el: a, node: node, gain: g, name: name };
+    musicCur = cur;
+    a.addEventListener('error', function () {
+      musicFailed[name] = true;
+      if (musicCur === cur) { musicCur = null; musicName = null; }
+      if (pendingMusic === cur) { pendingMusic = null; hideHint(); }
+      dispose(cur);
+    });
+    a.addEventListener('loadedmetadata', function () {
+      var sp = readPos();
+      if (sp && sp.name === name && Date.now() - sp.at < 20 * 60 * 1000 && a.duration > 5) { try { a.currentTime = sp.t % a.duration; } catch (e) {} }
+    });
+    a.addEventListener('playing', function () {
+      if (pendingMusic === cur) { pendingMusic = null; hideHint(); }
+      var t = ctx.currentTime;
+      g.gain.cancelScheduledValues(t); g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(1, t + 1.8);
+    });
+    var p = a.play();
+    if (p && p.catch) p.catch(function () { if (musicCur === cur) { pendingMusic = cur; showHint(); } });
+    if (!posTimer) posTimer = setInterval(savePos, 2000);
+  }
+  function dispose(cur) {
+    try { cur.el.pause(); cur.el.removeAttribute('src'); cur.el.load(); } catch (e) {}
+    try { cur.node.disconnect(); cur.gain.disconnect(); } catch (e) {}
+  }
+  function killMusic(sec) {
+    var cur = musicCur; musicCur = null; musicName = null;
+    if (pendingMusic === cur) { pendingMusic = null; hideHint(); }
+    if (!cur || !ctx) return;
     var t = ctx.currentTime;
-    m.gain.gain.cancelScheduledValues(t);
-    m.gain.gain.setValueAtTime(Math.max(m.gain.gain.value, 0.0001), t);
-    m.gain.gain.linearRampToValueAtTime(0.0001, t + sec);
-    try { m.src.stop(t + sec + 0.05); } catch (e) {}
+    cur.gain.gain.cancelScheduledValues(t);
+    cur.gain.gain.setValueAtTime(Math.max(cur.gain.gain.value, 0.0001), t);
+    cur.gain.gain.linearRampToValueAtTime(0.0001, t + sec);
+    setTimeout(function () { dispose(cur); }, sec * 1000 + 100);
+  }
+  function stopMusic(sec) { schedToken++; savePos(); killMusic(sec || 1.2); }
+
+  // petunjuk "ketuk layar" (browser memblokir suara otomatis sebelum ada ketukan)
+  function showHint() {
+    if (muted || document.getElementById('eg-music-hint') || !document.body) return;
+    var d = document.createElement('div');
+    d.id = 'eg-music-hint'; d.textContent = '🎵 Ketuk layar untuk menyalakan musik';
+    d.style.cssText = 'position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:120;background:rgba(7,22,19,.88);color:#cfe9dc;border:1px solid rgba(126,224,181,.35);border-radius:999px;padding:9px 16px;font:600 .8rem system-ui,sans-serif;pointer-events:none;max-width:90vw;text-align:center';
+    document.body.appendChild(d);
+  }
+  function hideHint() { var d = document.getElementById('eg-music-hint'); if (d) d.remove(); }
+  function onGesture() {
+    ensure();
+    if (musicCur && musicCur.el.paused) { musicCur.el.play().catch(function () {}); }
   }
 
   // ---------- tombol bisu ----------
@@ -176,6 +222,7 @@
     if (master) master.gain.setTargetAtTime(muted ? 0 : 1, ctx.currentTime, 0.02);
     if (muted) { try { navigator.vibrate && navigator.vibrate(0); } catch (e) {} }
     renderBtn();
+    if (muted) hideHint();
     try { w.dispatchEvent(new CustomEvent('eg-sound-change', { detail: { muted: muted } })); } catch (e) {}
   }
   function renderBtn() {
@@ -195,23 +242,32 @@
     document.body.appendChild(b);
     renderBtn();
   }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mountBtn); else mountBtn();
+  if (!w.EG_NO_SOUND_BTN) { if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mountBtn); else mountBtn(); }
+  w.addEventListener('pagehide', savePos);
 
   // buka kunci audio di ketukan pertama (aturan browser)
-  ['pointerdown', 'touchend', 'keydown'].forEach(function (ev) {
-    w.addEventListener(ev, function once() { ensure(); w.removeEventListener(ev, once, true); }, true);
+  ['pointerdown', 'touchend', 'keydown', 'click'].forEach(function (ev) {
+    w.addEventListener(ev, onGesture, true);
   });
   document.addEventListener('visibilitychange', function () {
     if (!ctx) return;
-    if (document.hidden) { try { ctx.suspend(); } catch (e) {} } else { try { ctx.resume(); } catch (e) {} }
+    if (document.hidden) {
+      savePos();
+      if (musicCur) { try { musicCur.el.pause(); } catch (e) {} }
+      try { ctx.suspend(); } catch (e) {}
+    } else {
+      try { ctx.resume(); } catch (e) {}
+      if (musicCur) { musicCur.el.play().catch(function () {}); }
+    }
   });
 
   // ---------- API ----------
   w.EgAudio = {
     isMuted: function () { return muted; },
+    showButton: mountBtn,
     setMuted: setMuted,
     music: music, stopMusic: stopMusic,
-    start: function (musicName) { sfx(FX.whoosh); haptic(20); voice('start', { force: true }); if (musicName) setTimeout(function () { music(musicName); }, 500); },
+    start: function (musicName) { sfx(FX.whoosh); haptic(20); voice('start', { force: true }); if (musicName) scheduleMusic(musicName, 500); else schedToken++; },
     right: function (o) { sfx(FX.cling); haptic(25); wrongStreak = 0; voice('right', { chance: (o && o.chance != null) ? o.chance : 0.5 }); },
     found: function () { this.right({ chance: 0.35 }); },
     wrong: function (o) {
@@ -224,8 +280,8 @@
       else voice('wrong', { chance: 0.6 });
     },
     shy: function () { sfx(FX.tick); voice('shy', { force: true }); },
-    win: function () { stopMusic(1); sfx(FX.fanfare); haptic([40, 40, 40, 40, 140]); setTimeout(function () { voice('win', { force: true }); }, 350); },
-    finish: function () { stopMusic(1); sfx(FX.chime); },
+    win: function () { stopMusic(1); sfx(FX.fanfare); haptic([40, 40, 40, 40, 140]); setTimeout(function () { voice('win', { force: true }); }, 350); scheduleMusic('closing', 3200); },
+    finish: function () { stopMusic(1); sfx(FX.chime); scheduleMusic('closing', 1800); },
     prize: function () { stopMusic(1); sfx(FX.fanfare); haptic([40, 40, 40, 40, 160]); setTimeout(function () { voice('prize', { force: true }); }, 300); },
     door: function () { sfx(FX.door); haptic([30, 30, 70]); },
     cling: function () { sfx(FX.cling); haptic(20); },
@@ -238,6 +294,6 @@
     rotate: function () { sfx(FX.rotate); },
     whoosh: function () { sfx(FX.whoosh); },
     note: function (color) { sfx(function () { tone(NOTES[color] || 440, 0, 0.3, 'triangle', 0.2); }); },
-    _debug: function () { return { loaded: Object.keys(buffers), state: ctx && ctx.state, muted: muted }; }
+    _debug: function () { return { loaded: Object.keys(buffers), state: ctx && ctx.state, muted: muted, music: musicName, playing: !!(musicCur && !musicCur.el.paused), t: musicCur ? musicCur.el.currentTime : 0, pending: !!pendingMusic, failed: Object.keys(musicFailed) }; }
   };
 })(window);

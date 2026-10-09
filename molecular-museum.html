@@ -997,6 +997,8 @@
     if (now >= GAME1_UNLOCK_AT){
       if (gateInterval){ clearInterval(gateInterval); gateInterval = null; }
       if (document.getElementById('screen-gate').classList.contains('active')){
+        EgAudio.stopMusic(1.5);
+        EgAudio.door();
         showScreen('screen-welcome');
       }
       return;
@@ -2181,6 +2183,7 @@
   initUsernameField();
   checkGate();
   gateInterval = setInterval(checkGate, 1000);
+  if (new Date() < GAME1_UNLOCK_AT) EgAudio.music('waiting-1'); // musik selama menunggu game dibuka
 </script>
 
 </body>
