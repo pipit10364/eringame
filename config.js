@@ -78,6 +78,7 @@ window.EG_CONFIG = {
     if (document.getElementById('eg-admin-css')) return;
     var s = document.createElement('style'); s.id = 'eg-admin-css';
     s.textContent = '.eg-admin-badge{position:fixed;top:5px;left:50%;transform:translateX(-50%);z-index:130;background:rgba(231,196,111,.95);color:#2a2105;font:700 11px/1 ui-monospace,Menlo,monospace;letter-spacing:.08em;padding:5px 10px;border-radius:999px;display:flex;gap:8px;align-items:center;box-shadow:0 2px 10px rgba(0,0,0,.35)}.eg-admin-badge button{all:unset;cursor:pointer;text-decoration:underline;font-weight:700}'
+      + '.eg-admin-link{position:fixed;top:6px;left:50%;transform:translateX(-50%);z-index:130;background:rgba(7,22,19,.55);color:#9db8ab;border:1px solid rgba(126,224,181,.2);font:600 11px/1 ui-monospace,Menlo,monospace;letter-spacing:.06em;padding:5px 10px;border-radius:999px;cursor:pointer;opacity:.7}.eg-admin-link:hover{opacity:1;color:#e7c46f;border-color:#e7c46f}'
       + '.eg-admin-ov{position:fixed;inset:0;z-index:300;background:rgba(3,12,10,.78);display:flex;align-items:center;justify-content:center;padding:20px}.eg-admin-card{background:#0f221e;border:1px solid #5b4d27;border-radius:10px;padding:22px;max-width:360px;width:100%;color:#e8f3ec;font-family:system-ui,sans-serif}.eg-admin-card h2{font-size:1.1rem;margin:0 0 6px}.eg-admin-card p{margin:0 0 12px;color:#9db8ab;font-size:.85rem}.eg-admin-card input{width:100%;box-sizing:border-box;background:#071613;border:1px solid #2c4a42;border-radius:6px;padding:11px 12px;color:#fff;font:1rem ui-monospace,Menlo,monospace}.eg-admin-card .r{display:flex;gap:8px;margin-top:12px}.eg-admin-card button{flex:1;border-radius:6px;padding:10px;font-weight:700;cursor:pointer;border:1px solid #5b4d27;background:#e7c46f;color:#2a2105}.eg-admin-card button.g{background:transparent;color:#cfe9dc;border-color:#2c4a42}.eg-admin-msg{min-height:1.2em;margin-top:8px;font-size:.82rem;color:#e8827a}';
     document.head.appendChild(s);
   }
@@ -110,6 +111,12 @@ window.EG_CONFIG = {
       b.innerHTML = '<span>ADMIN</span><button type="button">keluar</button>';
       b.querySelector('button').onclick = function(){ C.adminLogout(); location.reload(); };
       document.body.appendChild(b);
+    } else {
+      // tombol kecil "🔑 admin" di atas layar: ketuk, lalu ketik sandi (tanpa perlu mengetik alamat khusus)
+      css();
+      var a = document.createElement('button'); a.type = 'button'; a.className = 'eg-admin-link'; a.textContent = '🔑 admin';
+      a.onclick = function(){ C.promptAdmin(); };
+      document.body.appendChild(a);
     }
     if (location.hash === '#admin' && !C.isAdmin()) C.promptAdmin();
   }
