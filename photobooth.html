@@ -197,10 +197,10 @@
     appId: "1:303866378537:web:f3844c701203391f4b5f38"
   };
   const OPEN_AT = EG_CONFIG.OPEN_AT.photobooth;
-  if (!EG_CONFIG.TESTING_OPEN && Date.now() < new Date(OPEN_AT).getTime()){
+  if (!EG_CONFIG.bypass() && Date.now() < new Date(OPEN_AT).getTime()){
     EgAudio.showButton();
     EgAudio.music('waiting-photobooth'); // musik selama menunggu photobooth dibuka
-    document.querySelector('.wrap').innerHTML = '<a href="index.html#menu" style="display:block;text-align:center;font:600 .8rem Nunito,sans-serif;color:#0b7a6e;text-decoration:none;margin-bottom:14px">← Kembali ke menu</a><div class="card" style="text-align:center"><div class="eyebrow">MISSION 03 · POLAROID PARLOR</div><h1>Belum dibuka</h1><p class="sub">Polaroid Parlor can be accessed at 17 November 2026, 07:00 WIB.</p><p class="sub" id="pbTimer" style="font:700 1.5rem ui-monospace,Menlo,monospace;letter-spacing:.06em;margin-top:4px"></p></div>';
+    document.querySelector('.wrap').innerHTML = '<a href="index.html#menu" style="display:block;text-align:center;font:600 .8rem Nunito,sans-serif;color:#0b7a6e;text-decoration:none;margin-bottom:14px">← Kembali ke menu</a><div class="card" style="text-align:center"><div class="eyebrow">MISSION 03 · POLAROID PARLOR</div><h1>Belum dibuka</h1><p class="sub">Polaroid Parlor opens on ' + new Date(OPEN_AT).toLocaleString('en-GB', { day:'numeric', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit', timeZone:'Asia/Jakarta' }) + ' WIB.</p><p class="sub" id="pbTimer" style="font:700 1.5rem ui-monospace,Menlo,monospace;letter-spacing:.06em;margin-top:4px"></p></div>';
     // hitung mundur; begitu waktunya tiba, halaman terbuka sendiri
     const openMs = new Date(OPEN_AT).getTime(), pbEl = document.getElementById('pbTimer');
     const pad = n => String(n).padStart(2, '0');
@@ -240,7 +240,7 @@
     c.font = '700 60px "Fredoka", sans-serif';
     c.fillText('Polaroid Parlor · Erin', S/2, S-92);
     c.font = '500 28px "Nunito", sans-serif'; c.fillStyle = '#0b7a6e';
-    c.fillText('Bingkai ' + (i+1) + ' · 17 November', S/2, S-48);
+    c.fillText('Bingkai ' + (i+1) + ' · 16 November', S/2, S-48);
     c.restore();
   }
   function drawFrame(){

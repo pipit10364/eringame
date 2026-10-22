@@ -253,16 +253,21 @@
   ];
 
   // Mode testing dan jadwal buka diatur di config.js (TESTING_OPEN).
-  const BYPASS = EG_CONFIG.TESTING_OPEN;
+  const BYPASS = EG_CONFIG.bypass(); // TESTING_OPEN atau mode admin
   function fmtWIB(iso){
     return new Date(iso).toLocaleString('en-GB', { day:'numeric', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit', timeZone:'Asia/Jakarta' }) + ' WIB';
   }
+  // Teks penutup kaca: "Coming soon at November 16th" + jam buka (WIB)
+  function ordinal(n){ const v = n % 100; return n + (['th','st','nd','rd'][(v - 20) % 10] || ['th','st','nd','rd'][v] || 'th'); }
+  function whenParts(iso){
+    const d = new Date(iso);
+    const f = (o) => new Intl.DateTimeFormat('en-GB', Object.assign({ timeZone:'Asia/Jakarta' }, o)).format(d);
+    return { day: 'at ' + f({ month:'long' }) + ' ' + ordinal(parseInt(f({ day:'numeric' }), 10)), time: f({ hour:'2-digit', minute:'2-digit', hour12:false }) + ' WIB' };
+  }
   function lockInfo(it){
-    const name = it.title.replace(/<br>/g,' ');
-    if (it.ready === false) return name + ' can be accessed soon';   // halaman belum dibuat
-    if (BYPASS) return null;
-    if (it.openAt && Date.now() < new Date(it.openAt).getTime()) return name + ' can be accessed at ' + fmtWIB(it.openAt);
-    return null;
+    if (it.ready === false) return { soon:true };                   // halaman belum dibuat
+    if (!it.openAt || Date.now() >= new Date(it.openAt).getTime()) return null;
+    return BYPASS ? { admin:true, ...whenParts(it.openAt) } : whenParts(it.openAt);
   }
   function renderHub(){
     const root = document.getElementById('hub');
@@ -277,15 +282,19 @@
             <div class="stage-num">${it.num}</div>
             <div class="stage-title">${it.title}</div>
             <div class="stage-blurb">${it.blurb}</div>
-            ${lock ? `<div class="stage-lock">🔒 ${lock}</div>` : (it.hint ? `<div class="stage-hint">${it.hint}</div>` : '')}`;
+            ${lock && lock.admin ? `<div class="stage-lock">🛠 Admin: terkunci untuk pemain sampai ${lock.day.replace('at ','')}, ${lock.time}</div>` : (it.hint ? `<div class="stage-hint">${it.hint}</div>` : '')}
+            ${lock && !lock.admin ? `<div class="lock-glass" role="note" aria-label="Coming soon ${lock.day || ''} ${lock.time || ''}"><div class="lg-tag">COMING SOON</div><div class="lg-when">${lock.day || 'soon'}</div>${lock.time ? `<div class="lg-time">${lock.time}</div>` : ''}</div>` : ''}`;
           const cls = it.prize ? ' prize' : '';
-          const card = lock ? `<div class="stage-card locked${cls}">${inner}</div>` : `<a class="stage-card${cls}" href="${it.href}">${inner}</a>`;
-          const more = lock ? '' : `<button type="button" class="stage-more" aria-label="Buka di tab baru" title="Buka di tab baru" onclick="window.open('${it.href}','_blank','noopener')">&#8942;</button>`;
+          const isLocked = lock && !lock.admin;
+          const card = isLocked ? `<div class="stage-card locked${cls}" aria-disabled="true">${inner}</div>` : `<a class="stage-card${cls}" href="${it.href}">${inner}</a>`;
+          const more = isLocked ? '' : `<button type="button" class="stage-more" aria-label="Buka di tab baru" title="Buka di tab baru" onclick="window.open('${it.href}','_blank','noopener')">&#8942;</button>`;
           return `<div class="stage-item">${card}${more}</div>`;
         }).join('')}</div>
       </section>`).join('');
   }
   renderHub();
+  // Kaca penutup hilang sendiri begitu waktu buka tiba
+  setInterval(() => { if (document.getElementById('screen-select').classList.contains('active')) renderHub(); }, 20000);
   // Tautan kembali dari halaman misi/game: index.html#menu langsung ke daftar (kalau username sudah ada)
   if (location.hash === '#menu' && isValidUsername(getStoredUsername() || '')) showScreen('screen-select');
 </script>

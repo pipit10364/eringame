@@ -192,6 +192,9 @@
 
   const USERNAME_KEY = 'eg_username_v1';
   const FRAME_SRC = 'assets/twibbon-frame.png';   // PNG transparan 1080x1080 (opsional; ada placeholder)
+  // Area foto (bagian transparan) pada bingkai, dalam piksel 1080x1080: pusat dan ukurannya.
+  // Foto otomatis ditaruh dan di-zoom supaya memenuhi area ini. Ganti angkanya kalau bingkainya diganti.
+  const WIN = { cx:472, cy:570, w:720, h:705 };
   const EMOJIS = ['🎂','🎉','🎈','✨','💚','🌿','🦋','🌸','🎁','🕯️','⭐','🥳'];
   const COLORS = ['#0f9d8e','#17332d','#ffffff','#d8b979','#e8827a','#f0a8c0'];
 
@@ -214,7 +217,7 @@
     c.font = '700 64px "Fredoka", sans-serif';
     c.fillText('Selamat Ulang Tahun, Erin', S/2, S-92);
     c.font = '500 28px "Nunito", sans-serif'; c.fillStyle = '#0b7a6e';
-    c.fillText('17 November', S/2, S-48);
+    c.fillText('16 November', S/2, S-48);
     c.restore();
   }
 
@@ -260,8 +263,14 @@
     const url = URL.createObjectURL(file);
     const im = new Image();
     im.onload = () => {
-      st.img = im; st.ox = st.oy = 0; st.zoom = 1; st.rot = 0;
-      st.base = Math.max(S/im.width, S/im.height);
+      st.img = im; st.zoom = 1; st.rot = 0;
+      if (frameOk){
+        st.ox = WIN.cx - S/2; st.oy = WIN.cy - S/2;
+        st.base = Math.max(WIN.w/im.width, WIN.h/im.height);
+      } else {
+        st.ox = st.oy = 0;
+        st.base = Math.max(S/im.width, S/im.height);
+      }
       $('zoom').value = 1; $('rot').value = 0;
       $('empty').style.display = 'none'; $('editor').style.display = 'block';
       $('btnPrev').disabled = false; $('swapRow').style.display = 'flex'; draw(); URL.revokeObjectURL(url);

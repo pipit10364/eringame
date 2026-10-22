@@ -206,6 +206,14 @@
   .lp-tealtua{ background:linear-gradient(160deg,#0f8f81,#0b6f64); --pi:#fbf8f1; --pa:#f1dcaa; }
   .lp-malam{ background:linear-gradient(160deg,#12382f,#0a211c); --pi:#eaf6f3; --pa:#d8b979; }
   .lp-emas{ background:linear-gradient(160deg,#f4e6bf,#ead29b); }
+  .lp-mawar{ background:linear-gradient(160deg,#fde6ea,#fbf0f1); }
+  .lp-lavender{ background:linear-gradient(160deg,#ece6fb,#f6f2fd); }
+  .lp-persik{ background:linear-gradient(160deg,#ffe9d6,#fff3e8); }
+  .lp-langit{ background:linear-gradient(160deg,#e2f0fb,#f1f8fe); }
+  .lp-mint{ background:linear-gradient(160deg,#e0f5e8,#f1fbf5); }
+  .lp-butter{ background:linear-gradient(160deg,#fff4c2,#fffbe6); }
+  .lp-marun{ background:linear-gradient(160deg,#6b2335,#4a1624); --pi:#fdf0f2; --pa:#f1c6a8; }
+  .lp-indigo{ background:linear-gradient(160deg,#2d3a73,#1d2650); --pi:#eef1ff; --pa:#f1dcaa; }
   .lf-sans{ font-family:'Fredoka',sans-serif; font-size:1rem; } .lf-hand{ font-family:'Caveat',cursive; font-size:1.35rem; } .lf-serif{ font-family:'Cormorant Garamond',serif; font-size:1.2rem; font-weight:600; }
   .lp img{ width:100%; border-radius:10px; display:block; margin-bottom:12px; }
   .lp .g, .lp .sg{ color: var(--pa); line-height:32px; } .lp .sg{ text-align:right; }
@@ -1055,7 +1063,7 @@
   }
 
   // ---- Wall surat ----
-  const PAPER_KEYS = ['polos','garis','titik','teal','tealtua','malam','emas'], FONT_KEYS = ['sans','hand','serif'];
+  const PAPER_KEYS = ['polos','garis','titik','teal','tealtua','malam','emas','mawar','lavender','persik','langit','mint','butter','marun','indigo'], FONT_KEYS = ['sans','hand','serif'];
   async function openLetterWall(){
     const body = showGiftBody(GIFT_TITLES.letter);
     try {
@@ -1067,7 +1075,9 @@
         const paper = PAPER_KEYS.includes(L.paper) ? L.paper : 'polos', font = FONT_KEYS.includes(L.font) ? L.font : 'sans';
         const c = document.createElement('div'); c.className = 'lp lp-' + paper + ' lf-' + font;
         if (typeof L.photo === 'string' && L.photo.startsWith('data:image/jpeg;base64,')){ const im = document.createElement('img'); im.src = L.photo; im.alt = ''; c.appendChild(im); }
-        const g = document.createElement('div'); g.className = 'g'; g.textContent = 'Untuk Erin,'; c.appendChild(g);
+        // surat baru (v2): judulnya subjek pilihan penulis (boleh kosong); surat lama tetap "Untuk Erin,"
+        const subj = (L.v >= 2) ? String(L.subject || '').trim() : 'Untuk Erin,';
+        if (subj){ const g = document.createElement('div'); g.className = 'g'; g.textContent = subj; c.appendChild(g); }
         const t = document.createElement('div'); t.className = 't'; t.textContent = String(L.text || ''); c.appendChild(t);
         (Array.isArray(L.links) ? L.links : []).slice(0,3).forEach(l => {
           if (!l || !/^https?:\/\//i.test(l.url || '')) return;

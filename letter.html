@@ -31,6 +31,14 @@
   .p-tealtua{background:linear-gradient(160deg,#0f8f81,#0b6f64);--pi:#fbf8f1;--pa:#f1dcaa;border-color:#0b6f64}
   .p-malam{background:linear-gradient(160deg,#12382f,#0a211c);--pi:#eaf6f3;--pa:#d8b979;border-color:#1e4a3f}
   .p-emas{background:linear-gradient(160deg,#f4e6bf,#ead29b);border-color:#d8b979}
+  .p-mawar{background:linear-gradient(160deg,#fde6ea,#fbf0f1);border-color:#f0c4cc}
+  .p-lavender{background:linear-gradient(160deg,#ece6fb,#f6f2fd);border-color:#cfc2ef}
+  .p-persik{background:linear-gradient(160deg,#ffe9d6,#fff3e8);border-color:#f2c9a4}
+  .p-langit{background:linear-gradient(160deg,#e2f0fb,#f1f8fe);border-color:#b9d6ef}
+  .p-mint{background:linear-gradient(160deg,#e0f5e8,#f1fbf5);border-color:#b7e0c6}
+  .p-butter{background:linear-gradient(160deg,#fff4c2,#fffbe6);border-color:#ecdc8d}
+  .p-marun{background:linear-gradient(160deg,#6b2335,#4a1624);--pi:#fdf0f2;--pa:#f1c6a8;border-color:#4a1624}
+  .p-indigo{background:linear-gradient(160deg,#2d3a73,#1d2650);--pi:#eef1ff;--pa:#f1dcaa;border-color:#1d2650}
   .ptext{white-space:pre-wrap;word-break:break-word;line-height:32px;color:var(--pi)}
   .plinks{margin-top:10px}.plinks a{display:block;color:var(--pa);font-weight:700;text-decoration:underline;line-height:30px}
   textarea::placeholder{color:var(--pi);opacity:.5}
@@ -38,6 +46,9 @@
   .f-hand{font-family:'Caveat',cursive;font-size:1.5rem;font-weight:500}
   .f-sans{font-family:'Fredoka',sans-serif;font-size:1.05rem;font-weight:400}
   .greet{line-height:32px;color:var(--pa)}
+  .paper input.subj{display:block;width:100%;min-width:0;flex:none;border:0;border-bottom:1px dashed rgba(128,128,128,.45);border-radius:0;background:transparent;padding:0 0 2px;margin-bottom:6px;font:inherit;line-height:32px;color:var(--pa);outline:none}
+  .paper input.subj::placeholder{color:var(--pa);opacity:.5}
+  .paper-note{font-size:.8rem;color:var(--faint);margin-top:10px}
   textarea{width:100%;min-height:250px;border:0;background:transparent;resize:vertical;font:inherit;line-height:32px;color:var(--pi);outline:none}
   .sign{text-align:right;line-height:32px;color:var(--pa)}
   .count{font-size:.76rem;color:var(--faint);text-align:right;margin-top:4px}
@@ -82,18 +93,18 @@
   <a class="back" href="index.html#menu">← Kembali ke menu</a>
   <div class="eyebrow">MISSION 02 · LETTER SANCTUM</div>
   <h1>Tulis surat untuk Erin</h1>
-  <p class="sub">Pilih kertas dan gaya tulisanmu, lalu tuangkan isi hatimu. Surat disimpan rapi dan baru terbuka di hari perayaan. Setelah terkirim, kamu mendapat kunci misi.</p>
+  <p class="sub">Pilih gaya tulisanmu, lalu tuangkan isi hatimu. Warna kertas dipilihkan otomatis supaya dinding surat tetap beragam. Surat disimpan rapi dan baru terbuka di hari perayaan. Setelah terkirim, kamu mendapat kunci misi.</p>
 
   <div id="viewEdit">
   <div class="card">
-    <div class="lbl">KERTAS</div><div class="chips" id="papers"></div>
-    <div class="lbl" style="margin-top:14px">GAYA TULISAN</div><div class="chips" id="fonts"></div>
+    <div class="lbl">GAYA TULISAN</div><div class="chips" id="fonts"></div>
+    <p class="paper-note" id="paperNote"></p>
   </div>
 
   <div class="card">
     <div class="paper p-polos f-sans" id="paper">
       <div class="pimg" id="pimg"><img id="pimgEl" alt="Foto suratmu"><button class="btn ghost small" id="pdel">Hapus foto</button></div>
-      <div class="greet">Untuk Erin,</div>
+      <input type="text" id="subject" class="subj" maxlength="60" placeholder="Subjek surat (mis. Untuk Erin)" autocomplete="off">
       <textarea id="text" maxlength="1500" placeholder="Tulis suratmu di sini..."></textarea>
       <div class="sign" id="sign">— kamu</div>
     </div>
@@ -127,7 +138,7 @@
       <div class="lbl">PRATINJAU · BEGINI SURATMU AKAN TAMPIL</div>
       <div class="paper p-polos f-sans" id="pvPaper">
         <div id="pvPhoto"></div>
-        <div class="greet">Untuk Erin,</div>
+        <div class="greet" id="pvSubject" style="display:none"></div>
         <div class="ptext" id="pvText"></div>
         <div class="plinks" id="pvLinks"></div>
         <div class="sign" id="pvSign"></div>
@@ -164,7 +175,15 @@
   const $ = id => document.getElementById(id);
   const USERNAME_KEY = 'eg_username_v1';
   const st = { paper:'polos', font:'sans', photo:null, links:[] };
-  const PAPERS = [['polos','Polos'],['garis','Bergaris'],['titik','Titik'],['teal','Teal pucat'],['tealtua','Teal pekat'],['malam','Hijau malam'],['emas','Emas hangat']];
+  // Kertas dipilihkan otomatis (acak) supaya dinding surat tidak monoton.
+  const PAPERS = [['polos','Polos'],['garis','Bergaris'],['titik','Titik'],['teal','Teal pucat'],['tealtua','Teal pekat'],['malam','Hijau malam'],['emas','Emas hangat'],
+    ['mawar','Mawar'],['lavender','Lavender'],['persik','Persik'],['langit','Langit'],['mint','Mint'],['butter','Butter'],['marun','Marun'],['indigo','Indigo']];
+  (function pickPaper(){
+    const a = new Uint32Array(1); crypto.getRandomValues(a);
+    const pick = PAPERS[a[0] % PAPERS.length];
+    st.paper = pick[0];
+    $('paperNote').textContent = 'Kertasmu: ' + pick[1] + ' (dipilihkan otomatis).';
+  })();
   const FONTS = [['sans','Ceria'],['hand','Tulisan tangan'],['serif','Klasik']];
 
   function chips(box, list, key){
@@ -175,7 +194,7 @@
     });
   }
   function applyStyle(){ $('paper').className = 'paper p-' + st.paper + ' f-' + st.font; }
-  chips($('papers'), PAPERS, 'paper'); chips($('fonts'), FONTS, 'font');
+  chips($('fonts'), FONTS, 'font'); applyStyle();
 
   $('text').addEventListener('input', () => { $('cnt').textContent = $('text').value.length; });
 
@@ -253,6 +272,8 @@
   $('prev').onclick = () => {
     if (!check()) return;
     $('pvPaper').className = 'paper p-' + st.paper + ' f-' + st.font;
+    const subj = $('subject').value.trim();
+    $('pvSubject').textContent = subj; $('pvSubject').style.display = subj ? '' : 'none';
     $('pvText').textContent = $('text').value.trim();
     $('pvSign').textContent = '— ' + un.value.trim();
     $('pvPhoto').innerHTML = '';
@@ -270,7 +291,7 @@
     if (text.length < 10){ alert('Suratnya masih terlalu singkat. Tulis minimal 10 karakter ya.'); return; }
     if (!confirm('Kirim surat ini? Setelah terkirim, surat tidak bisa diubah.')) return;
     localStorage.setItem(USERNAME_KEY, u);
-    const payload = { text, paper:st.paper, font:st.font };
+    const payload = { text, paper:st.paper, font:st.font, v:2, subject:$('subject').value.trim().slice(0,60) };
     if (st.photo) payload.photo = st.photo;
     if (st.links.length) payload.links = st.links;
     const btn = $('send'); btn.disabled = true; btn.textContent = 'Mengirim...';
