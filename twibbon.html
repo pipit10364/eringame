@@ -8,6 +8,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700&family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
+<script src="erin-audio.js"></script>
+<script>window.EgAudio=window.EgAudio||new Proxy({},{get:function(){return function(){}}});</script>
 <style>
   :root{
     --bg:#fbf8f1; --panel:#ffffff; --ink:#17332d; --dim:#5d7a72; --faint:#5c7a71;
@@ -27,6 +29,12 @@
   .empty{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;
     background:var(--teal-soft);color:var(--teal-d);text-align:center;padding:20px}
   .empty p{font-size:.92rem;max-width:300px}
+  /* Bingkai langsung tampil dari awal; petunjuk kecil di dalam area foto, tombol ambil/pilih foto di bawah bingkai */
+  .winhint{position:absolute;left:10.4%;top:20.2%;width:66.7%;height:65.3%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+    border:2px dashed rgba(23,51,45,.28);border-radius:10px;background:rgba(255,255,255,.45);color:var(--dim);font:600 .82rem Nunito,sans-serif;cursor:pointer;padding:0}
+  .winhint .plus{font-size:2.2rem;line-height:1;color:var(--teal-d)}
+  .pickrow{margin-top:12px;text-align:center;color:var(--dim);font-size:.9rem}
+  .pickrow p{margin-bottom:10px}
   .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
   .btn{flex:1;min-width:120px;border:1px solid var(--teal);background:var(--teal);color:#fff;font:600 .92rem 'Nunito',sans-serif;
     padding:12px 14px;border-radius:14px;cursor:pointer}
@@ -87,14 +95,16 @@
   <div class="card">
     <div class="stick"><div class="stage">
       <canvas id="cv" width="1080" height="1080"></canvas>
-      <div class="empty" id="empty">
-        <p>Mulai dengan mengambil foto atau memilih foto dari galeri.</p>
-        <div class="row" style="width:100%;justify-content:center">
-          <button class="btn" id="btnCam">Ambil foto</button>
-          <button class="btn ghost" id="btnPick">Pilih dari galeri</button>
-        </div>
-      </div>
+      <button type="button" class="winhint" id="winHint" aria-label="Pilih foto"><span class="plus">+</span><span>Fotomu muncul di sini</span></button>
     </div></div>
+
+    <div class="pickrow" id="empty">
+      <p>Mulai dengan mengambil foto atau memilih foto dari galeri.</p>
+      <div class="row" style="width:100%;justify-content:center;margin-top:0">
+        <button class="btn" id="btnCam">Ambil foto</button>
+        <button class="btn ghost" id="btnPick">Pilih dari galeri</button>
+      </div>
+    </div>
 
     <div id="editor" style="display:none">
       <div class="tabs">
@@ -272,7 +282,7 @@
         st.base = Math.max(S/im.width, S/im.height);
       }
       $('zoom').value = 1; $('rot').value = 0;
-      $('empty').style.display = 'none'; $('editor').style.display = 'block';
+      $('empty').style.display = 'none'; $('winHint').style.display = 'none'; $('editor').style.display = 'block';
       $('btnPrev').disabled = false; $('swapRow').style.display = 'flex'; draw(); URL.revokeObjectURL(url);
     };
     im.src = url;
@@ -280,6 +290,7 @@
 
   // sumber foto
   $('btnPick').onclick = $('btnNew').onclick = () => { $('file').value=''; $('file').click(); };
+  $('winHint').onclick = () => $('btnPick').click();
   $('file').onchange = e => loadImage(e.target.files[0]);
   $('fileCam').onchange = e => loadImage(e.target.files[0]);
 
@@ -461,12 +472,13 @@
     const btn = $('btnSave'); btn.disabled = true; btn.textContent = 'Membuat kunci...';
     try{
       const r = await getOrCreateKey(u);
+      if (!r.existing) EgAudio.cling();
       $('codeBox').textContent = r.existing ? '✓ Sudah selesai' : r.code;
       $('copyCode').style.display = r.existing ? 'none' : '';
       $('keyWarn').style.display = r.existing ? 'none' : '';
       $('closeDone').textContent = r.existing ? 'Tutup' : 'Sudah kucatat';
       $('doneMsg').textContent = r.existing
-        ? 'Kamu sudah menyelesaikan Misi Twibbon sebelumnya. Demi keamanan, kunci tidak ditampilkan ulang. Kalau lupa, nanti bisa dipulihkan dengan kata pemulihan.'
+        ? 'Twibbon barumu sudah terunduh. Kunci misimu tetap yang pertama dan tidak berubah; demi keamanan tidak ditampilkan lagi. Kalau lupa, bisa dipulihkan lewat pertanyaan pemulihan.'
         : 'Ini kunci Misi Twibbon-mu. Simpan baik-baik, dibutuhkan saat klaim hadiah di Stage 4.';
       localStorage.setItem('eg_mission_twibbon_v1','1');
       $('done').classList.add('on');
@@ -479,6 +491,7 @@
   $('closeDone').onclick = () => { $('done').classList.remove('on'); $('copyCode').textContent = 'Salin kunci'; };
 
   draw();
+  EgAudio.music('twibbon'); // musik misi 1 (mulai setelah ketukan pertama)
 })();
 </script>
 </body>
