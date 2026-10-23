@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="config.js"></script>
-<script>window.EG_NO_SOUND_BTN=true;</script>
 <script src="erin-audio.js"></script>
 <script>window.EgAudio=window.EgAudio||new Proxy({},{get:function(){return function(){}}});</script>
 <title>Polaroid Parlor — Mission 03</title>
@@ -213,6 +212,7 @@
     const pbIv = setInterval(pbTick, 1000); pbTick();
     return;
   }
+  EgAudio.music('photobooth'); // musik misi 3 (mulai setelah ketukan pertama)
   let db = null;
   try { firebase.initializeApp(firebaseConfig); db = firebase.database(); } catch(e){ console.warn(e); }
 
@@ -487,6 +487,7 @@
     const btn = $('btnSave'); btn.disabled = true; btn.textContent = 'Membuat kunci...';
     try{
       const r = await getOrCreateKey(u);
+      if (!r.existing) EgAudio.cling();
       $('codeBox').textContent = r.existing ? '✓ Sudah selesai' : r.code;
       $('copyCode').style.display = r.existing ? 'none' : '';
       $('keyWarn').style.display = r.existing ? 'none' : '';
