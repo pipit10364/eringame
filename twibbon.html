@@ -30,9 +30,7 @@
     background:var(--teal-soft);color:var(--teal-d);text-align:center;padding:20px}
   .empty p{font-size:.92rem;max-width:300px}
   /* Bingkai langsung tampil dari awal; petunjuk kecil di dalam area foto, tombol ambil/pilih foto di bawah bingkai */
-  .winhint{position:absolute;left:10.4%;top:20.2%;width:66.7%;height:65.3%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
-    border:2px dashed rgba(23,51,45,.28);border-radius:10px;background:rgba(255,255,255,.45);color:var(--dim);font:600 .82rem Nunito,sans-serif;cursor:pointer;padding:0}
-  .winhint .plus{font-size:2.2rem;line-height:1;color:var(--teal-d)}
+  .winhint{position:absolute;left:10.4%;top:20.2%;width:66.7%;height:65.3%;background:transparent;border:0;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
   .pickrow{margin-top:12px;text-align:center;color:var(--dim);font-size:.9rem}
   .pickrow p{margin-bottom:10px}
   .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
@@ -89,13 +87,13 @@
   <a href="index.html#menu" style="display:block;text-align:center;font:600 .8rem Nunito,sans-serif;color:#0b7a6e;text-decoration:none;margin-bottom:14px">← Kembali ke menu</a>
   <div class="eyebrow">MISSION 01 · PORTRAIT ATELIER</div>
   <h1>Pasang twibbon untuk Erin</h1>
-  <p class="sub">Ambil atau pilih fotomu, atur posisinya, lalu unduh. Kunci misi akan muncul setelah twibbon berhasil kamu simpan.</p>
+  <p class="sub">Pilih foto terbaikmu untuk twibbon! Kamu bisa mengatur foto, menambahkan stiker, atau mencoret-coret fotonya. Setelah mengunduh twibbon, kamu akan mendapatkan kunci. Simpan baik-baik ya, karena kunci itu hanya muncul sekali. Setelah itu, twibbon-nya bisa kamu pakai untuk foto profil (pp) medsosmu. Have funnnn!</p>
 
   <div id="viewEdit">
   <div class="card">
     <div class="stick"><div class="stage">
       <canvas id="cv" width="1080" height="1080"></canvas>
-      <button type="button" class="winhint" id="winHint" aria-label="Pilih foto"><span class="plus">+</span><span>Fotomu muncul di sini</span></button>
+      <button type="button" class="winhint" id="winHint" aria-label="Pilih foto dari galeri"></button>
     </div></div>
 
     <div class="pickrow" id="empty">
@@ -119,7 +117,7 @@
         <div class="row">
           <button class="btn ghost small" id="rot90">Putar 90°</button>
         </div>
-        <p class="hint">Geser fotonya di atas gambar untuk mengatur posisi (crop). Di HP, cubit dua jari untuk zoom dan putar; di komputer, pakai scroll mouse untuk zoom.</p>
+        <p class="hint">Geser fotonya di atas gambar untuk mengatur posisi. Di HP, cubit dua jari untuk zoom dan memutar; di komputer, pakai scroll mouse untuk zoom.</p>
       </div>
 
       <div class="panel" id="p-stiker">
@@ -127,7 +125,7 @@
         <label class="s"><span>Ukuran</span><input type="range" id="stSize" min="50" max="500" step="1" value="160" disabled></label>
         <label class="s"><span>Putar</span><input type="range" id="stRot" min="-180" max="180" step="1" value="0" disabled></label>
         <div class="row"><button class="btn ghost small" id="stDel">Hapus stiker</button></div>
-        <p class="hint">Ketuk emoji untuk menambah, geser untuk memindah. Di HP, cubit dua jari di atas gambar untuk mengubah ukuran dan memutar stiker yang terpilih.</p>
+        <p class="hint">Ketuk emoji untuk menambah, geser untuk memindah. Di HP, cubit dua jari di atas gambar untuk mengubah ukuran dan memutar stiker yang dipilih.</p>
       </div>
 
       <div class="panel" id="p-coret">
@@ -145,7 +143,7 @@
 
     <div class="user">
       <input id="uname" maxlength="20" placeholder="username game kamu" autocomplete="off" autocapitalize="off" spellcheck="false">
-      <small>Pakai username yang sama dengan di game (huruf kecil a-z dan angka, tanpa titik atau simbol).</small>
+      <small>Pakai username yang sama dengan di game (huruf kecil a–z dan angka, tanpa titik atau simbol).</small>
     </div>
     <div class="row"><button class="btn" id="btnPrev" disabled>Lihat pratinjau</button></div>
   </div>
@@ -177,9 +175,9 @@
 
 <div class="overlay" id="done"><div class="modal">
   <h2>Twibbon tersimpan ✨</h2>
-  <p id="doneMsg">Ini kunci Misi Twibbon-mu. Simpan baik-baik, dibutuhkan saat klaim hadiah di Stage 4.</p>
+  <p id="doneMsg">Ini kunci Portrait Atelier-mu. Simpan baik-baik, ya. Kunci ini dibutuhkan saat klaim hadiah di halaman Prize.</p>
   <div class="code" id="codeBox">--------</div>
-  <div class="keywarn" id="keyWarn">Catat kunci ini sekarang: tulis di kertas, simpan di note HP, atau screenshot. Kunci tidak akan ditampilkan lagi. Kalau terlanjur lupa, kamu masih bisa memulihkannya lewat pertanyaan pemulihan di halaman Prize.</div>
+  <div class="keywarn" id="keyWarn">Catat kunci ini sekarang: tulis di kertas, simpan di catatan HP, atau screenshot. Kunci hanya muncul sekali. Kalau terlanjur lupa, kamu masih bisa memulihkannya lewat pertanyaan pemulihan di halaman Prize.</div>
   <div class="row">
     <button class="btn ghost" id="copyCode">Salin kunci</button>
     <button class="btn" id="closeDone">Tutup</button>
@@ -231,6 +229,20 @@
     c.restore();
   }
 
+  // Petunjuk "Fotomu muncul di sini" digambar DI BELAKANG bingkai (hilang begitu foto dipilih)
+  function drawWindowHint(c){
+    const x = WIN.cx - WIN.w/2, y = WIN.cy - WIN.h/2;
+    c.save();
+    c.fillStyle = '#f6faf6'; c.fillRect(x, y, WIN.w, WIN.h);
+    c.setLineDash([22,16]); c.lineWidth = 5; c.strokeStyle = 'rgba(23,51,45,.22)';
+    c.strokeRect(x + 14, y + 14, WIN.w - 28, WIN.h - 28);
+    c.setLineDash([]);
+    c.textAlign = 'center'; c.textBaseline = 'middle';
+    const hx = WIN.cx - 45; // sedikit ke kiri supaya tidak tertutup foto Erin di kanan bawah
+    c.fillStyle = '#0b7a6e'; c.font = '300 150px Nunito, sans-serif'; c.fillText('+', hx, WIN.cy - 40);
+    c.fillStyle = '#5d7a72'; c.font = '700 40px Nunito, sans-serif'; c.fillText('Fotomu muncul di sini', hx, WIN.cy + 70);
+    c.restore();
+  }
   function draw(){
     ctx.clearRect(0,0,S,S);
     ctx.fillStyle = '#eef2ee'; ctx.fillRect(0,0,S,S);
@@ -243,6 +255,7 @@
       ctx.drawImage(st.img, -st.img.width/2, -st.img.height/2);
       ctx.restore();
     }
+    if (!st.img && !draw.exporting) drawWindowHint(ctx);
     if (frameOk) ctx.drawImage(frame,0,0,S,S); else drawFramePlaceholder(ctx);
     ctx.lineCap = 'round'; ctx.lineJoin = 'round';
     st.strokes.forEach(s => {
@@ -458,7 +471,7 @@
 
   $('btnPrev').onclick = () => {
     const u = un.value.trim().toLowerCase();
-    if (!validUser(u)){ alert('Isi username game dulu ya (huruf kecil a-z dan angka, 3-20 karakter, tanpa simbol).'); un.focus(); return; }
+    if (!validUser(u)){ alert('Isi username game dulu ya (huruf kecil a–z dan angka, 3–20 karakter, tanpa simbol).'); un.focus(); return; }
     draw.exporting = true; draw(); $('pvImg').src = cv.toDataURL('image/png'); draw.exporting = false; draw();
     $('viewEdit').style.display = 'none'; $('viewPrev').style.display = 'block'; window.scrollTo(0,0);
   };
@@ -466,7 +479,7 @@
 
   $('btnSave').onclick = async () => {
     const u = un.value.trim().toLowerCase();
-    if (!validUser(u)){ alert('Isi username game dulu ya (huruf kecil a-z dan angka, 3-20 karakter, tanpa simbol).'); un.focus(); return; }
+    if (!validUser(u)){ alert('Isi username game dulu ya (huruf kecil a–z dan angka, 3–20 karakter, tanpa simbol).'); un.focus(); return; }
     localStorage.setItem(USERNAME_KEY, u);
     download();
     const btn = $('btnSave'); btn.disabled = true; btn.textContent = 'Membuat kunci...';
@@ -478,12 +491,12 @@
       $('keyWarn').style.display = r.existing ? 'none' : '';
       $('closeDone').textContent = r.existing ? 'Tutup' : 'Sudah kucatat';
       $('doneMsg').textContent = r.existing
-        ? 'Twibbon barumu sudah terunduh. Kunci misimu tetap yang pertama dan tidak berubah; demi keamanan tidak ditampilkan lagi. Kalau lupa, bisa dipulihkan lewat pertanyaan pemulihan.'
-        : 'Ini kunci Misi Twibbon-mu. Simpan baik-baik, dibutuhkan saat klaim hadiah di Stage 4.';
+        ? 'Twibbon barumu sudah terunduh. Kunci Portrait Atelier-mu tetap yang pertama dan tidak berubah; demi keamanan tidak ditampilkan lagi. Kalau lupa, kamu bisa memulihkannya lewat pertanyaan pemulihan di halaman Prize.'
+        : 'Ini kunci Portrait Atelier-mu. Simpan baik-baik, ya. Kunci ini dibutuhkan saat klaim hadiah di halaman Prize.';
       localStorage.setItem('eg_mission_twibbon_v1','1');
       $('done').classList.add('on');
     }catch(err){
-      alert('Twibbon sudah terunduh, tapi kunci belum bisa dibuat: ' + err.message + '\nCoba tekan tombol lagi.');
+      alert('Twibbon sudah terunduh, tapi kunci belum bisa dibuat: ' + err.message + '\nCoba tekan tombolnya lagi.');
     }
     btn.disabled = false; btn.textContent = 'Unduh & dapatkan kunci';
   };
@@ -491,6 +504,7 @@
   $('closeDone').onclick = () => { $('done').classList.remove('on'); $('copyCode').textContent = 'Salin kunci'; };
 
   draw();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(draw); // gambar ulang setelah font termuat
   EgAudio.music('twibbon'); // musik misi 1 (mulai setelah ketukan pertama)
 })();
 </script>
