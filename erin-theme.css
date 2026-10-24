@@ -67,7 +67,7 @@ button:disabled { cursor: not-allowed; }
 .wrap .modal,.modal { border-radius: 8px; border: 1px solid var(--border); box-shadow: var(--shadow-soft); }
 .keywarn { background: var(--surface); color: var(--foreground); border-color: var(--secondary); border-radius: 4px; }
 /* Selected paper/font styles and canvas drawings intentionally keep their original designs. */
-.paper,.lp { --pi: oklch(0.30 0.035 174); --pa: oklch(0.45 0.06 164); color-scheme: light; }
+:where(.paper,.lp) { --pi: oklch(0.30 0.035 174); --pa: oklch(0.45 0.06 164); color-scheme: light; } /* :where = prioritas nol, supaya warna tulisan tiap kertas (mis. kertas gelap) tidak tertimpa */
 .p-tealtua,.p-malam,.lp-tealtua,.lp-malam { --pi: var(--foreground); --pa: var(--foreground); }
 .paper textarea { color: var(--pi); }
 .paper .greet,.paper .sign { color: var(--pa); }
