@@ -198,12 +198,12 @@
   .gift-body.on{ display:block; }
   .gift-msg{ color: var(--ink-dim); text-align:center; padding: 40px 12px; font-size:0.95rem; }
   .wall{ column-width: 250px; column-gap: 14px; }
-  .lp{ --pi:#17332d; --pa:#0b7a6e; break-inside: avoid; margin-bottom:14px; border-radius:16px; padding:14px 14px 10px; border:1px solid rgba(0,0,0,.12); color: var(--pi); }
+  .lp{ --pi:#17332d; --pa:#085c52; break-inside: avoid; margin-bottom:14px; border-radius:16px; padding:14px 14px 10px; border:1px solid rgba(0,0,0,.12); color: var(--pi); }
   .lp-polos{ background:#fffdf7; }
   .lp-garis{ background:repeating-linear-gradient(#fffdf7 0 31px,#e9e2cf 31px 32px); }
   .lp-titik{ background:radial-gradient(#d3ccb5 1px,transparent 1px) 0 0/18px 18px,#fffdf7; }
   .lp-teal{ background:linear-gradient(160deg,#e6f6f3,#fbf8f1); }
-  .lp-tealtua{ background:linear-gradient(160deg,#0f8f81,#0b6f64); --pi:#fbf8f1; --pa:#f1dcaa; }
+  .lp-tealtua{ background:linear-gradient(160deg,#087064,#06544b); --pi:#fbf8f1; --pa:#f6e3b4; }
   .lp-malam{ background:linear-gradient(160deg,#12382f,#0a211c); --pi:#eaf6f3; --pa:#d8b979; }
   .lp-emas{ background:linear-gradient(160deg,#f4e6bf,#ead29b); }
   .lp-mawar{ background:linear-gradient(160deg,#fde6ea,#fbf0f1); }
@@ -813,10 +813,13 @@
       setTimeout(finishDoors, 700);
     }
   }
-  function finishDoors(){
-    try { localStorage.removeItem(doorStoreKey()); } catch (e) {}
-    finalizeLeaderboardEntry();
-    localStorage.setItem(GAME4_DONE_KEY, '1');
+  function finishDoors(preview){
+    // preview = true dipakai tombol pintasan admin: tidak mengubah progres atau leaderboard siapa pun
+    if (!preview){
+      try { localStorage.removeItem(doorStoreKey()); } catch (e) {}
+      finalizeLeaderboardEntry();
+      localStorage.setItem(GAME4_DONE_KEY, '1');
+    }
     showScreen('screen-cake');
     const audio = document.getElementById('bday-audio');
     audio.muted = EgAudio.isMuted();
@@ -830,6 +833,38 @@
     EgAudio.prize();
     launchConfetti();
   }
+  // ---------- Pintasan admin (hanya tampil saat mode admin aktif) ----------
+  // Melompati pintu supaya bagian Prize bisa dicek berulang kali. Tidak mengubah progres atau leaderboard.
+  // Catatan: surat tetap dilindungi database, jadi dinding surat hanya terbuka di browser yang pernah lolos pintu sekali.
+  (function adminShortcuts(){
+    if (!EG_CONFIG.isAdmin()) return;
+    const box = document.createElement('div');
+    box.style.cssText = 'position:fixed;left:10px;bottom:10px;z-index:130;font:700 11px ui-monospace,Menlo,monospace;color:#2a2105';
+    const toggle = document.createElement('button');
+    toggle.type = 'button'; toggle.textContent = '🛠 Pintasan admin ▸';
+    toggle.style.cssText = 'background:rgba(231,196,111,.96);color:#2a2105;border:0;border-radius:999px;padding:7px 12px;font:inherit;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.35)';
+    const menu = document.createElement('div');
+    menu.style.cssText = 'display:none;flex-wrap:wrap;gap:6px;margin-bottom:6px;max-width:calc(100vw - 20px)';
+    [['Pintu','pin'],['Kue + lagu','cake'],['Hadiah','gifts'],['Penutup','closing']].forEach(([label, key]) => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.textContent = label;
+      b.style.cssText = 'background:#fff3cf;color:#2a2105;border:1px solid #c9a94c;border-radius:8px;padding:7px 10px;font:inherit;cursor:pointer';
+      b.onclick = () => {
+        if (key === 'cake') finishDoors(true);
+        else if (key === 'pin'){ assignQuestionSet(); loadDoors(); applyRooms(); showScreen('screen-pin'); renderDoors(); }
+        else showScreen('screen-' + key);
+        menu.style.display = 'none'; toggle.textContent = '🛠 Pintasan admin ▸';
+      };
+      menu.appendChild(b);
+    });
+    toggle.onclick = () => {
+      const open = menu.style.display === 'none';
+      menu.style.display = open ? 'flex' : 'none';
+      toggle.textContent = open ? '🛠 Pintasan admin ▾' : '🛠 Pintasan admin ▸';
+    };
+    box.appendChild(menu); box.appendChild(toggle);
+    document.body.appendChild(box);
+  })();
   window.addEventListener('eg-sound-change', ev => {
     const a = document.getElementById('bday-audio');
     if (a) a.muted = ev.detail.muted;
