@@ -45,7 +45,7 @@ window.EG_CONFIG = {
   },
   // Verifikasi sandi admin: yang disimpan hanya hash dua lapis (sandinya tidak tertulis di mana pun).
   ADMIN_SALT: '377fe72131480d500df9fb43',
-  ADMIN_HASH: '0047448d14f4c25eba4e80fb3b9fd7298ca55e18b592bdbb77b98a890fc6d733',
+  ADMIN_HASH: 'c420414044b11e0e77f92f1e442b741ac1a89fd1e2eab271010da76b2360b8c5',
   _adminKey: 'eg_admin_v1',
   _derive: function(pw){
     var h = this.ADMIN_SALT + pw;
