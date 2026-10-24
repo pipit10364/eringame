@@ -28,9 +28,9 @@
   .p-polos{background:#fffdf7}
   .p-garis{background:repeating-linear-gradient(#fffdf7 0 31px,#e9e2cf 31px 32px)}
   .p-titik{background:radial-gradient(#d3ccb5 1px,transparent 1px) 0 0/18px 18px,#fffdf7}
-  .paper{--pi:var(--ink);--pa:var(--teal-d)}
+  .paper{--pi:#17332d;--pa:#085c52} /* warna tulisan kertas: pakai hex tetap (var(--ink) dari tema berwarna krem, jadi tidak terbaca di kertas terang) */
   .p-teal{background:linear-gradient(160deg,#e6f6f3,#fbf8f1);border-color:#bfe5df}
-  .p-tealtua{background:linear-gradient(160deg,#0f8f81,#0b6f64);--pi:#fbf8f1;--pa:#f1dcaa;border-color:#0b6f64}
+  .p-tealtua{background:linear-gradient(160deg,#087064,#06544b);--pi:#fbf8f1;--pa:#f6e3b4;border-color:#06544b}
   .p-malam{background:linear-gradient(160deg,#12382f,#0a211c);--pi:#eaf6f3;--pa:#d8b979;border-color:#1e4a3f}
   .p-emas{background:linear-gradient(160deg,#f4e6bf,#ead29b);border-color:#d8b979}
   .p-mawar{background:linear-gradient(160deg,#fde6ea,#fbf0f1);border-color:#f0c4cc}
@@ -48,8 +48,8 @@
   .f-hand{font-family:'Caveat',cursive;font-size:1.5rem;font-weight:500}
   .f-sans{font-family:'Fredoka',sans-serif;font-size:1.05rem;font-weight:400}
   .greet{line-height:32px;color:var(--pa)}
-  .paper input.subj{display:block;width:100%;min-width:0;flex:none;border:0;border-bottom:1px dashed rgba(128,128,128,.45);border-radius:0;background:transparent;padding:0 0 2px;margin-bottom:6px;font:inherit;line-height:32px;color:var(--pa);outline:none}
-  .paper input.subj::placeholder{color:var(--pa);opacity:.5}
+  .wrap .paper input.subj{display:block;width:100%;min-width:0;flex:none;border:0;border-bottom:1px dashed rgba(128,128,128,.45);border-radius:0;background:transparent;padding:0 0 2px;margin-bottom:6px;font:inherit;line-height:32px;color:var(--pa);outline:none}
+  .wrap .paper input.subj::placeholder{color:var(--pa);opacity:.5}
   .paper-note{font-size:.8rem;color:var(--faint);margin-top:10px}
   textarea{width:100%;min-height:250px;border:0;background:transparent;resize:vertical;font:inherit;line-height:32px;color:var(--pi);outline:none}
   .sign{text-align:right;line-height:32px;color:var(--pa)}
@@ -94,8 +94,8 @@
 <div class="wrap">
   <a class="back" href="index.html#menu">← Kembali ke menu</a>
   <div class="eyebrow">MISSION 02 · LETTER SANCTUM</div>
-  <h1>Tulis surat untuk Erin</h1>
-  <p class="sub">Pilih gaya tulisanmu, lalu tuangkan isi hatimu. Warna kertas dipilihkan otomatis supaya dinding surat tetap beragam. Surat disimpan rapi dan baru terbuka di hari perayaan. Setelah terkirim, kamu mendapat kunci misi.</p>
+  <h1>Ayo tulis surat buat Erin!</h1>
+  <p class="sub">Ungkapkan perasaan terdalammu untuk Erin. Kamu bisa menyisipkan foto maupun link. Suratmu akan disimpan dan dipajang di wall pada hari ulang tahun Erin nanti. Setelah suratmu terkirim, akan muncul sebuah kunci. Catat baik-baik, karena kunci itu hanya muncul sekali.</p>
 
   <div id="viewEdit">
   <div class="card">
@@ -117,14 +117,14 @@
     <div class="lbl">FOTO (OPSIONAL)</div>
     <button class="btn ghost small" id="padd">Pilih foto</button>
     <input type="file" id="pfile" accept="image/*" hidden>
-    <div class="lbl" style="margin-top:16px">TAUTAN (OPSIONAL, MAKS 3)</div>
+    <div class="lbl" style="margin-top:16px">LINK (OPSIONAL, MAKS 3)</div>
     <div class="row" style="margin-top:0">
-      <input type="text" id="lname" placeholder="Nama tautan, mis. Video kenangan" maxlength="40">
+      <input type="text" id="lname" placeholder="Nama link, mis. Video kenangan" maxlength="40">
       <input type="url" id="lurl" placeholder="https://..." autocapitalize="off">
       <button class="btn ghost small" id="ladd">Tambah</button>
     </div>
     <div id="links"></div>
-    <p class="hint">Tautan tampil sebagai nama yang kamu tulis, bukan alamat lengkapnya. Foto dan tautan ikut tersimpan di database bersama suratmu dan hanya admin yang bisa membacanya sampai hari perayaan.</p>
+    <p class="hint">Link tampil sebagai nama yang kamu tulis, bukan alamat lengkapnya. Foto dan link ikut tersimpan bersama suratmu, dan hanya admin yang bisa membacanya sampai hari perayaan.</p>
   </div>
 
   <div class="card user">
@@ -157,7 +157,7 @@
   <h2>Surat terkirim 💌</h2>
   <p id="doneMsg"></p>
   <div class="code" id="codeBox"></div>
-  <div class="keywarn" id="keyWarn">Catat kunci ini sekarang: tulis di kertas, simpan di note HP, atau screenshot. Kunci tidak akan ditampilkan lagi. Kalau terlanjur lupa, kamu masih bisa memulihkannya lewat pertanyaan pemulihan di halaman Prize.</div>
+  <div class="keywarn" id="keyWarn">Catat kunci ini sekarang: tulis di kertas, simpan di catatan HP, atau screenshot. Kunci hanya muncul sekali. Kalau terlanjur lupa, kamu masih bisa memulihkannya lewat pertanyaan pemulihan di halaman Prize.</div>
   <div class="row" style="justify-content:center"><button class="btn ghost" id="copyCode">Salin kunci</button><button class="btn" id="closeDone">Tutup</button></div>
 </div></div>
 
@@ -244,10 +244,10 @@
     });
   }
   $('ladd').onclick = () => {
-    if (st.links.length >= 3){ alert('Maksimal 3 tautan.'); return; }
+    if (st.links.length >= 3){ alert('Maksimal 3 link.'); return; }
     const label = $('lname').value.trim(), url = cleanUrl($('lurl').value);
-    if (!label){ alert('Isi nama tautannya dulu.'); return; }
-    if (!url){ alert('Alamat tautan belum valid.'); return; }
+    if (!label){ alert('Isi nama link-nya dulu.'); return; }
+    if (!url){ alert('Alamat link belum valid.'); return; }
     st.links.push({ label, url }); $('lname').value = ''; $('lurl').value = ''; renderLinks();
   };
 
@@ -268,7 +268,7 @@
 
   function check(){
     const u = un.value.trim(), text = $('text').value.trim();
-    if (!validUser(u)){ alert('Isi username game dulu ya (huruf kecil a-z dan angka, 3-20 karakter, tanpa simbol).'); un.focus(); return false; }
+    if (!validUser(u)){ alert('Isi username game dulu ya (huruf kecil a-z dan angka, 3–20 karakter, tanpa simbol).'); un.focus(); return false; }
     if (text.length < 10){ alert('Suratnya masih terlalu singkat. Tulis minimal 10 karakter ya.'); return false; }
     return true;
   }
@@ -290,7 +290,7 @@
   $('send').onclick = async () => {
     const u = un.value.trim();
     const text = $('text').value.trim();
-    if (!validUser(u)){ alert('Isi username game dulu ya (huruf kecil a-z dan angka, 3-20 karakter, tanpa simbol).'); un.focus(); return; }
+    if (!validUser(u)){ alert('Isi username game dulu ya (huruf kecil a-z dan angka, 3–20 karakter, tanpa simbol).'); un.focus(); return; }
     if (text.length < 10){ alert('Suratnya masih terlalu singkat. Tulis minimal 10 karakter ya.'); return; }
     if (!confirm('Kirim surat ini? Setelah terkirim, surat tidak bisa diubah.')) return;
     localStorage.setItem(USERNAME_KEY, u);
@@ -306,11 +306,11 @@
       $('keyWarn').style.display = r.existing ? 'none' : '';
       $('closeDone').textContent = r.existing ? 'Tutup' : 'Sudah kucatat';
       $('doneMsg').textContent = r.existing
-        ? 'Username ini sudah pernah mengirim surat, jadi surat baru tidak disimpan. Demi keamanan, kunci tidak ditampilkan ulang. Kalau lupa, nanti bisa dipulihkan dengan kata pemulihan.'
-        : 'Suratmu aman tersimpan dan baru terbuka di hari perayaan. Ini kunci Misi Letter-mu. Simpan baik-baik, dibutuhkan saat klaim hadiah.';
+        ? 'Username ini sudah pernah mengirim surat, jadi surat barumu tidak disimpan. Demi keamanan, kunci tidak ditampilkan lagi. Kalau lupa, kamu bisa memulihkannya lewat pertanyaan pemulihan di halaman Prize.'
+        : 'Suratmu tersimpan aman dan akan dipajang di wall pada hari ulang tahun Erin. Ini kunci Letter Sanctum-mu. Simpan baik-baik, ya. Kunci ini dibutuhkan saat klaim hadiah di halaman Prize.';
       localStorage.setItem('eg_mission_letter_v1','1');
       $('done').classList.add('on');
-    }catch(err){ alert('Surat belum terkirim: ' + err.message + '\nCoba tekan tombol lagi.'); }
+    }catch(err){ alert('Surat belum terkirim: ' + err.message + '\nCoba tekan tombolnya lagi.'); }
     btn.disabled = false; btn.textContent = 'Kirim surat & dapatkan kunci';
   };
   $('copyCode').onclick = () => { navigator.clipboard && navigator.clipboard.writeText($('codeBox').textContent); $('copyCode').textContent = 'Tersalin ✓'; };
