@@ -72,6 +72,24 @@
   .card::before{top:9px;left:9px;border-right:none;border-bottom:none}
   .card::after{bottom:9px;right:9px;border-left:none;border-top:none}
   .eyebrow{font-family:'JetBrains Mono',monospace}
+
+  /* ---------- Photobooth: carousel bingkai ---------- */
+  .fname{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+  .fname b{font:700 1.08rem 'Fredoka',sans-serif;color:var(--ink)}
+  .fname span{font:600 .78rem 'JetBrains Mono',monospace;color:var(--dim)}
+  .pbstage{position:relative;width:min(100%,var(--sw,460px));margin:0 auto;border-radius:10px;overflow:hidden;background:#fff;transition:opacity .15s}
+  .pbstage.loading{opacity:.55}
+  .pbstage canvas{width:100%;height:auto;display:block;touch-action:pan-y;user-select:none;-webkit-user-select:none}
+  .nav{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;border:0;background:rgba(255,255,255,.93);color:#0b7a6e;
+    font:700 1.7rem/1 sans-serif;box-shadow:0 2px 10px rgba(0,0,0,.28);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0 0 3px}
+  .nav.prev{left:8px}.nav.next{right:8px}
+  .dots{display:flex;gap:7px;justify-content:center;flex-wrap:wrap;margin-top:12px}
+  .dots i{width:7px;height:7px;border-radius:50%;background:var(--line);transition:transform .15s,background .15s}
+  .dots i.on{background:var(--teal);transform:scale(1.5)}
+  .slotctl{margin-top:12px;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--bg)}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#17332d;color:#fff;padding:10px 16px;border-radius:999px;
+    font:600 .85rem Nunito,sans-serif;z-index:60;opacity:0;pointer-events:none;transition:opacity .2s;max-width:90vw;text-align:center}
+  .toast.on{opacity:1}
 </style>
 
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -87,63 +105,36 @@
   <a href="index.html#menu" style="display:block;text-align:center;font:600 .8rem Nunito,sans-serif;color:#0b7a6e;text-decoration:none;margin-bottom:14px">← Kembali ke menu</a>
   <div class="eyebrow">MISSION 03 · POLAROID PARLOR</div>
   <h1>Foto bareng Erin</h1>
-  <p class="sub">Pilih bingkai favoritmu, ambil atau pilih fotomu, lalu unduh hasilnya. Kunci misi akan muncul setelah fotomu berhasil kamu simpan.</p>
+  <p class="sub">Geser untuk memilih bingkai favoritmu, lalu isi kotak-kotaknya dengan fotomu. Hasilnya boleh kamu unduh berkali-kali, sebanyak yang kamu mau! Kunci muncul saat kamu pertama kali mengunduh, dan hanya muncul sekali.</p>
 
   <div id="viewEdit">
   <div class="card">
-    <div class="stick"><div class="stage">
-      <canvas id="cv" width="1080" height="1080"></canvas>
-      <div class="empty" id="empty">
-        <p>Mulai dengan mengambil foto atau memilih foto dari galeri.</p>
-        <div class="row" style="width:100%;justify-content:center">
-          <button class="btn" id="btnCam">Ambil foto</button>
-          <button class="btn ghost" id="btnPick">Pilih dari galeri</button>
-        </div>
-      </div>
-    </div></div>
-
-    <div id="editor" style="display:none">
-      <div class="lbl" style="margin-top:12px">PILIH BINGKAI</div>
-      <div class="chips" id="fchips"></div>
-      <div class="tabs">
-        <button class="tab on" data-m="foto">Foto</button>
-        <button class="tab" data-m="stiker">Stiker</button>
-        <button class="tab" data-m="coret">Coret</button>
-      </div>
-
-      <div class="panel on" id="p-foto">
-        <label class="s"><span>Zoom</span><input type="range" id="zoom" min="0.3" max="4" step="0.01" value="1"></label>
-        <label class="s"><span>Putar</span><input type="range" id="rot" min="-180" max="180" step="1" value="0"></label>
-        <div class="row">
-          <button class="btn ghost small" id="rot90">Putar 90°</button>
-        </div>
-        <p class="hint">Geser fotonya di atas gambar untuk mengatur posisi (crop). Di HP, cubit dua jari untuk zoom dan putar; di komputer, pakai scroll mouse untuk zoom.</p>
-      </div>
-
-      <div class="panel" id="p-stiker">
-        <div class="emojis" id="emojis"></div>
-        <label class="s"><span>Ukuran</span><input type="range" id="stSize" min="50" max="500" step="1" value="160" disabled></label>
-        <label class="s"><span>Putar</span><input type="range" id="stRot" min="-180" max="180" step="1" value="0" disabled></label>
-        <div class="row"><button class="btn ghost small" id="stDel">Hapus stiker</button></div>
-        <p class="hint">Ketuk emoji untuk menambah, geser untuk memindah. Di HP, cubit dua jari di atas gambar untuk mengubah ukuran dan memutar stiker yang terpilih.</p>
-      </div>
-
-      <div class="panel" id="p-coret">
-        <div class="swatches" id="swatches"></div>
-        <label class="s"><span>Tebal</span><input type="range" id="brush" min="3" max="40" value="10"></label>
-        <div class="row"><button class="btn ghost small" id="undo">Urungkan</button></div>
-        <p class="hint">Gambar langsung di atas foto dengan jari atau mouse.</p>
-      </div>
+    <div class="fname"><b id="fname">Memuat bingkai...</b><span id="fcount"></span></div>
+    <div class="pbstage loading" id="pbstage">
+      <canvas id="cv" width="1357" height="2035"></canvas>
+      <button type="button" class="nav prev" id="navPrev" aria-label="Bingkai sebelumnya">&#8249;</button>
+      <button type="button" class="nav next" id="navNext" aria-label="Bingkai berikutnya">&#8250;</button>
     </div>
+    <div class="dots" id="dots"></div>
+    <p class="hint" style="text-align:center">Geser ke kiri atau kanan (atau ketuk panah) untuk ganti bingkai.</p>
 
-    <div class="row" id="swapRow" style="display:none">
-      <button class="btn ghost small" id="btnNew" style="flex:1">Ganti foto</button>
-      <button class="btn ghost small" id="btnRetake" style="flex:1">Ambil ulang foto</button>
+    <div class="lbl" style="margin-top:16px">FOTOMU &middot; <span id="fillCount">0 / 0</span> KOTAK TERISI</div>
+    <div class="row" style="margin-top:0">
+      <button class="btn" id="btnCam">Ambil foto</button>
+      <button class="btn ghost" id="btnPick">Pilih dari galeri</button>
+    </div>
+    <p class="hint" id="targetNote">Foto akan mengisi kotak yang masih kosong. Dari galeri, kamu bisa memilih beberapa foto sekaligus.</p>
+
+    <div class="slotctl" id="slotCtl" style="display:none">
+      <div class="lbl" id="slotTitle">KOTAK 1</div>
+      <label class="s"><span>Zoom</span><input type="range" id="zoom" min="1" max="4" step="0.01" value="1"></label>
+      <div class="row"><button class="btn ghost small" id="slotDel" style="flex:1">Hapus foto</button><button class="btn small" id="slotDone" style="flex:1">Selesai</button></div>
+      <p class="hint">Geser fotonya di dalam kotak untuk mengatur posisi. Di HP, cubit dua jari untuk zoom.</p>
     </div>
 
     <div class="user">
       <input id="uname" maxlength="20" placeholder="username game kamu" autocomplete="off" autocapitalize="off" spellcheck="false">
-      <small>Pakai username yang sama dengan di game (huruf kecil a-z dan angka, tanpa titik atau simbol).</small>
+      <small>Pakai username yang sama dengan di game (huruf kecil a&ndash;z dan angka, tanpa titik atau simbol).</small>
     </div>
     <div class="row"><button class="btn" id="btnPrev" disabled>Lihat pratinjau</button></div>
   </div>
@@ -151,15 +142,18 @@
 
   <div id="viewPrev" style="display:none">
     <div class="card">
-      <div class="lbl">PRATINJAU · BEGINI HASIL FOTOMU</div>
-      <img id="pvImg" alt="Pratinjau foto" style="width:100%;max-width:min(100%,60vh);display:block;margin:0 auto;border-radius:10px">
+      <div class="lbl">PRATINJAU &middot; BEGINI HASIL FOTOMU</div>
+      <img id="pvImg" alt="Pratinjau hasil photobooth" style="width:100%;max-width:min(100%,520px);display:block;margin:0 auto;border-radius:10px">
+      <p class="hint" id="pvNote" style="text-align:center">Mau coba bingkai lain? Kembali ke edit, geser ke bingkai lain, lalu unduh lagi. Unduhnya tidak dibatasi!</p>
     </div>
     <div class="row">
-      <button class="btn ghost" id="btnBack" style="flex:1">← Edit foto</button>
+      <button class="btn ghost" id="btnBack" style="flex:1">&larr; Edit atau ganti bingkai</button>
       <button class="btn" id="btnSave" style="flex:2">Unduh &amp; dapatkan kunci</button>
     </div>
   </div>
 </div>
+
+<div class="toast" id="toast"></div>
 
 <input type="file" id="file" accept="image/*" hidden>
 <input type="file" id="fileCam" accept="image/*" capture="user" hidden>
@@ -174,10 +168,10 @@
 </div></div>
 
 <div class="overlay" id="done"><div class="modal">
-  <h2>Photobooth tersimpan ✨</h2>
-  <p id="doneMsg">Ini kunci Misi Photobooth-mu. Simpan baik-baik, dibutuhkan saat klaim hadiah di Stage 4.</p>
+  <h2>Photobooth tersimpan &#10024;</h2>
+  <p id="doneMsg">Ini kunci Polaroid Parlor-mu. Simpan baik-baik, ya. Kunci ini dibutuhkan saat klaim hadiah di halaman Prize.</p>
   <div class="code" id="codeBox">--------</div>
-  <div class="keywarn" id="keyWarn">Catat kunci ini sekarang: tulis di kertas, simpan di note HP, atau screenshot. Kunci tidak akan ditampilkan lagi. Kalau terlanjur lupa, kamu masih bisa memulihkannya lewat pertanyaan pemulihan di halaman Prize.</div>
+  <div class="keywarn" id="keyWarn">Catat kunci ini sekarang: tulis di kertas, simpan di catatan HP, atau screenshot. Kunci hanya muncul sekali. Kalau terlanjur lupa, kamu masih bisa memulihkannya lewat pertanyaan pemulihan di halaman Prize.</div>
   <div class="row">
     <button class="btn ghost" id="copyCode">Salin kunci</button>
     <button class="btn" id="closeDone">Tutup</button>
@@ -217,92 +211,226 @@
   try { firebase.initializeApp(firebaseConfig); db = firebase.database(); } catch(e){ console.warn(e); }
 
   const USERNAME_KEY = 'eg_username_v1';
-  // Tambah/ubah bingkai di sini. File PNG transparan 1080x1080 di folder assets/.
+  const FRAME_DIR = 'assets/photobooth/';
+  // Tambah/ubah bingkai di sini: file WebP/PNG transparan di assets/photobooth/ (id = nama file tanpa ekstensi).
+  // Bagian transparan yang cukup besar otomatis dikenali sebagai "kotak foto".
   const FRAMES = [
-    { src:'assets/photobooth-frame-1.png', name:'Bingkai 1' },
-    { src:'assets/photobooth-frame-2.png', name:'Bingkai 2' },
-    { src:'assets/photobooth-frame-3.png', name:'Bingkai 3' },
+    { id:'20s-club', name:'20s Club' },
+    { id:'serinity', name:'sERINity' },
+    { id:'daily-quote', name:'Daily Quote' },
+    { id:'late-night-ledger', name:'Late Night Ledger' },
+    { id:'pit-lane', name:'Pit Lane' },
+    { id:'froggy-clouds', name:'Froggy Clouds' },
+    { id:'slay-strip', name:'Slay Strip' },
+    { id:'redline-mail', name:'Redline Mail' },
+    { id:'mint-sparkle', name:'Mint Sparkle' },
+    { id:'pretty-smart-cute', name:'Pretty Smart Cute' },
+    { id:'forest-post', name:'Forest Post' },
+    { id:'pinboard', name:'Pinboard' },
+    { id:'next-level', name:'Next Level' },
+    { id:'locker-room', name:'Locker Room' }
   ];
-  const EMOJIS = ['🎂','🎉','🎈','✨','💚','🌿','🦋','🌸','🎁','🕯️','⭐','🥳'];
-  const COLORS = ['#0f9d8e','#17332d','#ffffff','#d8b979','#e8827a','#f0a8c0'];
+  // urutan bingkai diacak tiap halaman dibuka
+  (function shuffle(){
+    const r = new Uint32Array(FRAMES.length); crypto.getRandomValues(r);
+    for (let i = FRAMES.length - 1; i > 0; i--){ const j = r[i] % (i + 1); [FRAMES[i], FRAMES[j]] = [FRAMES[j], FRAMES[i]]; }
+  })();
+  FRAMES.forEach(f => f.src = FRAME_DIR + f.id + '.webp');
+
   const $ = id => document.getElementById(id);
-  const cv = $('cv'), ctx = cv.getContext('2d'), S = 1080;
-  const st = { img:null, ox:0, oy:0, zoom:1, rot:0, base:1, mode:'foto', stickers:[], sel:-1, strokes:[], color:COLORS[0], frame:0 };
-  FRAMES.forEach(f => { const im = new Image(); im.onload = () => { f.img = im; draw(); }; im.onerror = () => { f.img = null; }; im.src = f.src; });
+  const cv = $('cv'), ctx = cv.getContext('2d');
+  const photos = [];            // kumpulan foto yang sudah dimasukkan: {img,w,h}
+  const PAD = 3;                // pelebaran topeng kotak (supaya tidak ada celah di tepi)
+  let cur = 0, data = null, sel = -1, exporting = false, token = 0, pickTarget = -1;
+  let pvUrl = null, pvBlob = null;
 
-  function drawFramePlaceholder(c, i){
-    const P = [['#0f9d8e','#d8b979'],['#d8b979','#17332d'],['#17332d','#d8b979']][i % 3];
-    c.save();
-    c.lineWidth = 56; c.strokeStyle = P[0]; c.strokeRect(28,28,S-56,S-56);
-    c.lineWidth = 4; c.strokeStyle = P[1]; c.strokeRect(70,70,S-140,S-140);
-    c.fillStyle = 'rgba(251,248,241,.92)'; c.fillRect(0,S-170,S,170);
-    c.fillStyle = '#17332d'; c.textAlign = 'center';
-    c.font = '700 60px "Fredoka", sans-serif';
-    c.fillText('Polaroid Parlor · Erin', S/2, S-92);
-    c.font = '500 28px "Nunito", sans-serif'; c.fillStyle = '#0b7a6e';
-    c.fillText('Bingkai ' + (i+1) + ' · 16 November', S/2, S-48);
-    c.restore();
-  }
-  function drawFrame(){
-    const f = FRAMES[st.frame];
-    if (f && f.img) ctx.drawImage(f.img,0,0,S,S); else drawFramePlaceholder(ctx, st.frame);
-  }
+  function toast(msg){ const t = $('toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('on'), 2600); }
 
-  function draw(){
-    ctx.clearRect(0,0,S,S);
-    ctx.fillStyle = '#eef2ee'; ctx.fillRect(0,0,S,S);
-    if (st.img){
-      ctx.save();
-      ctx.translate(S/2+st.ox, S/2+st.oy);
-      ctx.rotate(st.rot*Math.PI/180);
-      const k = st.base*st.zoom;
-      ctx.scale(k,k);
-      ctx.drawImage(st.img, -st.img.width/2, -st.img.height/2);
-      ctx.restore();
-    }
-    drawFrame();
-    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-    st.strokes.forEach(s => {
-      if (!s.pts.length) return;
-      ctx.strokeStyle = s.color; ctx.lineWidth = s.w; ctx.beginPath();
-      ctx.moveTo(s.pts[0][0], s.pts[0][1]);
-      s.pts.forEach(p => ctx.lineTo(p[0], p[1]));
-      if (s.pts.length === 1) ctx.lineTo(s.pts[0][0]+.1, s.pts[0][1]);
-      ctx.stroke();
+  // ---------- memuat & menganalisis bingkai ----------
+  function loadFrameImg(i){
+    const f = FRAMES[i];
+    if (!f._img) f._img = new Promise((res, rej) => {
+      const im = new Image(); im.onload = () => res(im); im.onerror = () => rej(new Error('Bingkai gagal dimuat')); im.src = f.src;
     });
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    st.stickers.forEach((e,i) => {
-      ctx.save();
-      ctx.translate(e.x, e.y); ctx.rotate((e.rot||0)*Math.PI/180);
-      ctx.font = e.size + 'px serif';
-      ctx.fillText(e.ch, 0, 0);
-      if (i === st.sel && st.mode === 'stiker' && !draw.exporting){
-        ctx.strokeStyle = '#0f9d8e'; ctx.lineWidth = 3; ctx.setLineDash([10,8]);
-        ctx.strokeRect(-e.size*.6, -e.size*.6, e.size*1.2, e.size*1.2); ctx.setLineDash([]);
+    return f._img;
+  }
+  // Cari "kotak foto" = area transparan yang besar & padat, lengkap dengan topengnya (bentuk apa pun: hati, awan, beruang, dst.)
+  function prepareFrame(i, im){
+    const W = im.naturalWidth, H = im.naturalHeight, N = W * H;
+    const c = document.createElement('canvas'); c.width = W; c.height = H;
+    const g = c.getContext('2d', { willReadFrequently:true }); g.drawImage(im, 0, 0);
+    const px = g.getImageData(0, 0, W, H).data;
+    const lab = new Int32Array(N), stack = new Int32Array(N);
+    let wins = [], next = 0;
+    for (let p0 = 0; p0 < N; p0++){
+      if (lab[p0] !== 0 || px[p0*4+3] >= 64) continue;
+      next++; let sp = 0; stack[sp++] = p0; lab[p0] = next;
+      let x0 = W, y0 = H, x1 = 0, y1 = 0, area = 0;
+      while (sp > 0){
+        const p = stack[--sp], x = p % W, y = (p - x) / W; area++;
+        if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y;
+        let q;
+        if (x > 0)     { q = p - 1; if (lab[q] === 0 && px[q*4+3] < 64){ lab[q] = next; stack[sp++] = q; } }
+        if (x < W - 1) { q = p + 1; if (lab[q] === 0 && px[q*4+3] < 64){ lab[q] = next; stack[sp++] = q; } }
+        if (y > 0)     { q = p - W; if (lab[q] === 0 && px[q*4+3] < 64){ lab[q] = next; stack[sp++] = q; } }
+        if (y < H - 1) { q = p + W; if (lab[q] === 0 && px[q*4+3] < 64){ lab[q] = next; stack[sp++] = q; } }
       }
-      ctx.restore();
+      const w = x1 - x0 + 1, h = y1 - y0 + 1;
+      if (area >= N * 0.006 && w >= 100 && h >= 100 && area / (w * h) >= 0.35) wins.push({ id:next, x:x0, y:y0, w, h });
+    }
+    // urutan baca: atas ke bawah, kiri ke kanan
+    wins.sort((a, b) => a.y - b.y);
+    const rows = [];
+    wins.forEach(w => { const r = rows[rows.length - 1]; if (r && Math.abs(w.y - r[0].y) < H * 0.07) r.push(w); else rows.push([w]); });
+    wins = rows.flatMap(r => r.sort((a, b) => a.x - b.x));
+    wins.forEach(w => {
+      const mc = document.createElement('canvas'); mc.width = w.w + PAD*2; mc.height = w.h + PAD*2;
+      const mg = mc.getContext('2d');
+      const idt = mg.createImageData(w.w, w.h), hit = new Uint8Array(w.w * w.h);
+      for (let y = 0; y < w.h; y++) for (let x = 0; x < w.w; x++){
+        if (lab[(w.y + y) * W + w.x + x] === w.id){ const k = y * w.w + x; hit[k] = 1; idt.data[k*4+3] = 255; }
+      }
+      const base = document.createElement('canvas'); base.width = w.w; base.height = w.h; base.getContext('2d').putImageData(idt, 0, 0);
+      for (let dy = -PAD; dy <= PAD; dy += PAD) for (let dx = -PAD; dx <= PAD; dx += PAD) mg.drawImage(base, PAD + dx, PAD + dy);
+      w.mask = mc; w.hit = hit; w.px = w.x - PAD; w.py = w.y - PAD;
+      const tc = document.createElement('canvas'); tc.width = mc.width; tc.height = mc.height; w.tc = tc; w.tg = tc.getContext('2d');
     });
-    ctx.textBaseline = 'alphabetic';
+    const f = FRAMES[i];
+    if (!f.slots || f.slots.length !== wins.length) f.slots = wins.map(() => ({ p:-1, ox:0, oy:0, zoom:1, cleared:false }));
+    return { i, img:im, W, H, wins, slots:f.slots };
   }
 
-  function loadImage(file){
-    if (!file) return;
+  // ---------- menggambar ----------
+  function drawPlaceholder(w, n){
+    const g = w.tg, cx = PAD + w.w / 2, cy = PAD + w.h / 2, m = Math.min(w.w, w.h);
+    g.fillStyle = '#f2f7f3'; g.fillRect(0, 0, w.tc.width, w.tc.height);
+    g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.fillStyle = '#0b7a6e'; g.font = '300 ' + Math.round(m * 0.34) + 'px Nunito, sans-serif'; g.fillText('+', cx, cy - m * 0.07);
+    g.fillStyle = '#5d7a72'; g.font = '700 ' + Math.round(m * 0.085) + 'px Nunito, sans-serif'; g.fillText('Kotak ' + n, cx, cy + m * 0.2);
+  }
+  function drawPhoto(w, s){
+    const ph = photos[s.p], g = w.tg;
+    const base = Math.max(w.w / ph.w, w.h / ph.h), k = base * s.zoom;
+    g.save();
+    g.translate(PAD + w.w / 2 + s.ox * w.w, PAD + w.h / 2 + s.oy * w.h);
+    g.scale(k, k); g.drawImage(ph.img, -ph.w / 2, -ph.h / 2);
+    g.restore();
+  }
+  function render(){
+    if (!data) return;
+    if (cv.width !== data.W || cv.height !== data.H){ cv.width = data.W; cv.height = data.H; }
+    ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, data.W, data.H);
+    data.wins.forEach((w, i) => {
+      const s = data.slots[i], g = w.tg;
+      g.globalCompositeOperation = 'source-over'; g.clearRect(0, 0, w.tc.width, w.tc.height);
+      if (s.p >= 0) drawPhoto(w, s); else if (!exporting) drawPlaceholder(w, i + 1); else return;
+      g.globalCompositeOperation = 'destination-in'; g.drawImage(w.mask, 0, 0);
+      g.globalCompositeOperation = 'source-over';
+      ctx.drawImage(w.tc, w.px, w.py);
+    });
+    ctx.drawImage(data.img, 0, 0);
+    if (!exporting && sel >= 0 && data.wins[sel]){
+      const w = data.wins[sel], g = w.tg;
+      g.globalCompositeOperation = 'source-over'; g.clearRect(0, 0, w.tc.width, w.tc.height);
+      g.fillStyle = 'rgba(15,157,142,.20)'; g.fillRect(0, 0, w.tc.width, w.tc.height);
+      g.globalCompositeOperation = 'destination-in'; g.drawImage(w.mask, 0, 0); g.globalCompositeOperation = 'source-over';
+      ctx.drawImage(w.tc, w.px, w.py);
+      ctx.save(); ctx.setLineDash([22, 14]); ctx.lineWidth = 7; ctx.strokeStyle = '#0f9d8e'; ctx.strokeRect(w.x, w.y, w.w, w.h); ctx.restore();
+    }
+  }
+
+  // ---------- tampilan & navigasi ----------
+  function filled(d){ return d ? d.slots.filter(s => s.p >= 0).length : 0; }
+  function updateUI(){
+    $('fname').textContent = FRAMES[cur].name;
+    $('fcount').textContent = (cur + 1) + ' / ' + FRAMES.length;
+    [...$('dots').children].forEach((d, i) => d.classList.toggle('on', i === cur));
+    if (data){
+      const n = data.wins.length;
+      $('fillCount').textContent = filled(data) + ' / ' + n;
+      $('btnPrev').disabled = filled(data) === 0;
+    }
+    const has = data && sel >= 0 && data.slots[sel] && data.slots[sel].p >= 0;
+    $('slotCtl').style.display = has ? 'block' : 'none';
+    if (has){ $('slotTitle').textContent = 'KOTAK ' + (sel + 1); $('zoom').value = data.slots[sel].zoom; }
+    $('targetNote').textContent = sel >= 0
+      ? 'Foto berikutnya akan masuk ke kotak ' + (sel + 1) + '. Ketuk bagian lain untuk membatalkan pilihan.'
+      : 'Foto akan mengisi kotak yang masih kosong. Dari galeri, kamu bisa memilih beberapa foto sekaligus.';
+    cv.style.touchAction = has ? 'none' : 'pan-y';
+  }
+  function autoFill(d){
+    // kotak kosong diisi otomatis dari kumpulan foto (yang belum dipakai di bingkai ini)
+    const used = new Set(d.slots.filter(s => s.p >= 0).map(s => s.p));
+    d.slots.forEach(s => {
+      if (s.p >= 0 || s.cleared) return;
+      const k = photos.findIndex((_, idx) => !used.has(idx));
+      if (k >= 0){ s.p = k; s.ox = s.oy = 0; s.zoom = 1; used.add(k); }
+    });
+  }
+  async function showFrame(){
+    const my = ++token;
+    $('pbstage').classList.add('loading'); sel = -1;
+    $('fname').textContent = FRAMES[cur].name; $('fcount').textContent = (cur + 1) + ' / ' + FRAMES.length;
+    try{
+      const im = await loadFrameImg(cur);
+      if (my !== token) return;
+      await new Promise(r => setTimeout(r, 0));
+      const d = prepareFrame(cur, im);
+      if (my !== token) return;
+      data = d; autoFill(d);
+      $('pbstage').style.setProperty('--sw', (d.W / d.H < 0.5 ? 320 : 460) + 'px');
+      render(); updateUI();
+    }catch(err){ toast('Bingkai gagal dimuat. Coba geser lagi.'); }
+    $('pbstage').classList.remove('loading');
+    loadFrameImg((cur + 1) % FRAMES.length).catch(() => {});
+    loadFrameImg((cur - 1 + FRAMES.length) % FRAMES.length).catch(() => {});
+  }
+  function go(delta){ cur = (cur + delta + FRAMES.length) % FRAMES.length; EgAudio.tap(); showFrame(); }
+  FRAMES.forEach(() => $('dots').appendChild(document.createElement('i')));
+  $('navPrev').onclick = () => go(-1);
+  $('navNext').onclick = () => go(1);
+  document.addEventListener('keydown', e => {
+    if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
+    if ($('viewPrev').style.display !== 'none') return;
+    if (e.key === 'ArrowLeft') go(-1); else if (e.key === 'ArrowRight') go(1);
+  });
+
+  // ---------- memasukkan foto ----------
+  async function loadPhoto(file){
     const url = URL.createObjectURL(file);
-    const im = new Image();
-    im.onload = () => {
-      st.img = im; st.ox = st.oy = 0; st.zoom = 1; st.rot = 0;
-      st.base = Math.max(S/im.width, S/im.height);
-      $('zoom').value = 1; $('rot').value = 0;
-      $('empty').style.display = 'none'; $('editor').style.display = 'block';
-      $('btnPrev').disabled = false; $('swapRow').style.display = 'flex'; draw(); URL.revokeObjectURL(url);
-    };
-    im.src = url;
+    try{
+      const im = new Image(); im.src = url; await im.decode();
+      let src = im, w = im.naturalWidth, h = im.naturalHeight; const MAX = 2400;
+      if (Math.max(w, h) > MAX){
+        const k = MAX / Math.max(w, h), c = document.createElement('canvas');
+        c.width = Math.round(w * k); c.height = Math.round(h * k); c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
+        src = c; w = c.width; h = c.height;
+      }
+      return { img:src, w, h };
+    }catch(e){ return null; }
+    finally{ URL.revokeObjectURL(url); }
   }
-
-  // sumber foto
-  $('btnPick').onclick = $('btnNew').onclick = () => { $('file').value=''; $('file').click(); };
-  $('file').onchange = e => loadImage(e.target.files[0]);
-  $('fileCam').onchange = e => loadImage(e.target.files[0]);
+  async function addFiles(files, target){
+    if (!data) return;
+    const added = [];
+    for (const f of files.slice(0, 24)){
+      const p = await loadPhoto(f);
+      if (p){ photos.push(p); added.push(photos.length - 1); }
+    }
+    if (!added.length){ toast('Fotonya tidak bisa dibuka. Coba foto lain ya.'); return; }
+    if (target >= 0 && data.slots[target]){
+      Object.assign(data.slots[target], { p:added[0], ox:0, oy:0, zoom:1, cleared:false });
+    } else {
+      let a = 0;
+      data.slots.forEach(s => { if (s.p < 0 && a < added.length){ Object.assign(s, { p:added[a++], ox:0, oy:0, zoom:1, cleared:false }); } });
+      if (a === 0) toast('Semua kotak sudah terisi. Ketuk sebuah kotak untuk menggantinya.');
+    }
+    EgAudio.cling();
+    render(); updateUI();
+  }
+  $('btnPick').onclick = () => { pickTarget = sel; $('file').multiple = sel < 0; $('file').value = ''; $('file').click(); };
+  $('file').onchange = e => addFiles([...e.target.files], pickTarget);
+  $('fileCam').onchange = e => addFiles([...e.target.files], sel);
 
   // kamera
   let stream = null, facing = 'user';
@@ -312,139 +440,108 @@
       stream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:facing, width:{ideal:1280}, height:{ideal:1280} }, audio:false });
       $('vid').srcObject = stream; $('vid').classList.toggle('back', facing !== 'user');
       $('camBox').classList.add('on');
-    }catch(err){ $('fileCam').click(); }   // fallback: kamera bawaan HP
+    }catch(err){ $('fileCam').click(); }   // cadangan: kamera bawaan HP
   }
-  function closeCam(){ if (stream){ stream.getTracks().forEach(t=>t.stop()); stream=null; } $('camBox').classList.remove('on'); }
+  function closeCam(){ if (stream){ stream.getTracks().forEach(t => t.stop()); stream = null; } $('camBox').classList.remove('on'); }
   $('btnCam').onclick = openCam;
-  $('btnRetake').onclick = openCam;
   $('camClose').onclick = closeCam;
-  $('camFlip').onclick = () => { closeCam(); facing = facing==='user' ? 'environment' : 'user'; openCam(); };
+  $('camFlip').onclick = () => { closeCam(); facing = facing === 'user' ? 'environment' : 'user'; openCam(); };
   $('camShot').onclick = () => {
     const v = $('vid'); if (!v.videoWidth) return;
     const c = document.createElement('canvas'); c.width = v.videoWidth; c.height = v.videoHeight;
-    c.getContext('2d').drawImage(v,0,0);
-    c.toBlob(b => { closeCam(); loadImage(b); }, 'image/jpeg', .92);
+    const g = c.getContext('2d');
+    if (facing === 'user'){ g.translate(c.width, 0); g.scale(-1, 1); }   // selfie: samakan dengan yang terlihat di layar
+    g.drawImage(v, 0, 0);
+    c.toBlob(b => { closeCam(); if (b) addFiles([b], sel); }, 'image/jpeg', .92);
   };
 
-  // tab & kontrol
-  FRAMES.forEach((f,i) => {
-    const b = document.createElement('button'); b.className = 'chip' + (i===st.frame ? ' on' : ''); b.textContent = f.name;
-    b.onclick = () => { st.frame = i; [...$('fchips').children].forEach(c => c.classList.toggle('on', c===b)); draw(); };
-    $('fchips').appendChild(b);
-  });
-  document.querySelectorAll('.tab').forEach(t => t.onclick = () => {
-    st.mode = t.dataset.m;
-    document.querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x === t));
-    document.querySelectorAll('.panel').forEach(p => p.classList.toggle('on', p.id === 'p-' + st.mode));
-    draw();
-  });
-  $('zoom').oninput = e => { st.zoom = +e.target.value; draw(); };
-  $('rot').oninput = e => { st.rot = +e.target.value; draw(); };
-  $('rot90').onclick = () => { st.rot = ((st.rot + 90 + 180) % 360) - 180; $('rot').value = st.rot; draw(); };
-
-  function syncSticker(){
-    const e = st.stickers[st.sel];
-    $('stSize').disabled = $('stRot').disabled = !e;
-    if (e){ $('stSize').value = e.size; $('stRot').value = Math.round(e.rot||0); }
+  // ---------- mengatur foto di dalam kotak ----------
+  function clampPan(s, w){
+    const ph = photos[s.p], k = Math.max(w.w / ph.w, w.h / ph.h) * s.zoom;
+    const mx = Math.max(0, (ph.w * k - w.w) / 2 / w.w), my = Math.max(0, (ph.h * k - w.h) / 2 / w.h);
+    s.ox = Math.max(-mx, Math.min(mx, s.ox)); s.oy = Math.max(-my, Math.min(my, s.oy));
   }
-  EMOJIS.forEach(ch => {
-    const b = document.createElement('button'); b.textContent = ch;
-    b.onclick = () => { st.stickers.push({ch, x:S/2, y:S/2, size:160, rot:0}); st.sel = st.stickers.length-1; syncSticker(); draw(); };
-    $('emojis').appendChild(b);
-  });
-  $('stSize').oninput = e => { const s = st.stickers[st.sel]; if (s){ s.size = +e.target.value; draw(); } };
-  $('stRot').oninput = e => { const s = st.stickers[st.sel]; if (s){ s.rot = +e.target.value; draw(); } };
-  $('stDel').onclick = () => { if (st.sel>=0){ st.stickers.splice(st.sel,1); st.sel = st.stickers.length-1; syncSticker(); draw(); } };
+  function setZoom(z){
+    const s = data.slots[sel]; if (!s || s.p < 0) return;
+    s.zoom = Math.max(1, Math.min(4, z)); clampPan(s, data.wins[sel]); $('zoom').value = s.zoom; render();
+  }
+  $('zoom').oninput = e => setZoom(+e.target.value);
+  $('slotDel').onclick = () => { const s = data.slots[sel]; if (s){ s.p = -1; s.cleared = true; s.ox = s.oy = 0; s.zoom = 1; render(); updateUI(); } };
+  $('slotDone').onclick = () => { sel = -1; render(); updateUI(); };
 
-  COLORS.forEach((c,i) => {
-    const d = document.createElement('div'); d.className = 'sw' + (i===0?' on':''); d.style.background = c;
-    d.onclick = () => { st.color = c; document.querySelectorAll('.sw').forEach(x=>x.classList.toggle('on',x===d)); };
-    $('swatches').appendChild(d);
-  });
-  $('undo').onclick = () => { st.strokes.pop(); draw(); };
-
-  // gestur di canvas
-  let drag = null, pinch = null;
-  const ptrs = new Map();
-  function pos(e){ const r = cv.getBoundingClientRect(); return [(e.clientX-r.left)*S/r.width, (e.clientY-r.top)*S/r.height]; }
-  function twoPtr(){ const [a,b] = [...ptrs.values()]; return { d:Math.hypot(b[0]-a[0], b[1]-a[1]) || 1, ang:Math.atan2(b[1]-a[1], b[0]-a[0])*180/Math.PI }; }
-  function hitSticker(x,y){
-    for (let i=st.stickers.length-1;i>=0;i--){
-      const s = st.stickers[i], r = -(s.rot||0)*Math.PI/180, dx = x-s.x, dy = y-s.y;
-      const lx = dx*Math.cos(r) - dy*Math.sin(r), ly = dx*Math.sin(r) + dy*Math.cos(r);
-      if (Math.abs(lx) < s.size*.6 && Math.abs(ly) < s.size*.6) return i;
+  const ptrs = new Map(); let gest = null;
+  function cpos(e){ const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) * cv.width / r.width, (e.clientY - r.top) * cv.height / r.height]; }
+  function winAt(x, y){
+    if (!data) return -1;
+    x = Math.floor(x); y = Math.floor(y);
+    for (let i = 0; i < data.wins.length; i++){
+      const w = data.wins[i];
+      if (x >= w.x && x < w.x + w.w && y >= w.y && y < w.y + w.h && w.hit[(y - w.y) * w.w + (x - w.x)]) return i;
     }
     return -1;
   }
+  function dist2(){ const [a, b] = [...ptrs.values()]; return Math.hypot(b.cx - a.cx, b.cy - a.cy) || 1; }
   cv.addEventListener('pointerdown', e => {
-    if (!st.img) return;
-    cv.setPointerCapture(e.pointerId);
-    const [x,y] = pos(e);
-    ptrs.set(e.pointerId, [x,y]);
-    if (ptrs.size === 2 && st.mode === 'stiker' && st.stickers[st.sel]){
-      const t = twoPtr(), s = st.stickers[st.sel];
-      pinch = { kind:'stiker', d:t.d, ang:t.ang, size:s.size, rot:s.rot||0 }; drag = null; return;
-    }
-    if (ptrs.size === 2 && st.mode === 'foto'){
-      const t = twoPtr();
-      pinch = { kind:'foto', d:t.d, ang:t.ang, zoom:st.zoom, rot:st.rot }; drag = null; return;
-    }
-    if (st.mode === 'foto') drag = {x,y,ox:st.ox,oy:st.oy};
-    else if (st.mode === 'stiker'){
-      const hit = hitSticker(x,y);
-      st.sel = hit; if (hit>=0) drag = {x,y,sx:st.stickers[hit].x,sy:st.stickers[hit].y};
-      syncSticker(); draw();
-    } else { st.strokes.push({color:st.color, w:+$('brush').value, pts:[[x,y]]}); drag = {}; draw(); }
+    if (!data) return;
+    const [x, y] = cpos(e); ptrs.set(e.pointerId, { x, y, cx:e.clientX, cy:e.clientY });
+    try{ cv.setPointerCapture(e.pointerId); }catch(_){}
+    const s = sel >= 0 ? data.slots[sel] : null;
+    if (ptrs.size === 2 && s && s.p >= 0){ gest = { kind:'pinch', d:dist2(), zoom:s.zoom }; return; }
+    const hit = winAt(x, y);
+    gest = { kind:'down', hit, x, y, cx:e.clientX, cy:e.clientY, moved:false,
+      onSel: s && s.p >= 0 && hit === sel, ox: s ? s.ox : 0, oy: s ? s.oy : 0 };
   });
   cv.addEventListener('pointermove', e => {
-    if (!ptrs.has(e.pointerId)) return;
-    const [x,y] = pos(e);
-    ptrs.set(e.pointerId, [x,y]);
-    if (pinch && ptrs.size >= 2){
-      const t = twoPtr(), wrap = v => ((v % 360) + 540) % 360 - 180;
-      if (pinch.kind === 'foto'){
-        st.zoom = Math.max(0.3, Math.min(4, pinch.zoom * t.d / pinch.d));
-        st.rot = Math.round(wrap(pinch.rot + t.ang - pinch.ang));
-        $('zoom').value = st.zoom; $('rot').value = st.rot; draw();
-      } else {
-        const s = st.stickers[st.sel];
-        if (s){ s.size = Math.max(50, Math.min(500, pinch.size * t.d / pinch.d)); s.rot = wrap(pinch.rot + t.ang - pinch.ang); syncSticker(); draw(); }
-      }
-      return;
+    if (!ptrs.has(e.pointerId) || !gest) return;
+    const [x, y] = cpos(e); const p = ptrs.get(e.pointerId); p.x = x; p.y = y; p.cx = e.clientX; p.cy = e.clientY;
+    if (gest.kind === 'pinch' && ptrs.size >= 2){ setZoom(gest.zoom * dist2() / gest.d); return; }
+    if (gest.kind !== 'down') return;
+    if (Math.abs(e.clientX - gest.cx) > 8 || Math.abs(e.clientY - gest.cy) > 8) gest.moved = true;
+    if (gest.onSel){
+      const s = data.slots[sel], w = data.wins[sel];
+      s.ox = gest.ox + (x - gest.x) / w.w; s.oy = gest.oy + (y - gest.y) / w.h; clampPan(s, w); render();
     }
-    if (!drag) return;
-    if (st.mode === 'foto'){ st.ox = drag.ox + (x-drag.x); st.oy = drag.oy + (y-drag.y); }
-    else if (st.mode === 'stiker'){ const s = st.stickers[st.sel]; if (s){ s.x = drag.sx + (x-drag.x); s.y = drag.sy + (y-drag.y); } }
-    else st.strokes[st.strokes.length-1].pts.push([x,y]);
-    draw();
   });
-  ['pointerup','pointercancel'].forEach(ev => cv.addEventListener(ev, e => {
+  function endPtr(e, cancelled){
     ptrs.delete(e.pointerId);
-    if (ptrs.size < 2) pinch = null;
-    drag = null;
-  }));
-
+    if (ptrs.size < 2 && gest && gest.kind === 'pinch') gest = null;
+    if (!gest || gest.kind !== 'down' || ptrs.size > 0){ if (ptrs.size === 0) gest = null; return; }
+    const g = gest; gest = null;
+    if (cancelled) return;
+    const dx = e.clientX - g.cx, dy = e.clientY - g.cy;
+    if (!g.moved){                       // ketukan
+      if (g.hit >= 0){
+        sel = g.hit;
+        if (data.slots[sel].p < 0){ pickTarget = sel; $('file').multiple = false; $('file').value = ''; $('file').click(); }
+      } else sel = -1;
+      render(); updateUI();
+    } else if (!g.onSel && Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.4){   // geser = ganti bingkai
+      go(dx < 0 ? 1 : -1);
+    }
+  }
+  cv.addEventListener('pointerup', e => endPtr(e, false));
+  cv.addEventListener('pointercancel', e => endPtr(e, true));
   cv.addEventListener('wheel', e => {
-    if (!st.img || st.mode !== 'foto') return;
-    e.preventDefault();
-    st.zoom = Math.max(0.3, Math.min(4, st.zoom * (e.deltaY < 0 ? 1.06 : 1/1.06)));
-    $('zoom').value = st.zoom; draw();
+    if (!data || sel < 0 || !data.slots[sel] || data.slots[sel].p < 0) return;
+    e.preventDefault(); setZoom(data.slots[sel].zoom * (e.deltaY < 0 ? 1.06 : 1 / 1.06));
   }, { passive:false });
 
-  // username
+  // ---------- username ----------
   const un = $('uname');
   un.value = localStorage.getItem(USERNAME_KEY) || '';
   const validUser = v => /^[a-z0-9]{3,20}$/.test(v);
-  un.addEventListener('input', () => { un.value = un.value.toLowerCase().replace(/[^a-z0-9]/g,''); });
+  un.addEventListener('input', () => { un.value = un.value.toLowerCase().replace(/[^a-z0-9]/g, ''); });
+  const doneKey = u => 'eg_mission_photobooth_done_' + u;
+  const isAdmin = () => !!(window.EG_CONFIG && EG_CONFIG.isAdmin && EG_CONFIG.isAdmin());
 
-  // kode misi
+  // ---------- kunci misi ----------
   function newCode(){
     const a = new Uint32Array(2); crypto.getRandomValues(a);
     return String((a[0] % 9000) + 1000) + String((a[1] % 9000) + 1000);   // 8 digit
   }
   async function getOrCreateKey(username){
     if (!db) throw new Error('Database belum tersambung.');
-    for (let i=0;i<5;i++){
+    for (let i = 0; i < 5; i++){
       const code = newCode();
       // 1) pesan kode (hanya bisa dibuat baru, tidak bisa menimpa)
       const tx = await db.ref('codes/' + code).transaction(cur => cur === null ? { username, app:'photobooth', valid:true, at:Date.now() } : undefined);
@@ -461,29 +558,40 @@
     throw new Error('Gagal membuat kunci, coba lagi.');
   }
 
-  function download(){
-    draw.exporting = true; draw();
-    cv.toBlob(b => {
-      draw.exporting = false; draw();
-      const a = document.createElement('a'); a.href = URL.createObjectURL(b);
-      a.download = 'photobooth-erin.png'; document.body.appendChild(a); a.click(); a.remove();
-      setTimeout(()=>URL.revokeObjectURL(a.href), 4000);
-    }, 'image/png');
+  // ---------- pratinjau & unduh (tanpa batas) ----------
+  function exportBlob(){
+    exporting = true; render();
+    return new Promise(res => cv.toBlob(b => { exporting = false; render(); res(b); }, 'image/png'));
   }
-
-  $('btnPrev').onclick = () => {
+  function downloadBlob(b){
+    const a = document.createElement('a'); a.href = URL.createObjectURL(b);
+    a.download = 'photobooth-erin-' + FRAMES[cur].id + '.png'; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  }
+  $('btnPrev').onclick = async () => {
     const u = un.value.trim().toLowerCase();
-    if (!validUser(u)){ alert('Isi username game dulu ya (huruf kecil a-z dan angka, 3-20 karakter, tanpa simbol).'); un.focus(); return; }
-    draw.exporting = true; draw(); $('pvImg').src = cv.toDataURL('image/png'); draw.exporting = false; draw();
-    $('viewEdit').style.display = 'none'; $('viewPrev').style.display = 'block'; window.scrollTo(0,0);
+    if (filled(data) === 0){ alert('Isi minimal satu kotak foto dulu ya.'); return; }
+    if (!validUser(u)){ alert('Isi username game dulu ya (huruf kecil a–z dan angka, 3–20 karakter, tanpa simbol).'); un.focus(); return; }
+    pvBlob = await exportBlob();
+    if (pvUrl) URL.revokeObjectURL(pvUrl);
+    pvUrl = URL.createObjectURL(pvBlob); $('pvImg').src = pvUrl;
+    const empty = data.wins.length - filled(data);
+    $('pvNote').textContent = empty > 0
+      ? 'Masih ada ' + empty + ' kotak kosong. Kembali ke edit kalau mau mengisinya dulu. Unduhnya tidak dibatasi, jadi boleh coba bingkai lain juga!'
+      : 'Mau coba bingkai lain? Kembali ke edit, geser ke bingkai lain, lalu unduh lagi. Unduhnya tidak dibatasi!';
+    $('btnSave').textContent = (localStorage.getItem(doneKey(u)) === '1' && !isAdmin()) ? 'Unduh' : 'Unduh & dapatkan kunci';
+    $('viewEdit').style.display = 'none'; $('viewPrev').style.display = 'block'; window.scrollTo(0, 0);
   };
-  $('btnBack').onclick = () => { $('viewPrev').style.display = 'none'; $('viewEdit').style.display = 'block'; window.scrollTo(0,0); };
+  $('btnBack').onclick = () => { $('viewPrev').style.display = 'none'; $('viewEdit').style.display = 'block'; window.scrollTo(0, 0); };
 
   $('btnSave').onclick = async () => {
     const u = un.value.trim().toLowerCase();
-    if (!validUser(u)){ alert('Isi username game dulu ya (huruf kecil a-z dan angka, 3-20 karakter, tanpa simbol).'); un.focus(); return; }
+    if (!validUser(u)){ alert('Isi username game dulu ya (huruf kecil a–z dan angka, 3–20 karakter, tanpa simbol).'); un.focus(); return; }
     localStorage.setItem(USERNAME_KEY, u);
-    download();
+    if (!pvBlob) pvBlob = await exportBlob();
+    downloadBlob(pvBlob);
+    // sudah pernah dapat kunci di browser ini: cukup unduh, tanpa jendela kunci lagi
+    if (localStorage.getItem(doneKey(u)) === '1' && !isAdmin()){ EgAudio.cling(); toast('Foto terunduh ✓ Kunci misimu tetap yang pertama.'); return; }
     const btn = $('btnSave'); btn.disabled = true; btn.textContent = 'Membuat kunci...';
     try{
       const r = await getOrCreateKey(u);
@@ -493,19 +601,19 @@
       $('keyWarn').style.display = r.existing ? 'none' : '';
       $('closeDone').textContent = r.existing ? 'Tutup' : 'Sudah kucatat';
       $('doneMsg').textContent = r.existing
-        ? 'Kamu sudah menyelesaikan Misi Photobooth sebelumnya. Demi keamanan, kunci tidak ditampilkan ulang. Kalau lupa, nanti bisa dipulihkan dengan kata pemulihan.'
-        : 'Ini kunci Misi Photobooth-mu. Simpan baik-baik, dibutuhkan saat klaim hadiah di Stage 4.';
-      localStorage.setItem('eg_mission_photobooth_v1','1');
+        ? 'Foto barumu sudah terunduh. Kunci Polaroid Parlor-mu tetap yang pertama dan tidak berubah; demi keamanan tidak ditampilkan lagi. Kalau lupa, kamu bisa memulihkannya lewat pertanyaan pemulihan di halaman Prize.'
+        : 'Ini kunci Polaroid Parlor-mu. Simpan baik-baik, ya. Kunci ini dibutuhkan saat klaim hadiah di halaman Prize.';
+      localStorage.setItem('eg_mission_photobooth_v1', '1'); localStorage.setItem(doneKey(u), '1');
       $('done').classList.add('on');
     }catch(err){
-      alert('Photobooth sudah terunduh, tapi kunci belum bisa dibuat: ' + err.message + '\nCoba tekan tombol lagi.');
+      alert('Foto sudah terunduh, tapi kunci belum bisa dibuat: ' + err.message + '\nCoba tekan tombolnya lagi.');
     }
-    btn.disabled = false; btn.textContent = 'Unduh & dapatkan kunci';
+    btn.disabled = false; btn.textContent = (localStorage.getItem(doneKey(u)) === '1' && !isAdmin()) ? 'Unduh' : 'Unduh & dapatkan kunci';
   };
   $('copyCode').onclick = () => { navigator.clipboard && navigator.clipboard.writeText($('codeBox').textContent); $('copyCode').textContent = 'Tersalin ✓'; };
   $('closeDone').onclick = () => { $('done').classList.remove('on'); $('copyCode').textContent = 'Salin kunci'; };
 
-  draw();
+  showFrame();
 })();
 </script>
 </body>
