@@ -212,11 +212,12 @@
 
   const USERNAME_KEY = 'eg_username_v1';
   const FRAME_DIR = 'assets/photobooth/';
+  // splitY (opsional) = pecah dua kotak foto yang menempel jadi satu pada garis tinggi tersebut (0 sampai 1 dari tinggi bingkai).
   // Tambah/ubah bingkai di sini: file WebP/PNG transparan di assets/photobooth/ (id = nama file tanpa ekstensi).
   // Bagian transparan yang cukup besar otomatis dikenali sebagai "kotak foto".
   const FRAMES = [
     { id:'20s-club', name:'20s Club' },
-    { id:'serinity', name:'sERINity' },
+    { id:'serinity', name:'sERINity', splitY:0.2345 },
     { id:'daily-quote', name:'Daily Quote' },
     { id:'late-night-ledger', name:'Late Night Ledger' },
     { id:'pit-lane', name:'Pit Lane' },
@@ -262,6 +263,7 @@
     const px = g.getImageData(0, 0, W, H).data;
     const lab = new Int32Array(N), stack = new Int32Array(N);
     let wins = [], next = 0;
+    const sy = FRAMES[i].splitY ? Math.round(FRAMES[i].splitY * H) : -1;   // garis pemisah (kalau ada)
     for (let p0 = 0; p0 < N; p0++){
       if (lab[p0] !== 0 || px[p0*4+3] >= 64) continue;
       next++; let sp = 0; stack[sp++] = p0; lab[p0] = next;
@@ -272,8 +274,8 @@
         let q;
         if (x > 0)     { q = p - 1; if (lab[q] === 0 && px[q*4+3] < 64){ lab[q] = next; stack[sp++] = q; } }
         if (x < W - 1) { q = p + 1; if (lab[q] === 0 && px[q*4+3] < 64){ lab[q] = next; stack[sp++] = q; } }
-        if (y > 0)     { q = p - W; if (lab[q] === 0 && px[q*4+3] < 64){ lab[q] = next; stack[sp++] = q; } }
-        if (y < H - 1) { q = p + W; if (lab[q] === 0 && px[q*4+3] < 64){ lab[q] = next; stack[sp++] = q; } }
+        if (y > 0 && y !== sy)     { q = p - W; if (lab[q] === 0 && px[q*4+3] < 64){ lab[q] = next; stack[sp++] = q; } }
+        if (y < H - 1 && y + 1 !== sy) { q = p + W; if (lab[q] === 0 && px[q*4+3] < 64){ lab[q] = next; stack[sp++] = q; } }
       }
       const w = x1 - x0 + 1, h = y1 - y0 + 1;
       if (area >= N * 0.006 && w >= 100 && h >= 100 && area / (w * h) >= 0.35) wins.push({ id:next, x:x0, y:y0, w, h });
