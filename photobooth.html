@@ -6,6 +6,8 @@
 <script src="config.js"></script>
 <script src="erin-audio.js"></script>
 <script>window.EgAudio=window.EgAudio||new Proxy({},{get:function(){return function(){}}});</script>
+<script src="analytics.js"></script>
+<script>window.EgTrack=window.EgTrack||function(){};</script>
 <title>Polaroid Parlor — Mission 03</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700&family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
@@ -592,12 +594,14 @@
     localStorage.setItem(USERNAME_KEY, u);
     if (!pvBlob) pvBlob = await exportBlob();
     downloadBlob(pvBlob);
+    EgTrack('photobooth_download', { frame:FRAMES[cur].id });
     // sudah pernah dapat kunci di browser ini: cukup unduh, tanpa jendela kunci lagi
     if (localStorage.getItem(doneKey(u)) === '1' && !isAdmin()){ EgAudio.cling(); toast('Foto terunduh ✓ Kunci misimu tetap yang pertama.'); return; }
     const btn = $('btnSave'); btn.disabled = true; btn.textContent = 'Membuat kunci...';
     try{
       const r = await getOrCreateKey(u);
       if (!r.existing) EgAudio.cling();
+      EgTrack('mission_complete', { mission:'photobooth', first_time:!r.existing });
       $('codeBox').textContent = r.existing ? '✓ Sudah selesai' : r.code;
       $('copyCode').style.display = r.existing ? 'none' : '';
       $('keyWarn').style.display = r.existing ? 'none' : '';
