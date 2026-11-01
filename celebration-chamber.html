@@ -6,6 +6,8 @@
 <script src="config.js"></script>
 <script src="erin-audio.js"></script>
 <script>window.EgAudio=window.EgAudio||new Proxy({},{get:function(){return function(){}}});</script>
+<script src="analytics.js"></script>
+<script>window.EgTrack=window.EgTrack||function(){};</script>
 <title>Claim Your Prize</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&family=Fredoka:wght@400;500;600&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
@@ -819,6 +821,7 @@
       try { localStorage.removeItem(doorStoreKey()); } catch (e) {}
       finalizeLeaderboardEntry();
       localStorage.setItem(GAME4_DONE_KEY, '1');
+      EgTrack('prize_reached');
     }
     showScreen('screen-cake');
     const audio = document.getElementById('bday-audio');
@@ -995,6 +998,7 @@
       return;
     }
     doorState.keys = true; saveDoors();
+    EgTrack('prize_door', { door:'keys' });
     if (currentDoor()) EgAudio.door();
     fb.textContent = 'Semua kunci cocok. Pintu terbuka ✓'; fb.className = 'pin-feedback ok';
     afterDoor();
@@ -1024,6 +1028,7 @@
     else if (newRight && emptyR.length) EgAudio.cling();
     if (!wrongR.length && !emptyR.length){
       doorState.pin = true; saveDoors();
+      EgTrack('prize_door', { door:'pin' });
       if (currentDoor()) EgAudio.door();
       fb.textContent = 'PIN tepat. Pintu terbuka ✓'; fb.className = 'pin-feedback ok';
       afterDoor();
