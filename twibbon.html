@@ -10,6 +10,8 @@
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
 <script src="erin-audio.js"></script>
 <script>window.EgAudio=window.EgAudio||new Proxy({},{get:function(){return function(){}}});</script>
+<script src="analytics.js"></script>
+<script>window.EgTrack=window.EgTrack||function(){};</script>
 <style>
   :root{
     --bg:#fbf8f1; --panel:#ffffff; --ink:#17332d; --dim:#5d7a72; --faint:#5c7a71;
@@ -486,6 +488,7 @@
     try{
       const r = await getOrCreateKey(u);
       if (!r.existing) EgAudio.cling();
+      EgTrack('mission_complete', { mission:'twibbon', first_time:!r.existing });
       $('codeBox').textContent = r.existing ? '✓ Sudah selesai' : r.code;
       $('copyCode').style.display = r.existing ? 'none' : '';
       $('keyWarn').style.display = r.existing ? 'none' : '';
