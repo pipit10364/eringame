@@ -186,28 +186,19 @@
   .gift-title{ font-family:'Cormorant Garamond', serif; font-weight:700; font-size: 1.3rem; color: var(--ink); }
   .gift-blurb{ margin-top: 6px; color: var(--ink-faint); font-size: 0.82rem; line-height: 1.5; }
 
-  /* ---------- Celebration chamber ---------- */
-  .chamber{ width:100%; max-width:860px; margin-top:26px; padding:26px 10px 10px; border-radius:14px; position:relative;
-    background: radial-gradient(ellipse 70% 55% at 50% 0%, rgba(231,196,111,.14), transparent 70%), linear-gradient(180deg, rgba(13,26,24,.6), rgba(7,22,19,.2)); border:1px solid var(--border); }
-  .gi-row{ display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
-  .gi-row.two{ grid-template-columns:repeat(2,1fr); max-width:520px; margin:0 auto; }
-  .gi-bonus{ margin:22px 0 10px; text-align:center; color:var(--gold); font:600 .7rem 'JetBrains Mono',monospace; letter-spacing:.14em; }
-  .gi{ all:unset; box-sizing:border-box; position:relative; display:flex; flex-direction:column; align-items:center; cursor:pointer; padding:6px 4px 10px; text-align:center; }
-  .gi:focus-visible{ outline:2px solid var(--teal); border-radius:10px; }
-  .gbox{ width:74px; height:85px; position:relative; z-index:1; animation:gfloat 3.6s ease-in-out infinite; transition:transform .2s; overflow:visible; }
-  .gi:nth-child(2) .gbox{ animation-delay:-.9s } .gi:nth-child(3) .gbox{ animation-delay:-1.8s } .gi:nth-child(4) .gbox{ animation-delay:-2.7s }
-  .gi:hover .gbox{ transform:translateY(-6px) scale(1.05); }
-  .gglow{ position:absolute; top:8px; width:90px; height:90px; border-radius:50%; background:radial-gradient(circle, rgba(126,224,181,.28), transparent 70%); opacity:0; transition:opacity .25s; }
-  .gi:hover .gglow, .gi.opening .gglow{ opacity:1; }
-  .gped{ width:84%; height:14px; margin-top:-4px; border-radius:50%/60%; background:linear-gradient(180deg,#2f4a41,#0d1a18); box-shadow:0 8px 14px rgba(0,0,0,.45); }
-  .gt{ margin-top:10px; font-family:'Cormorant Garamond',serif; font-weight:700; font-size:1.15rem; color:var(--ink); }
-  .gb{ margin-top:3px; color:var(--ink-faint); font-size:.74rem; line-height:1.4; }
-  .lid{ transform-box:fill-box; transform-origin:30% 100%; transition:transform .45s cubic-bezier(.3,1.6,.5,1); }
-  .gi.opening .lid{ transform:translateY(-16px) rotate(-14deg); }
-  .gi.opening .gbox{ animation:none; transform:scale(1.12); }
-  @keyframes gfloat{ 0%,100%{ transform:translateY(0) } 50%{ transform:translateY(-5px) } }
-  @media (max-width:560px){ .gi-row{ grid-template-columns:repeat(2,1fr); row-gap:18px; } .gi-row.two{ grid-template-columns:repeat(2,1fr); } }
-  @media (prefers-reduced-motion:reduce){ .gbox{ animation:none } }
+  /* ---------- Celebration chamber (ruangan) ---------- */
+  .chamber{ width:100%; max-width:860px; margin-top:22px; }
+  .room-hint{ text-align:center; color:var(--ink-faint); font-size:.82rem; margin-bottom:10px; }
+  .room{ width:100%; height:auto; display:block; border:1px solid var(--border); border-radius:12px; background:#0b201d; }
+  .room .lb{ font:700 14px 'Nunito',sans-serif; fill:#e7c46f; stroke:#0b1f1c; stroke-width:3.5px; paint-order:stroke; pointer-events:none; }
+  .room .hot{ cursor:pointer; transform-box:fill-box; transform-origin:50% 100%; transition:transform .18s, filter .18s; outline:none; }
+  .room .hot:hover, .room .hot:focus-visible{ transform:translateY(-4px) scale(1.04); filter:brightness(1.25) drop-shadow(0 0 8px rgba(126,224,181,.7)); }
+  .room .lid{ transform-box:fill-box; transform-origin:20% 100%; transition:transform .45s cubic-bezier(.3,1.6,.5,1); }
+  .room .hot.opening .lid{ transform:translateY(-16px) rotate(-14deg); }
+  .room .hot.opening{ filter:brightness(1.5) drop-shadow(0 0 14px #ffe9a8); transform:scale(1.1); }
+  .room .fl{ animation:flick .9s ease-in-out infinite alternate; transform-box:fill-box; transform-origin:50% 100%; }
+  @keyframes flick{ from{ transform:scale(1,.85) } to{ transform:scale(1.15,1.15) } }
+  @media (prefers-reduced-motion:reduce){ .room .fl{ animation:none } }
 
   .gift-overlay{ display:none; position:fixed; inset:0; background: rgba(3,10,8,0.92); z-index:60; padding: 20px 14px; }
   .gift-overlay.active{ display:flex; flex-direction:column; }
@@ -452,19 +443,39 @@
       <div class="eyebrow-mark">UNTUK ERIN</div>
       <h1 class="welcome-title">Pilih Hadiahmu</h1>
       <p class="welcome-sub">Buka sesuka hati, urutan bebas.</p>
-      <div class="chamber">
-<div class="gi-row">
-<button class="gi" onclick="pickGift(this,'letter')"><span class="gglow"></span><svg class="gbox" viewBox="0 0 80 92" aria-hidden="true"><g class="lid"><rect x="6" y="24" width="68" height="16" rx="3" fill="#172c28" stroke="#2f4a41"/><rect x="35" y="24" width="10" height="16" fill="#e7c46f"/><path d="M40 24 C 26 4, 10 12, 22 24 Z M40 24 C 54 4, 70 12, 58 24 Z" fill="#e7c46f" stroke="#2f4a41"/></g><rect x="11" y="40" width="58" height="46" rx="3" fill="#172c28" stroke="#2f4a41"/><rect x="35" y="40" width="10" height="46" fill="#e7c46f"/></svg><span class="gped"></span><span class="gt">Surat</span><span class="gb">Pesan dari orang-orang terdekat.</span></button>
-<button class="gi" onclick="pickGift(this,'scrapbook')"><span class="gglow"></span><svg class="gbox" viewBox="0 0 80 92" aria-hidden="true"><g class="lid"><rect x="6" y="24" width="68" height="16" rx="3" fill="#0d3a35" stroke="#2f4a41"/><rect x="35" y="24" width="10" height="16" fill="#7ee0d3"/><path d="M40 24 C 26 4, 10 12, 22 24 Z M40 24 C 54 4, 70 12, 58 24 Z" fill="#7ee0d3" stroke="#2f4a41"/></g><rect x="11" y="40" width="58" height="46" rx="3" fill="#0d3a35" stroke="#2f4a41"/><rect x="35" y="40" width="10" height="46" fill="#7ee0d3"/></svg><span class="gped"></span><span class="gt">Scrapbook</span><span class="gb">Momen dalam flipbook.</span></button>
-<button class="gi" onclick="pickGift(this,'video')"><span class="gglow"></span><svg class="gbox" viewBox="0 0 80 92" aria-hidden="true"><g class="lid"><rect x="6" y="24" width="68" height="16" rx="3" fill="#1d2b3a" stroke="#2f4a41"/><rect x="35" y="24" width="10" height="16" fill="#d8b979"/><path d="M40 24 C 26 4, 10 12, 22 24 Z M40 24 C 54 4, 70 12, 58 24 Z" fill="#d8b979" stroke="#2f4a41"/></g><rect x="11" y="40" width="58" height="46" rx="3" fill="#1d2b3a" stroke="#2f4a41"/><rect x="35" y="40" width="10" height="46" fill="#d8b979"/></svg><span class="gped"></span><span class="gt">Video</span><span class="gb">Video spesial buat Erin.</span></button>
-<button class="gi" onclick="pickGift(this,'fanart')"><span class="gglow"></span><svg class="gbox" viewBox="0 0 80 92" aria-hidden="true"><g class="lid"><rect x="6" y="24" width="68" height="16" rx="3" fill="#2a1d2b" stroke="#2f4a41"/><rect x="35" y="24" width="10" height="16" fill="#f0a8c0"/><path d="M40 24 C 26 4, 10 12, 22 24 Z M40 24 C 54 4, 70 12, 58 24 Z" fill="#f0a8c0" stroke="#2f4a41"/></g><rect x="11" y="40" width="58" height="46" rx="3" fill="#2a1d2b" stroke="#2f4a41"/><rect x="35" y="40" width="10" height="46" fill="#f0a8c0"/></svg><span class="gped"></span><span class="gt">Fanart</span><span class="gb">Karya dari komunitas.</span></button>
-</div>
-<div class="gi-bonus">BONUS · TANPA MISI</div>
-<div class="gi-row two">
-<button class="gi" onclick="pickGift(this,'photobooth')"><span class="gglow"></span><svg class="gbox" viewBox="0 0 80 92" aria-hidden="true"><rect x="8" y="30" width="64" height="48" rx="6" fill="#172c28" stroke="#7ee0d3"/><rect x="18" y="22" width="20" height="10" rx="2" fill="#172c28" stroke="#7ee0d3"/><circle cx="40" cy="54" r="15" fill="#0d1a18" stroke="#e7c46f" stroke-width="2"/><circle cx="40" cy="54" r="7" fill="#7ee0d3" opacity=".55"/><circle cx="62" cy="40" r="3" fill="#e7c46f"/></svg><span class="gped"></span><span class="gt">Photobooth</span><span class="gb">Foto bareng Erin, unduh sepuasnya.</span></button>
-<button class="gi" onclick="pickGift(this,'extra')"><span class="gglow"></span><svg class="gbox" viewBox="0 0 80 92" aria-hidden="true"><rect x="8" y="30" width="64" height="46" rx="4" fill="#172c28" stroke="#e7c46f"/><path d="M8 32 L40 58 L72 32" fill="none" stroke="#e7c46f" stroke-width="2"/><path d="M8 76 L30 52 M72 76 L50 52" stroke="#2f4a41" stroke-width="2"/><circle cx="40" cy="58" r="6" fill="#f0a8c0"/></svg><span class="gped"></span><span class="gt">Surat Tambahan</span><span class="gb">Belum puas? Tulis lagi di sini.</span></button>
-</div>
-</div>
+      <div class="chamber"><p class="room-hint">Ketuk kado atau benda di ruangan untuk membukanya.</p><svg class="room" viewBox="0 0 800 520" role="group" aria-label="Ruang perayaan Erin">
+<defs><linearGradient id="rw" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#143832"/><stop offset="1" stop-color="#0b201d"/></linearGradient>
+<linearGradient id="rf" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4a3420"/><stop offset="1" stop-color="#241810"/></linearGradient>
+<linearGradient id="sk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0a1633"/><stop offset="1" stop-color="#1b3a5a"/></linearGradient>
+<radialGradient id="lg"><stop offset="0" stop-color="#ffe9a8" stop-opacity=".55"/><stop offset="1" stop-color="#ffe9a8" stop-opacity="0"/></radialGradient></defs>
+<rect width="800" height="350" fill="url(#rw)"/><rect y="270" width="800" height="80" fill="#16372f"/><rect y="268" width="800" height="5" fill="#2f4a41"/>
+<rect y="350" width="800" height="170" fill="url(#rf)"/><line x1="0" y1="372" x2="800" y2="372" stroke="#1a110a" stroke-width="2" opacity=".6"/><line x1="0" y1="408" x2="800" y2="408" stroke="#1a110a" stroke-width="2" opacity=".6"/><line x1="0" y1="452" x2="800" y2="452" stroke="#1a110a" stroke-width="2" opacity=".6"/><line x1="0" y1="500" x2="800" y2="500" stroke="#1a110a" stroke-width="2" opacity=".6"/>
+<path d="M0 8 l20 0 l-10 22 z" fill="#e7c46f" opacity=".9"/><path d="M40 8 l20 0 l-10 22 z" fill="#7ee0d3" opacity=".9"/><path d="M80 8 l20 0 l-10 22 z" fill="#f0a8c0" opacity=".9"/><path d="M120 8 l20 0 l-10 22 z" fill="#e7c46f" opacity=".9"/><path d="M160 8 l20 0 l-10 22 z" fill="#7ee0d3" opacity=".9"/><path d="M200 8 l20 0 l-10 22 z" fill="#f0a8c0" opacity=".9"/><path d="M240 8 l20 0 l-10 22 z" fill="#e7c46f" opacity=".9"/><path d="M280 8 l20 0 l-10 22 z" fill="#7ee0d3" opacity=".9"/><path d="M320 8 l20 0 l-10 22 z" fill="#f0a8c0" opacity=".9"/><path d="M360 8 l20 0 l-10 22 z" fill="#e7c46f" opacity=".9"/><path d="M400 8 l20 0 l-10 22 z" fill="#7ee0d3" opacity=".9"/><path d="M440 8 l20 0 l-10 22 z" fill="#f0a8c0" opacity=".9"/><path d="M480 8 l20 0 l-10 22 z" fill="#e7c46f" opacity=".9"/><path d="M520 8 l20 0 l-10 22 z" fill="#7ee0d3" opacity=".9"/><path d="M560 8 l20 0 l-10 22 z" fill="#f0a8c0" opacity=".9"/><path d="M600 8 l20 0 l-10 22 z" fill="#e7c46f" opacity=".9"/><path d="M640 8 l20 0 l-10 22 z" fill="#7ee0d3" opacity=".9"/><path d="M680 8 l20 0 l-10 22 z" fill="#f0a8c0" opacity=".9"/><path d="M720 8 l20 0 l-10 22 z" fill="#e7c46f" opacity=".9"/><path d="M760 8 l20 0 l-10 22 z" fill="#7ee0d3" opacity=".9"/><path d="M0 8 Q400 52 800 8" fill="none" stroke="#e7c46f" stroke-width="2"/>
+<rect x="250" y="62" width="300" height="38" rx="4" fill="#0d1a18" stroke="#e7c46f" stroke-width="2"/><text x="400" y="89" text-anchor="middle" font-family="Cormorant Garamond,serif" font-weight="700" font-size="26" fill="#e7c46f" letter-spacing="3">HAPPY BIRTHDAY ERIN</text>
+<rect x="270" y="112" width="260" height="150" fill="url(#sk)" stroke="#2f4a41" stroke-width="6"/><circle cx="480" cy="145" r="16" fill="#fff6d6"/><circle cx="488" cy="140" r="14" fill="#0e2140"/><circle cx="300" cy="115" r="1.6" fill="#fff6d6"/><circle cx="340" cy="150" r="1.6" fill="#fff6d6"/><circle cx="380" cy="108" r="1.6" fill="#fff6d6"/><circle cx="430" cy="135" r="1.6" fill="#fff6d6"/><circle cx="470" cy="112" r="1.6" fill="#fff6d6"/><circle cx="500" cy="160" r="1.6" fill="#fff6d6"/><circle cx="320" cy="200" r="1.6" fill="#fff6d6"/><circle cx="455" cy="190" r="1.6" fill="#fff6d6"/><circle cx="360" cy="185" r="1.6" fill="#fff6d6"/>
+<line x1="400" y1="112" x2="400" y2="262" stroke="#2f4a41" stroke-width="5"/><line x1="270" y1="187" x2="530" y2="187" stroke="#2f4a41" stroke-width="5"/>
+<path d="M232 106 h40 v170 h-40 q14 -80 0 -170z" fill="#0f5a50"/><path d="M568 106 h-40 v170 h40 q-14 -80 0 -170z" fill="#0f5a50"/>
+<line x1="400" y1="52" x2="400" y2="300" stroke="#2f4a41" opacity="0"/><circle cx="400" cy="300" r="90" fill="url(#lg)"/>
+<ellipse cx="400" cy="458" rx="270" ry="50" fill="#123845" stroke="#e7c46f" stroke-width="2" stroke-dasharray="8 6"/>
+<g><rect x="262" y="372" width="12" height="66" fill="#2a1a0e"/><rect x="426" y="372" width="12" height="66" fill="#2a1a0e"/>
+<path d="M232 352 h236 l-14 60 h-208 z" fill="#f5efe0" stroke="#0b1f1c" stroke-width="2"/><path d="M232 352 h236 l-5 18 h-226 z" fill="#7ee0d3"/>
+<ellipse cx="350" cy="352" rx="118" ry="14" fill="#fffaf0" stroke="#0b1f1c" stroke-width="2"/>
+<rect x="318" y="318" width="64" height="32" rx="4" fill="#f0a8c0" stroke="#0b1f1c" stroke-width="2"/><rect x="318" y="318" width="64" height="9" rx="4" fill="#fff6d6"/>
+<rect x="328" y="298" width="4" height="20" fill="#7ee0d3"/><ellipse class="fl" cx="330" cy="294" rx="3.5" ry="6" fill="#ffd36e"/><rect x="341" y="298" width="4" height="20" fill="#7ee0d3"/><ellipse class="fl" cx="343" cy="294" rx="3.5" ry="6" fill="#ffd36e"/><rect x="354" y="298" width="4" height="20" fill="#7ee0d3"/><ellipse class="fl" cx="356" cy="294" rx="3.5" ry="6" fill="#ffd36e"/><rect x="367" y="298" width="4" height="20" fill="#7ee0d3"/><ellipse class="fl" cx="369" cy="294" rx="3.5" ry="6" fill="#ffd36e"/>
+<circle cx="270" cy="344" r="9" fill="#e7c46f"/><circle cx="430" cy="344" r="9" fill="#7ee0d3"/></g>
+<g class="hot" role="button" tabindex="0" aria-label="Surat" onclick="pickGift(this,'letter')" onkeydown="if(event.key==='Enter')pickGift(this,'letter')"><rect x="40" y="420" width="64" height="50" rx="3" fill="#172c28" stroke="#0b1f1c" stroke-width="2"/><rect x="67.0" y="420" width="10" height="50" fill="#e7c46f"/><g class="lid"><rect x="37" y="409" width="70" height="13" rx="3" fill="#172c28" stroke="#0b1f1c" stroke-width="2"/><rect x="67.0" y="409" width="10" height="13" fill="#e7c46f"/><path d="M72.0 409 C 50.0 384, 38.0 402, 68.0 409 Z M72.0 409 C 94.0 384, 106.0 402, 76.0 409 Z" fill="#e7c46f" stroke="#0b1f1c" stroke-width="1.5"/></g><text class="lb" x="72.0" y="454.0" text-anchor="middle">Surat</text></g>
+<g class="hot" role="button" tabindex="0" aria-label="Scrapbook" onclick="pickGift(this,'scrapbook')" onkeydown="if(event.key==='Enter')pickGift(this,'scrapbook')"><rect x="112" y="428" width="60" height="46" rx="3" fill="#0d3a35" stroke="#0b1f1c" stroke-width="2"/><rect x="137.0" y="428" width="10" height="46" fill="#7ee0d3"/><g class="lid"><rect x="109" y="417" width="66" height="13" rx="3" fill="#0d3a35" stroke="#0b1f1c" stroke-width="2"/><rect x="137.0" y="417" width="10" height="13" fill="#7ee0d3"/><path d="M142.0 417 C 120.0 392, 108.0 410, 138.0 417 Z M142.0 417 C 164.0 392, 176.0 410, 146.0 417 Z" fill="#7ee0d3" stroke="#0b1f1c" stroke-width="1.5"/></g><text class="lb" x="142.0" y="459.28" text-anchor="middle">Scrapbook</text></g>
+<g class="hot" role="button" tabindex="0" aria-label="Video" onclick="pickGift(this,'video')" onkeydown="if(event.key==='Enter')pickGift(this,'video')"><rect x="58" y="360" width="58" height="46" rx="3" fill="#1d2b3a" stroke="#0b1f1c" stroke-width="2"/><rect x="82.0" y="360" width="10" height="46" fill="#d8b979"/><g class="lid"><rect x="55" y="349" width="64" height="13" rx="3" fill="#1d2b3a" stroke="#0b1f1c" stroke-width="2"/><rect x="82.0" y="349" width="10" height="13" fill="#d8b979"/><path d="M87.0 349 C 65.0 324, 53.0 342, 83.0 349 Z M87.0 349 C 109.0 324, 121.0 342, 91.0 349 Z" fill="#d8b979" stroke="#0b1f1c" stroke-width="1.5"/></g><text class="lb" x="87.0" y="391.28" text-anchor="middle">Video</text></g>
+<g class="hot" role="button" tabindex="0" aria-label="Fanart" onclick="pickGift(this,'fanart')" onkeydown="if(event.key==='Enter')pickGift(this,'fanart')"><rect x="124" y="382" width="54" height="40" rx="3" fill="#4a2a3f" stroke="#0b1f1c" stroke-width="2"/><rect x="146.0" y="382" width="10" height="40" fill="#f0a8c0"/><g class="lid"><rect x="121" y="371" width="60" height="13" rx="3" fill="#4a2a3f" stroke="#0b1f1c" stroke-width="2"/><rect x="146.0" y="371" width="10" height="13" fill="#f0a8c0"/><path d="M151.0 371 C 129.0 346, 117.0 364, 147.0 371 Z M151.0 371 C 173.0 346, 185.0 364, 155.0 371 Z" fill="#f0a8c0" stroke="#0b1f1c" stroke-width="1.5"/></g><text class="lb" x="151.0" y="409.2" text-anchor="middle">Fanart</text></g>
+<g class="hot" role="button" tabindex="0" aria-label="Surat Tambahan" onclick="pickGift(this,'extra')" onkeydown="if(event.key==='Enter')pickGift(this,'extra')">
+<rect x="500" y="368" width="90" height="12" rx="2" fill="#4a3420" stroke="#0b1f1c" stroke-width="2"/><rect x="508" y="380" width="8" height="58" fill="#2a1a0e"/><rect x="574" y="380" width="8" height="58" fill="#2a1a0e"/>
+<rect x="516" y="350" width="48" height="18" rx="2" fill="#fff6d6" stroke="#0b1f1c" stroke-width="2"/><path d="M516 351 L540 363 L564 351" fill="none" stroke="#b08a3c" stroke-width="2"/><circle cx="540" cy="361" r="4" fill="#f0a8c0"/>
+<path d="M572 368 q18 -40 30 -50 q-6 22 -22 50z" fill="#e7c46f" stroke="#0b1f1c"/><text class="lb" x="545" y="408" text-anchor="middle">Surat Tambahan</text></g>
+<g class="hot" role="button" tabindex="0" aria-label="Photobooth" onclick="pickGift(this,'photobooth')" onkeydown="if(event.key==='Enter')pickGift(this,'photobooth')">
+<rect x="612" y="222" width="126" height="216" rx="6" fill="#0d1a18" stroke="#e7c46f" stroke-width="3"/><rect x="624" y="258" width="102" height="170" fill="#0f6a5e"/><line x1="640" y1="258" x2="640" y2="428" stroke="#0b4a42" stroke-width="3" opacity=".7"/><line x1="656" y1="258" x2="656" y2="428" stroke="#0b4a42" stroke-width="3" opacity=".7"/><line x1="672" y1="258" x2="672" y2="428" stroke="#0b4a42" stroke-width="3" opacity=".7"/><line x1="688" y1="258" x2="688" y2="428" stroke="#0b4a42" stroke-width="3" opacity=".7"/><line x1="704" y1="258" x2="704" y2="428" stroke="#0b4a42" stroke-width="3" opacity=".7"/>
+<rect x="624" y="232" width="102" height="20" rx="3" fill="#e7c46f"/><text x="675" y="247" text-anchor="middle" font-family="JetBrains Mono,monospace" font-weight="700" font-size="12" fill="#0b1f1c">PHOTOBOOTH</text>
+<circle cx="675" cy="340" r="0" fill="none"/><text class="lb" x="675" y="410" text-anchor="middle">Photobooth</text></g>
+</svg></div>
       <div class="cta-row">
         <button class="btn btn-primary" onclick="showScreen('screen-closing')">Lanjut ke Penutup →</button>
       </div>
