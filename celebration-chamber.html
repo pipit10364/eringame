@@ -186,6 +186,29 @@
   .gift-title{ font-family:'Cormorant Garamond', serif; font-weight:700; font-size: 1.3rem; color: var(--ink); }
   .gift-blurb{ margin-top: 6px; color: var(--ink-faint); font-size: 0.82rem; line-height: 1.5; }
 
+  /* ---------- Celebration chamber ---------- */
+  .chamber{ width:100%; max-width:860px; margin-top:26px; padding:26px 10px 10px; border-radius:14px; position:relative;
+    background: radial-gradient(ellipse 70% 55% at 50% 0%, rgba(231,196,111,.14), transparent 70%), linear-gradient(180deg, rgba(13,26,24,.6), rgba(7,22,19,.2)); border:1px solid var(--border); }
+  .gi-row{ display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+  .gi-row.two{ grid-template-columns:repeat(2,1fr); max-width:520px; margin:0 auto; }
+  .gi-bonus{ margin:22px 0 10px; text-align:center; color:var(--gold); font:600 .7rem 'JetBrains Mono',monospace; letter-spacing:.14em; }
+  .gi{ all:unset; box-sizing:border-box; position:relative; display:flex; flex-direction:column; align-items:center; cursor:pointer; padding:6px 4px 10px; text-align:center; }
+  .gi:focus-visible{ outline:2px solid var(--teal); border-radius:10px; }
+  .gbox{ width:74px; height:85px; position:relative; z-index:1; animation:gfloat 3.6s ease-in-out infinite; transition:transform .2s; overflow:visible; }
+  .gi:nth-child(2) .gbox{ animation-delay:-.9s } .gi:nth-child(3) .gbox{ animation-delay:-1.8s } .gi:nth-child(4) .gbox{ animation-delay:-2.7s }
+  .gi:hover .gbox{ transform:translateY(-6px) scale(1.05); }
+  .gglow{ position:absolute; top:8px; width:90px; height:90px; border-radius:50%; background:radial-gradient(circle, rgba(126,224,181,.28), transparent 70%); opacity:0; transition:opacity .25s; }
+  .gi:hover .gglow, .gi.opening .gglow{ opacity:1; }
+  .gped{ width:84%; height:14px; margin-top:-4px; border-radius:50%/60%; background:linear-gradient(180deg,#2f4a41,#0d1a18); box-shadow:0 8px 14px rgba(0,0,0,.45); }
+  .gt{ margin-top:10px; font-family:'Cormorant Garamond',serif; font-weight:700; font-size:1.15rem; color:var(--ink); }
+  .gb{ margin-top:3px; color:var(--ink-faint); font-size:.74rem; line-height:1.4; }
+  .lid{ transform-box:fill-box; transform-origin:30% 100%; transition:transform .45s cubic-bezier(.3,1.6,.5,1); }
+  .gi.opening .lid{ transform:translateY(-16px) rotate(-14deg); }
+  .gi.opening .gbox{ animation:none; transform:scale(1.12); }
+  @keyframes gfloat{ 0%,100%{ transform:translateY(0) } 50%{ transform:translateY(-5px) } }
+  @media (max-width:560px){ .gi-row{ grid-template-columns:repeat(2,1fr); row-gap:18px; } .gi-row.two{ grid-template-columns:repeat(2,1fr); } }
+  @media (prefers-reduced-motion:reduce){ .gbox{ animation:none } }
+
   .gift-overlay{ display:none; position:fixed; inset:0; background: rgba(3,10,8,0.92); z-index:60; padding: 20px 14px; }
   .gift-overlay.active{ display:flex; flex-direction:column; }
   .gift-overlay-head{ display:flex; justify-content:space-between; align-items:center; max-width:900px; margin: 0 auto 12px; width:100%; }
@@ -429,28 +452,19 @@
       <div class="eyebrow-mark">UNTUK ERIN</div>
       <h1 class="welcome-title">Pilih Hadiahmu</h1>
       <p class="welcome-sub">Buka sesuka hati, urutan bebas.</p>
-      <div class="gift-grid">
-        <div class="gift-card" onclick="openGift('letter')">
-          <div class="gift-icon">💌</div>
-          <div class="gift-title">Surat</div>
-          <div class="gift-blurb">Pesan-pesan dari orang-orang terdekat Erin.</div>
-        </div>
-        <div class="gift-card" onclick="openGift('scrapbook')">
-          <div class="gift-icon">📖</div>
-          <div class="gift-title">Scrapbook</div>
-          <div class="gift-blurb">Kumpulan momen dalam bentuk flipbook.</div>
-        </div>
-        <div class="gift-card" onclick="openGift('video')">
-          <div class="gift-icon">🎬</div>
-          <div class="gift-title">Video</div>
-          <div class="gift-blurb">Video spesial buat Erin.</div>
-        </div>
-        <div class="gift-card" onclick="openGift('fanart')">
-          <div class="gift-icon">🎨</div>
-          <div class="gift-title">Fanart</div>
-          <div class="gift-blurb">Karya-karya untuk Erin dari komunitas.</div>
-        </div>
-      </div>
+      <div class="chamber">
+<div class="gi-row">
+<button class="gi" onclick="pickGift(this,'letter')"><span class="gglow"></span><svg class="gbox" viewBox="0 0 80 92" aria-hidden="true"><g class="lid"><rect x="6" y="24" width="68" height="16" rx="3" fill="#172c28" stroke="#2f4a41"/><rect x="35" y="24" width="10" height="16" fill="#e7c46f"/><path d="M40 24 C 26 4, 10 12, 22 24 Z M40 24 C 54 4, 70 12, 58 24 Z" fill="#e7c46f" stroke="#2f4a41"/></g><rect x="11" y="40" width="58" height="46" rx="3" fill="#172c28" stroke="#2f4a41"/><rect x="35" y="40" width="10" height="46" fill="#e7c46f"/></svg><span class="gped"></span><span class="gt">Surat</span><span class="gb">Pesan dari orang-orang terdekat.</span></button>
+<button class="gi" onclick="pickGift(this,'scrapbook')"><span class="gglow"></span><svg class="gbox" viewBox="0 0 80 92" aria-hidden="true"><g class="lid"><rect x="6" y="24" width="68" height="16" rx="3" fill="#0d3a35" stroke="#2f4a41"/><rect x="35" y="24" width="10" height="16" fill="#7ee0d3"/><path d="M40 24 C 26 4, 10 12, 22 24 Z M40 24 C 54 4, 70 12, 58 24 Z" fill="#7ee0d3" stroke="#2f4a41"/></g><rect x="11" y="40" width="58" height="46" rx="3" fill="#0d3a35" stroke="#2f4a41"/><rect x="35" y="40" width="10" height="46" fill="#7ee0d3"/></svg><span class="gped"></span><span class="gt">Scrapbook</span><span class="gb">Momen dalam flipbook.</span></button>
+<button class="gi" onclick="pickGift(this,'video')"><span class="gglow"></span><svg class="gbox" viewBox="0 0 80 92" aria-hidden="true"><g class="lid"><rect x="6" y="24" width="68" height="16" rx="3" fill="#1d2b3a" stroke="#2f4a41"/><rect x="35" y="24" width="10" height="16" fill="#d8b979"/><path d="M40 24 C 26 4, 10 12, 22 24 Z M40 24 C 54 4, 70 12, 58 24 Z" fill="#d8b979" stroke="#2f4a41"/></g><rect x="11" y="40" width="58" height="46" rx="3" fill="#1d2b3a" stroke="#2f4a41"/><rect x="35" y="40" width="10" height="46" fill="#d8b979"/></svg><span class="gped"></span><span class="gt">Video</span><span class="gb">Video spesial buat Erin.</span></button>
+<button class="gi" onclick="pickGift(this,'fanart')"><span class="gglow"></span><svg class="gbox" viewBox="0 0 80 92" aria-hidden="true"><g class="lid"><rect x="6" y="24" width="68" height="16" rx="3" fill="#2a1d2b" stroke="#2f4a41"/><rect x="35" y="24" width="10" height="16" fill="#f0a8c0"/><path d="M40 24 C 26 4, 10 12, 22 24 Z M40 24 C 54 4, 70 12, 58 24 Z" fill="#f0a8c0" stroke="#2f4a41"/></g><rect x="11" y="40" width="58" height="46" rx="3" fill="#2a1d2b" stroke="#2f4a41"/><rect x="35" y="40" width="10" height="46" fill="#f0a8c0"/></svg><span class="gped"></span><span class="gt">Fanart</span><span class="gb">Karya dari komunitas.</span></button>
+</div>
+<div class="gi-bonus">BONUS · TANPA MISI</div>
+<div class="gi-row two">
+<button class="gi" onclick="pickGift(this,'photobooth')"><span class="gglow"></span><svg class="gbox" viewBox="0 0 80 92" aria-hidden="true"><rect x="8" y="30" width="64" height="48" rx="6" fill="#172c28" stroke="#7ee0d3"/><rect x="18" y="22" width="20" height="10" rx="2" fill="#172c28" stroke="#7ee0d3"/><circle cx="40" cy="54" r="15" fill="#0d1a18" stroke="#e7c46f" stroke-width="2"/><circle cx="40" cy="54" r="7" fill="#7ee0d3" opacity=".55"/><circle cx="62" cy="40" r="3" fill="#e7c46f"/></svg><span class="gped"></span><span class="gt">Photobooth</span><span class="gb">Foto bareng Erin, unduh sepuasnya.</span></button>
+<button class="gi" onclick="pickGift(this,'extra')"><span class="gglow"></span><svg class="gbox" viewBox="0 0 80 92" aria-hidden="true"><rect x="8" y="30" width="64" height="46" rx="4" fill="#172c28" stroke="#e7c46f"/><path d="M8 32 L40 58 L72 32" fill="none" stroke="#e7c46f" stroke-width="2"/><path d="M8 76 L30 52 M72 76 L50 52" stroke="#2f4a41" stroke-width="2"/><circle cx="40" cy="58" r="6" fill="#f0a8c0"/></svg><span class="gped"></span><span class="gt">Surat Tambahan</span><span class="gb">Belum puas? Tulis lagi di sini.</span></button>
+</div>
+</div>
       <div class="cta-row">
         <button class="btn btn-primary" onclick="showScreen('screen-closing')">Lanjut ke Penutup →</button>
       </div>
@@ -660,8 +674,10 @@
     letter: 'https://padlet.com/GANTI_DENGAN_LINK_PADLET_KAMU',
     scrapbook: 'https://heyzine.com/GANTI_DENGAN_LINK_HEYZINE_KAMU',
     video: 'https://drive.google.com/GANTI_DENGAN_LINK_VIDEO_KAMU',
+    photobooth: 'photobooth.html?extra=1',
+    extra: 'letter.html?extra=1',
   };
-  const GIFT_TITLES = { letter: 'Surat untuk Erin', scrapbook: 'Scrapbook', video: 'Video untuk Erin', fanart: 'Fanart untuk Erin' };
+  const GIFT_TITLES = { letter: 'Surat untuk Erin', scrapbook: 'Scrapbook', video: 'Video untuk Erin', fanart: 'Fanart untuk Erin', photobooth: 'Photobooth (bonus)', extra: 'Surat Tambahan (bonus)' };
 
   // ==================================================================
   // FIREBASE — HARUS SAMA PERSIS dengan file game lain
@@ -1084,6 +1100,12 @@
   }
   function giftMsg(body, text){ body.innerHTML = ''; const d = document.createElement('div'); d.className = 'gift-msg'; d.textContent = text; body.appendChild(d); }
 
+  function pickGift(el, key){
+    if (el.classList.contains('opening')) return;
+    el.classList.add('opening');
+    try { window.EgAudio && EgAudio.cling && EgAudio.cling(); } catch (e) {}
+    setTimeout(() => { openGift(key); el.classList.remove('opening'); }, 650);
+  }
   function openGift(key){
     if (key === 'letter') return openLetterWall();
     if (key === 'video') return openVideos();
@@ -1108,7 +1130,9 @@
     const body = showGiftBody(GIFT_TITLES.letter);
     try {
       const val = (await db.ref('letters').once('value')).val() || {};
-      const list = Object.keys(val).map(u => Object.assign({ user:u }, val[u])).sort((a,b) => (a.at||0) - (b.at||0));
+      let extras = [];
+      try { extras = Object.values((await db.ref('letterExtras').once('value')).val() || {}).filter(x => x && x.text && x.user); } catch (e) { console.warn('letterExtras:', e); }
+      const list = Object.keys(val).map(u => Object.assign({ user:u }, val[u])).concat(extras).sort((a,b) => (a.at||0) - (b.at||0));
       if (!list.length){ giftMsg(body, 'Belum ada surat.'); return; }
       const wall = document.createElement('div'); wall.className = 'wall';
       list.forEach(L => {

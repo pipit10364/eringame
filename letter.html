@@ -8,6 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Cormorant+Garamond:wght@600;700&family=Caveat:wght@500;700&family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
 <script src="erin-audio.js"></script>
 <script>window.EgAudio=window.EgAudio||new Proxy({},{get:function(){return function(){}}});</script>
 <script src="analytics.js"></script>
@@ -178,6 +179,20 @@
   let db = null;
   try { firebase.initializeApp(firebaseConfig); db = firebase.database(); } catch(e){ console.warn(e); }
   const $ = id => document.getElementById(id);
+  const EXTRA = new URLSearchParams(location.search).get('extra') === '1';   // surat tambahan dari ruang Prize: lepas dari misi, tanpa kunci
+  if (EXTRA){
+    document.querySelectorAll('a.back').forEach(a => a.style.display = 'none');
+    document.querySelector('.eyebrow').textContent = 'BONUS · SURAT TAMBAHAN';
+    document.querySelector('p.sub').textContent = 'Masih ada yang belum tersampaikan? Tulis surat lagi untuk Erin. Surat tambahan ini langsung masuk ke wall surat dan tidak berkaitan dengan misi.';
+    $('send').textContent = 'Kirim surat tambahan';
+    try { firebase.auth().signInAnonymously().catch(e => console.warn(e)); } catch (e) { console.warn(e); }
+  }
+  async function submitExtra(u, payload){
+    if (!db) throw new Error('Database belum tersambung.');
+    await firebase.auth().signInAnonymously();
+    try { await db.ref('letterExtras').push(Object.assign({ user:u, at:Date.now() }, payload)); }
+    catch (err){ if (String(err.code || err.message).toUpperCase().includes('PERMISSION')) throw new Error('Pastikan username sama dengan yang kamu pakai saat klaim hadiah.'); throw err; }
+  }
   const USERNAME_KEY = 'eg_username_v1';
   const st = { paper:'polos', font:'sans', photo:null, links:[] };
   // Kertas dipilihkan otomatis (acak) supaya dinding surat tidak monoton.
@@ -301,6 +316,12 @@
     if (st.links.length) payload.links = st.links;
     const btn = $('send'); btn.disabled = true; btn.textContent = 'Mengirim...';
     try{
+      if (EXTRA){
+        await submitExtra(u, payload); EgAudio.cling();
+        $('codeBox').textContent = '✓ Terkirim'; $('copyCode').style.display = 'none'; $('keyWarn').style.display = 'none';
+        $('closeDone').textContent = 'Tutup'; $('doneMsg').textContent = 'Surat tambahanmu sudah masuk ke wall surat Erin.';
+        $('done').classList.add('on'); btn.disabled = false; btn.textContent = 'Kirim surat tambahan'; return;
+      }
       const r = await submit(u, payload);
       if (!r.existing) EgAudio.cling();
       EgTrack('mission_complete', { mission:'letter', first_time:!r.existing });

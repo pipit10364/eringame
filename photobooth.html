@@ -192,7 +192,9 @@
     appId: "1:303866378537:web:f3844c701203391f4b5f38"
   };
   const OPEN_AT = EG_CONFIG.OPEN_AT.photobooth;
-  if (!EG_CONFIG.bypass() && Date.now() < new Date(OPEN_AT).getTime()){
+  const EXTRA = new URLSearchParams(location.search).get('extra') === '1';   // mode bonus dari ruang Prize: tanpa jadwal, tanpa kunci misi
+  if (EXTRA){ document.querySelectorAll('a[href="index.html#menu"]').forEach(a => a.style.display = 'none'); const ey = document.querySelector('.eyebrow'); if (ey) ey.textContent = 'BONUS · POLAROID PARLOR'; document.getElementById('btnSave').textContent = 'Unduh'; }
+  if (!EXTRA && !EG_CONFIG.bypass() && Date.now() < new Date(OPEN_AT).getTime()){
     EgAudio.showButton();
     EgAudio.music('waiting-photobooth'); // musik selama menunggu photobooth dibuka
     document.querySelector('.wrap').innerHTML = '<a href="index.html#menu" style="display:block;text-align:center;font:600 .8rem Nunito,sans-serif;color:#0b7a6e;text-decoration:none;margin-bottom:14px">← Kembali ke menu</a><div class="card" style="text-align:center"><div class="eyebrow">MISSION 03 · POLAROID PARLOR</div><h1>Belum dibuka</h1><p class="sub">Polaroid Parlor opens on ' + new Date(OPEN_AT).toLocaleString('en-GB', { day:'numeric', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit', timeZone:'Asia/Jakarta' }) + ' WIB.</p><p class="sub" id="pbTimer" style="font:700 1.5rem ui-monospace,Menlo,monospace;letter-spacing:.06em;margin-top:4px"></p></div>';
@@ -583,7 +585,7 @@
     $('pvNote').textContent = empty > 0
       ? 'Masih ada ' + empty + ' kotak kosong. Kembali ke edit kalau mau mengisinya dulu. Unduhnya tidak dibatasi, jadi boleh coba bingkai lain juga!'
       : 'Mau coba bingkai lain? Kembali ke edit, geser ke bingkai lain, lalu unduh lagi. Unduhnya tidak dibatasi!';
-    $('btnSave').textContent = (localStorage.getItem(doneKey(u)) === '1' && !isAdmin()) ? 'Unduh' : 'Unduh & dapatkan kunci';
+    $('btnSave').textContent = (EXTRA || (localStorage.getItem(doneKey(u)) === '1' && !isAdmin())) ? 'Unduh' : 'Unduh & dapatkan kunci';
     $('viewEdit').style.display = 'none'; $('viewPrev').style.display = 'block'; window.scrollTo(0, 0);
   };
   $('btnBack').onclick = () => { $('viewPrev').style.display = 'none'; $('viewEdit').style.display = 'block'; window.scrollTo(0, 0); };
@@ -594,7 +596,8 @@
     localStorage.setItem(USERNAME_KEY, u);
     if (!pvBlob) pvBlob = await exportBlob();
     downloadBlob(pvBlob);
-    EgTrack('photobooth_download', { frame:FRAMES[cur].id });
+    EgTrack('photobooth_download', { frame:FRAMES[cur].id, extra:EXTRA });
+    if (EXTRA){ EgAudio.cling(); toast('Foto terunduh ✓'); return; }
     // sudah pernah dapat kunci di browser ini: cukup unduh, tanpa jendela kunci lagi
     if (localStorage.getItem(doneKey(u)) === '1' && !isAdmin()){ EgAudio.cling(); toast('Foto terunduh ✓ Kunci misimu tetap yang pertama.'); return; }
     const btn = $('btnSave'); btn.disabled = true; btn.textContent = 'Membuat kunci...';

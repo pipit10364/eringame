@@ -21,6 +21,13 @@
         ".validate": "newData.hasChildren(['text','at']) && newData.child('text').isString() && newData.child('text').val().length <= 1500 && (!newData.child('photo').exists() || (newData.child('photo').isString() && newData.child('photo').val().length < 200000))"
       }
     },
+    "letterExtras": {
+      ".read": "auth != null && root.child('claims/'+auth.uid).exists() || auth.uid === 'b8KLqkxnrmPlnHuiRWewJKWSlek1'",
+      "$id": {
+        ".write": "(auth != null && !data.exists() && newData.exists() && newData.child('user').val() === root.child('claims/'+auth.uid+'/username').val()) || auth.uid === 'b8KLqkxnrmPlnHuiRWewJKWSlek1'",
+        ".validate": "newData.hasChildren(['user','text','at']) && newData.child('text').isString() && newData.child('text').val().length >= 10 && newData.child('text').val().length <= 1500 && (!newData.child('photo').exists() || (newData.child('photo').isString() && newData.child('photo').val().length < 200000))"
+      }
+    },
     "missions": {
       "$username": {
         "$app": {
