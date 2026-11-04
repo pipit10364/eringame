@@ -3,6 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0b1f1c">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<link rel="apple-touch-icon" href="assets/icon-180.png">
+<script src="fs.js"></script>
 <script src="config.js"></script>
 <script src="erin-audio.js"></script>
 <script>window.EgAudio=window.EgAudio||new Proxy({},{get:function(){return function(){}}});</script>
@@ -597,7 +604,9 @@
     if (!pvBlob) pvBlob = await exportBlob();
     downloadBlob(pvBlob);
     EgTrack('photobooth_download', { frame:FRAMES[cur].id, extra:EXTRA });
-    if (EXTRA){ EgAudio.cling(); toast('Foto terunduh ✓'); return; }
+    if (EXTRA){ EgAudio.cling(); toast('Foto terunduh ✓');
+      if (!$('xLetter')){ const d = document.createElement('div'); d.id = 'xLetter'; d.style.cssText = 'text-align:center;margin-top:16px'; d.innerHTML = '<p class="sub" style="margin-bottom:10px">Masih ada yang mau disampaikan ke Erin?</p><a class="btn" href="letter.html?extra=1" style="display:inline-block;text-decoration:none">✉ Tulis surat lagi</a>'; $('btnSave').parentElement.insertAdjacentElement('afterend', d); }
+      return; }
     // sudah pernah dapat kunci di browser ini: cukup unduh, tanpa jendela kunci lagi
     if (localStorage.getItem(doneKey(u)) === '1' && !isAdmin()){ EgAudio.cling(); toast('Foto terunduh ✓ Kunci misimu tetap yang pertama.'); return; }
     const btn = $('btnSave'); btn.disabled = true; btn.textContent = 'Membuat kunci...';
