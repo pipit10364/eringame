@@ -2194,7 +2194,7 @@
   initUsernameField();
   checkGate();
   gateInterval = setInterval(checkGate, 1000);
-  if (new Date() < GAME1_UNLOCK_AT) EgAudio.music('waiting-1'); // musik selama menunggu game dibuka
+  if (new Date() < GAME1_UNLOCK_AT) EgAudio.music('waiting-1'); else EgAudio.music('museum'); // musik selama menunggu game dibuka
 </script>
 
 </body>

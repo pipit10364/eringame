@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Photobooth · Ruang Perayaan Erin</title>
+<style>
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ height:100%; margin:0; background:#0b1f1c; color:#e9f3f0; font-family:'Nunito',system-ui,-apple-system,'Segoe UI',sans-serif; overflow:hidden; }
+  #app{ height:100%; display:flex; flex-direction:column; }
+  .step{ display:none; flex:1; min-height:0; flex-direction:column; }
+  #app[data-step="1"] #st1, #app[data-step="2"] #st2, #app[data-step="3"] #st3{ display:flex; }
+  .stage{ flex:1; min-height:0; display:flex; align-items:center; justify-content:center; padding:10px 10px 4px; }
+  .frame{ position:relative; height:100%; max-width:100%; aspect-ratio:2/3; border-radius:10px; overflow:hidden; background:#000; touch-action:none; box-shadow:0 0 0 1px rgba(255,255,255,.18), 0 8px 30px rgba(0,0,0,.45); }
+  .frame canvas{ position:absolute; inset:0; width:100%; height:100%; display:block; }
+  .ctrl{ display:flex; align-items:center; justify-content:center; gap:10px; flex-wrap:wrap; padding:8px 12px calc(10px + env(safe-area-inset-bottom)); }
+  .hint{ text-align:center; font-size:.78rem; color:#8fb3aa; margin:0; padding:0 12px 2px; }
+  .btn{ all:unset; cursor:pointer; padding:11px 20px; border-radius:999px; background:#e7c46f; color:#0b1f1c; font-weight:800; font-size:.95rem; text-align:center; }
+  .btn.ghost{ background:rgba(255,255,255,.1); color:#e9f3f0; box-shadow:inset 0 0 0 1px rgba(255,255,255,.25); }
+  .btn:disabled{ opacity:.45; cursor:default; } .btn:focus-visible,.ib:focus-visible{ outline:2px solid #7ee0d3; }
+  .ib{ all:unset; cursor:pointer; width:40px; height:40px; border-radius:50%; display:grid; place-items:center; background:rgba(255,255,255,.1); box-shadow:inset 0 0 0 1px rgba(255,255,255,.25); font-size:1.3rem; line-height:1; }
+  input[type=range]{ accent-color:#e7c46f; width:min(260px,46vw); }
+  #mini{ position:absolute; left:8px; bottom:8px; width:34%; height:auto; border-radius:6px; box-shadow:0 0 0 1px rgba(255,255,255,.6); opacity:.9; pointer-events:none; }
+  #count{ position:absolute; inset:0; display:grid; place-items:center; font-size:min(34vw,200px); font-weight:900; color:#fff; text-shadow:0 4px 30px rgba(0,0,0,.6); pointer-events:none; }
+  #status{ position:absolute; left:8px; right:8px; top:8px; text-align:center; font-size:.8rem; background:rgba(11,31,28,.8); padding:6px 10px; border-radius:8px; display:none; }
+  #status.on{ display:block; }
+  #flash{ position:absolute; inset:0; background:#fff; opacity:0; pointer-events:none; transition:opacity .35s; }
+  #flash.on{ opacity:.9; transition:none; }
+  #vid{ position:absolute; width:2px; height:2px; opacity:0; pointer-events:none; }
+  .shutter{ all:unset; cursor:pointer; width:66px; height:66px; border-radius:50%; background:#fff; box-shadow:0 0 0 4px rgba(255,255,255,.35), 0 0 0 7px rgba(11,31,28,.9); }
+  .shutter:disabled{ opacity:.4; } .shutter:active{ transform:scale(.94); }
+  .sw{ all:unset; cursor:pointer; width:28px; height:28px; border-radius:50%; box-shadow:0 0 0 2px rgba(255,255,255,.35); }
+  .sw.sel{ box-shadow:0 0 0 3px #e7c46f; transform:scale(1.12); }
+  .tool{ all:unset; cursor:pointer; padding:7px 12px; border-radius:8px; background:rgba(255,255,255,.1); font-size:.85rem; font-weight:700; }
+  .tool.sel{ background:#e7c46f; color:#0b1f1c; }
+  #ink{ touch-action:none; cursor:crosshair; }
+  #toast{ position:fixed; left:50%; bottom:90px; transform:translateX(-50%); background:rgba(0,0,0,.8); padding:8px 16px; border-radius:999px; font-size:.85rem; opacity:0; transition:opacity .3s; pointer-events:none; }
+  #toast.on{ opacity:1; }
+  .top{ display:flex; align-items:center; justify-content:space-between; padding:8px 10px 0; min-height:48px; }
+  #dots{ display:flex; gap:8px; } #dots i{ width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,.25); }
+  #app[data-step="1"] #dots i:nth-child(1), #app[data-step="2"] #dots i:nth-child(2), #app[data-step="3"] #dots i:nth-child(3){ background:#e7c46f; }
+  @media (min-aspect-ratio:3/2) and (max-height:520px){ .stage{ padding-top:4px; } }
+</style>
+</head>
+<body>
+<div id="app" data-step="1">
+  <div class="top"><button class="ib" id="back" aria-label="Kembali" style="visibility:hidden">‹</button><div id="dots" aria-hidden="true"><i></i><i></i><i></i></div><span style="width:40px"></span></div>
+
+  <!-- 1. pilih spot -->
+  <section class="step" id="st1">
+    <div class="stage"><div class="frame" id="f1"><canvas id="c1" width="600" height="900"></canvas><canvas id="mini" width="160" height="90"></canvas></div></div>
+    <p class="hint">Geser untuk memilih spot foto · cubit atau scroll untuk zoom</p>
+    <div class="ctrl"><button class="ib" id="zOut" aria-label="Zoom out">−</button><input type="range" id="zoom" min="1" max="2.2" step="0.01" value="1.3" aria-label="Zoom"><button class="ib" id="zIn" aria-label="Zoom in">+</button><button class="btn" id="toCam">Lanjut ›</button></div>
+  </section>
+
+  <!-- 2. selfie -->
+  <section class="step" id="st2">
+    <div class="stage"><div class="frame" id="f2"><canvas id="c2" width="600" height="900"></canvas><div id="status"></div><div id="count"></div><div id="flash"></div></div></div>
+    <p class="hint">Geser foto untuk menggeser posisimu · atur ukuran dengan slider</p>
+    <div class="ctrl"><input type="range" id="psize" min="0.5" max="1.5" step="0.01" value="0.9" aria-label="Ukuran"><button class="shutter" id="shot" aria-label="Ambil foto"></button><button class="btn ghost" id="retry" style="display:none">Coba lagi</button></div>
+  </section>
+
+  <!-- 3. review + doodle -->
+  <section class="step" id="st3">
+    <div class="stage"><div class="frame" id="f3"><canvas id="base" width="1200" height="1800"></canvas><canvas id="ink" width="1200" height="1800"></canvas></div></div>
+    <div class="ctrl" id="tools">
+      <button class="sw sel" data-c="#ffffff" style="background:#fff" aria-label="Putih"></button><button class="sw" data-c="#111111" style="background:#111" aria-label="Hitam"></button><button class="sw" data-c="#ff4d6d" style="background:#ff4d6d" aria-label="Merah"></button><button class="sw" data-c="#ffd60a" style="background:#ffd60a" aria-label="Kuning"></button><button class="sw" data-c="#2ec4b6" style="background:#2ec4b6" aria-label="Hijau"></button><button class="sw" data-c="#ff8fab" style="background:#ff8fab" aria-label="Pink"></button>
+      <input type="range" id="dsize" min="4" max="48" step="1" value="12" aria-label="Tebal"><button class="tool" id="eraser">Hapus</button><button class="tool" id="undo">↶</button><button class="tool" id="clearInk">Bersihkan</button>
+    </div>
+    <div class="ctrl"><button class="btn ghost" id="again">↺ Ulangi</button><button class="btn ghost" id="respot">Ganti spot</button><button class="btn" id="save">Simpan ⬇</button></div>
+  </section>
+</div>
+<video id="vid" playsinline muted autoplay></video>
+<div id="toast"></div>
+
+<script>
+(function(){
+'use strict';
+var $ = function(id){ return document.getElementById(id); };
+var OW = 600, OH = 900, FW = 1200, FH = 1800;
+var SEG_CDN = 'https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation@0.1.1675465747/';
+var app = $('app');
+function toast(t){ var e = $('toast'); e.textContent = t; e.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(function(){ e.classList.remove('on'); }, 2200); }
+function sleep(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
+
+/* ---------- 1. pilih spot ---------- */
+var bg = new Image(), bgReady = false;
+var st = { cx:0, cy:0, z:1.3 };
+var c1 = $('c1'), x1 = c1.getContext('2d'), mini = $('mini'), xm = mini.getContext('2d');
+function cropSize(){ var h = bg.naturalHeight / st.z; return { w:h * 2 / 3, h:h }; }
+function clampCrop(){
+  st.z = Math.min(2.2, Math.max(1, st.z)); var s = cropSize();
+  st.cx = Math.min(Math.max(st.cx, s.w / 2), bg.naturalWidth - s.w / 2);
+  st.cy = Math.min(Math.max(st.cy, s.h / 2), bg.naturalHeight - s.h / 2);
+}
+function drawCrop(ctx, W, H){ var s = cropSize(); ctx.drawImage(bg, st.cx - s.w / 2, st.cy - s.h / 2, s.w, s.h, 0, 0, W, H); }
+function render1(){
+  if (!bgReady) return; clampCrop(); drawCrop(x1, OW, OH);
+  xm.drawImage(bg, 0, 0, 160, 90); var s = cropSize(), k = 160 / bg.naturalWidth;
+  xm.fillStyle = 'rgba(0,0,0,.45)'; xm.fillRect(0, 0, 160, 90);
+  xm.drawImage(bg, st.cx - s.w / 2, st.cy - s.h / 2, s.w, s.h, (st.cx - s.w / 2) * k, (st.cy - s.h / 2) * k, s.w * k, s.h * k);
+  xm.strokeStyle = '#e7c46f'; xm.lineWidth = 2; xm.strokeRect((st.cx - s.w / 2) * k, (st.cy - s.h / 2) * k, s.w * k, s.h * k);
+  $('zoom').value = st.z;
+}
+bg.onload = function(){ bgReady = true; st.cx = bg.naturalWidth * 0.5; st.cy = bg.naturalHeight * 0.5; render1(); setTimeout(loadSeg, 800); };
+bg.src = 'assets/room/selfie-bg.webp';
+
+var ptrs = {}, pinch0 = 0, z0 = 1;
+var f1 = $('f1');
+f1.addEventListener('pointerdown', function(e){ f1.setPointerCapture(e.pointerId); ptrs[e.pointerId] = { x:e.clientX, y:e.clientY }; var ids = Object.keys(ptrs); if (ids.length === 2){ pinch0 = dist(); z0 = st.z; } });
+f1.addEventListener('pointermove', function(e){
+  var p = ptrs[e.pointerId]; if (!p) return; var ids = Object.keys(ptrs);
+  if (ids.length === 1){ var k = cropSize().h / f1.clientHeight; st.cx -= (e.clientX - p.x) * k; st.cy -= (e.clientY - p.y) * k; p.x = e.clientX; p.y = e.clientY; }
+  else if (ids.length === 2){ p.x = e.clientX; p.y = e.clientY; if (pinch0) st.z = z0 * dist() / pinch0; }
+  render1();
+});
+function endPtr(e){ delete ptrs[e.pointerId]; pinch0 = 0; }
+f1.addEventListener('pointerup', endPtr); f1.addEventListener('pointercancel', endPtr);
+function dist(){ var a = Object.keys(ptrs).map(function(k){ return ptrs[k]; }); return Math.hypot(a[0].x - a[1].x, a[0].y - a[1].y) || 1; }
+f1.addEventListener('wheel', function(e){ e.preventDefault(); st.z *= Math.exp(-e.deltaY * 0.0012); render1(); }, { passive:false });
+$('zoom').addEventListener('input', function(){ st.z = parseFloat(this.value); render1(); });
+$('zIn').onclick = function(){ st.z *= 1.12; render1(); }; $('zOut').onclick = function(){ st.z /= 1.12; render1(); };
+
+/* ---------- penghapus latar (MediaPipe Selfie Segmentation) ---------- */
+var seg = null, segReady = false, segP = null, lastMask = null, modelSet = false;
+function loadSeg(){
+  if (segP) return segP;
+  segP = new Promise(function(res){
+    var sc = document.createElement('script'); sc.src = SEG_CDN + 'selfie_segmentation.js'; sc.crossOrigin = 'anonymous';
+    sc.onload = function(){
+      try {
+        seg = new window.SelfieSegmentation({ locateFile: function(f){ return SEG_CDN + f; } });
+        seg.setOptions({ modelSelection:1, selfieMode:false });
+        seg.onResults(function(r){ lastMask = r.segmentationMask; });
+        seg.initialize().then(function(){ segReady = true; res(true); }).catch(function(e){ console.warn(e); res(false); });
+      } catch (e) { console.warn(e); res(false); }
+    };
+    sc.onerror = function(){ res(false); }; document.head.appendChild(sc);
+  });
+  return segP;
+}
+
+/* ---------- 2. selfie ---------- */
+var vid = $('vid'), stream = null, live = false, loopId = 0;
+var c2 = $('c2'), x2 = c2.getContext('2d');
+var pc = document.createElement('canvas'), pctx = pc.getContext('2d');
+var bgPrev = document.createElement('canvas'); bgPrev.width = OW; bgPrev.height = OH;
+var ps = 0.9, px = 0;
+function status(t){ var s = $('status'); s.textContent = t || ''; s.classList.toggle('on', !!t); }
+function buildPerson(src, vw, vh){
+  if (pc.width !== vw || pc.height !== vh){ pc.width = vw; pc.height = vh; }
+  pctx.globalCompositeOperation = 'source-over'; pctx.clearRect(0, 0, vw, vh); pctx.drawImage(src, 0, 0, vw, vh);
+  pctx.globalCompositeOperation = 'destination-in';
+  if (segReady && lastMask){ pctx.drawImage(lastMask, 0, 0, vw, vh); }
+  else { // cadangan kalau penghapus latar belum siap: potongan oval berkabut
+    pctx.save(); pctx.translate(vw / 2, vh * 0.7); pctx.scale(1, 1.35);
+    var g = pctx.createRadialGradient(0, 0, vw * 0.18, 0, 0, vw * 0.36); g.addColorStop(0, '#000'); g.addColorStop(1, 'rgba(0,0,0,0)');
+    pctx.fillStyle = g; pctx.beginPath(); pctx.arc(0, 0, vw * 0.36, 0, Math.PI * 2); pctx.fill(); pctx.restore();
+  }
+  pctx.globalCompositeOperation = 'source-over';
+}
+function drawPerson(ctx, W, H){
+  var k = W / OW, vw = pc.width, vh = pc.height; if (!vw) return;
+  var s = (0.78 * H / vh) * ps, dw = vw * s, dh = vh * s;
+  ctx.save(); ctx.translate(W / 2 + px * k, H); ctx.scale(-1, 1); ctx.drawImage(pc, -dw / 2, -dh, dw, dh); ctx.restore();   // dicerminkan seperti preview selfie
+}
+async function loop(id){
+  while (live && id === loopId){
+    if (vid.readyState >= 2 && vid.videoWidth){
+      var vw = vid.videoWidth, vh = vid.videoHeight;
+      if (segReady){ try { if (!modelSet){ seg.setOptions({ modelSelection: vw >= vh ? 1 : 0 }); modelSet = true; } await seg.send({ image:vid }); } catch (e) {} }
+      buildPerson(vid, vw, vh); x2.drawImage(bgPrev, 0, 0); drawPerson(x2, OW, OH);
+    }
+    await new Promise(function(r){ requestAnimationFrame(r); });
+  }
+}
+async function startCam(){
+  $('retry').style.display = 'none'; $('shot').disabled = true; status('Meminta izin kamera…');
+  drawCrop(bgPrev.getContext('2d'), OW, OH); x2.drawImage(bgPrev, 0, 0);
+  try { stream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:'user', width:{ ideal:1280 }, height:{ ideal:720 } }, audio:false }); }
+  catch (e) { status('Kamera belum bisa dibuka. Izinkan akses kamera, lalu tekan Coba lagi.'); $('retry').style.display = ''; return; }
+  vid.srcObject = stream; try { await vid.play(); } catch (e) {}
+  live = true; $('shot').disabled = false; var id = ++loopId; loop(id);
+  if (segReady) status(''); else { status('Memuat penghapus latar…'); loadSeg().then(function(ok){ status(ok ? '' : 'Penghapus latar tidak termuat (cek internet). Memakai mode oval.'); if (!ok) setTimeout(function(){ status(''); }, 3500); else status(''); }); }
+}
+function stopCam(){ live = false; loopId++; if (stream){ stream.getTracks().forEach(function(t){ t.stop(); }); stream = null; } }
+$('retry').onclick = startCam;
+$('psize').addEventListener('input', function(){ ps = parseFloat(this.value); });
+var f2 = $('f2'), drag = null;
+f2.addEventListener('pointerdown', function(e){ f2.setPointerCapture(e.pointerId); drag = { x:e.clientX, px:px }; });
+f2.addEventListener('pointermove', function(e){ if (drag){ px = drag.px + (e.clientX - drag.x) * (OW / f2.clientWidth); px = Math.max(-OW * 0.6, Math.min(OW * 0.6, px)); } });
+f2.addEventListener('pointerup', function(){ drag = null; }); f2.addEventListener('pointercancel', function(){ drag = null; });
+
+var base = $('base'), bx = base.getContext('2d'), when = null;
+function stamp(ctx, W, H, d){
+  var pad = W * 0.05;
+  var tgl = d.toLocaleDateString('id-ID', { day:'2-digit', month:'short', year:'numeric' }).toUpperCase().replace(/\./g, '');
+  var jam = d.toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit', hour12:false }).replace('.', ':');
+  ctx.save(); ctx.font = '700 ' + Math.round(W * 0.038) + 'px "Courier New", ui-monospace, monospace'; ctx.textAlign = 'right'; ctx.textBaseline = 'alphabetic';
+  ctx.shadowColor = 'rgba(255,120,0,.9)'; ctx.shadowBlur = W * 0.012; ctx.fillStyle = '#ffb347'; ctx.fillText(tgl + '  ' + jam, W - pad, H - pad); ctx.restore();
+}
+$('shot').onclick = async function(){
+  if (!live) return; var b = this; b.disabled = true;
+  for (var n = 3; n > 0; n--){ $('count').textContent = n; await sleep(800); }
+  $('count').textContent = ''; var fl = $('flash'); fl.classList.add('on'); setTimeout(function(){ fl.classList.remove('on'); }, 60);
+  live = false; loopId++; await sleep(150);
+  when = new Date();                       // waktu foto diambil (realtime)
+  var vw = vid.videoWidth, vh = vid.videoHeight;
+  if (segReady){ try { await seg.send({ image:vid }); } catch (e) {} }
+  buildPerson(vid, vw, vh);
+  base.width = FW; base.height = FH; drawCrop(bx, FW, FH); drawPerson(bx, FW, FH); stamp(bx, FW, FH, when);
+  stopCam(); go(3); b.disabled = false;
+};
+
+/* ---------- 3. review + doodle ---------- */
+var ink = $('ink'), ix = ink.getContext('2d'), strokes = [], cur = null, tool = { color:'#ffffff', size:12, erase:false };
+function ipt(e){ var r = ink.getBoundingClientRect(); return [(e.clientX - r.left) * FW / r.width, (e.clientY - r.top) * FH / r.height]; }
+function seg2(ctx, s, a, b){
+  ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.lineWidth = s.size; ctx.strokeStyle = s.color; ctx.fillStyle = s.color; ctx.globalCompositeOperation = s.erase ? 'destination-out' : 'source-over';
+  if (!b){ ctx.beginPath(); ctx.arc(a[0], a[1], s.size / 2, 0, Math.PI * 2); ctx.fill(); } else { ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke(); }
+  ctx.globalCompositeOperation = 'source-over';
+}
+function redraw(){ ix.clearRect(0, 0, FW, FH); strokes.forEach(function(s){ s.pts.forEach(function(p, i){ seg2(ix, s, s.pts[i - 1] || p, i ? p : null); }); }); }
+ink.addEventListener('pointerdown', function(e){ ink.setPointerCapture(e.pointerId); var p = ipt(e); cur = { color:tool.color, size:tool.size, erase:tool.erase, pts:[p] }; strokes.push(cur); seg2(ix, cur, p, null); });
+ink.addEventListener('pointermove', function(e){ if (!cur) return; var p = ipt(e), q = cur.pts[cur.pts.length - 1]; cur.pts.push(p); seg2(ix, cur, q, p); });
+function endInk(){ cur = null; } ink.addEventListener('pointerup', endInk); ink.addEventListener('pointercancel', endInk);
+document.querySelectorAll('.sw').forEach(function(b){ b.onclick = function(){ document.querySelectorAll('.sw').forEach(function(x){ x.classList.remove('sel'); }); b.classList.add('sel'); tool.color = b.dataset.c; tool.erase = false; $('eraser').classList.remove('sel'); }; });
+$('dsize').addEventListener('input', function(){ tool.size = parseInt(this.value, 10); });
+$('eraser').onclick = function(){ tool.erase = !tool.erase; this.classList.toggle('sel', tool.erase); };
+$('undo').onclick = function(){ strokes.pop(); redraw(); };
+$('clearInk').onclick = function(){ strokes = []; redraw(); };
+$('save').onclick = function(){
+  var out = document.createElement('canvas'); out.width = FW; out.height = FH; var o = out.getContext('2d'); o.drawImage(base, 0, 0); o.drawImage(ink, 0, 0);
+  out.toBlob(function(blob){
+    if (!blob){ toast('Gagal menyimpan, coba lagi'); return; }
+    var d = when || new Date(), p2 = function(n){ return ('0' + n).slice(-2); };
+    var name = 'erin-selfie-' + d.getFullYear() + p2(d.getMonth() + 1) + p2(d.getDate()) + '-' + p2(d.getHours()) + p2(d.getMinutes()) + '.jpg';
+    var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function(){ URL.revokeObjectURL(a.href); }, 4000);
+    toast('Foto tersimpan ✓');
+  }, 'image/jpeg', 0.95);
+};
+$('again').onclick = function(){ go(2); }; $('respot').onclick = function(){ go(1); };
+
+/* ---------- navigasi ---------- */
+function go(n){
+  var prev = parseInt(app.dataset.step, 10);
+  if (prev === 2 && n !== 2) stopCam();
+  app.dataset.step = n; $('back').style.visibility = n > 1 ? 'visible' : 'hidden';
+  if (n === 1) render1();
+  if (n === 2){ strokes = []; ix.clearRect(0, 0, FW, FH); startCam(); }
+}
+$('toCam').onclick = function(){ if (bgReady) go(2); };
+$('back').onclick = function(){ var n = parseInt(app.dataset.step, 10); go(n === 3 ? 2 : 1); };
+window.addEventListener('pagehide', stopCam);
+})();
+</script>
+</body>
+</html>

@@ -607,7 +607,7 @@
   }
   checkLock();
   setInterval(checkLock, 1000);
-  if (lockWasActive) EgAudio.music('waiting-3'); // musik selama menunggu game dibuka
+  if (lockWasActive) EgAudio.music('waiting-3'); else EgAudio.music('vault'); // musik selama menunggu game dibuka
   initUsernameField();
 
   function showScreen(id){

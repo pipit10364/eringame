@@ -79,14 +79,14 @@ window.EG_CONFIG = {
     var s = document.createElement('style'); s.id = 'eg-admin-css';
     s.textContent = '.eg-admin-badge{position:fixed;top:5px;left:50%;transform:translateX(-50%);z-index:130;background:rgba(231,196,111,.95);color:#2a2105;font:700 11px/1 ui-monospace,Menlo,monospace;letter-spacing:.08em;padding:5px 10px;border-radius:999px;display:flex;gap:8px;align-items:center;box-shadow:0 2px 10px rgba(0,0,0,.35)}.eg-admin-badge button{all:unset;cursor:pointer;text-decoration:underline;font-weight:700}'
       + '.eg-admin-link{position:fixed;top:6px;left:50%;transform:translateX(-50%);z-index:130;background:rgba(7,22,19,.55);color:#9db8ab;border:1px solid rgba(126,224,181,.2);font:600 11px/1 ui-monospace,Menlo,monospace;letter-spacing:.06em;padding:5px 10px;border-radius:999px;cursor:pointer;opacity:.7}.eg-admin-link:hover{opacity:1;color:#e7c46f;border-color:#e7c46f}'
-      + '.eg-admin-ov{position:fixed;inset:0;z-index:300;background:rgba(3,12,10,.78);display:flex;align-items:center;justify-content:center;padding:20px}.eg-admin-card{background:#0f221e;border:1px solid #5b4d27;border-radius:10px;padding:22px;max-width:360px;width:100%;color:#e8f3ec;font-family:system-ui,sans-serif}.eg-admin-card h2{font-size:1.1rem;margin:0 0 6px}.eg-admin-card p{margin:0 0 12px;color:#9db8ab;font-size:.85rem}.eg-admin-card input{width:100%;box-sizing:border-box;background:#071613;border:1px solid #2c4a42;border-radius:6px;padding:11px 12px;color:#fff;font:1rem ui-monospace,Menlo,monospace}.eg-admin-card .r{display:flex;gap:8px;margin-top:12px}.eg-admin-card button{flex:1;border-radius:6px;padding:10px;font-weight:700;cursor:pointer;border:1px solid #5b4d27;background:#e7c46f;color:#2a2105}.eg-admin-card button.g{background:transparent;color:#cfe9dc;border-color:#2c4a42}.eg-admin-msg{min-height:1.2em;margin-top:8px;font-size:.82rem;color:#e8827a}';
+      + '.eg-admin-ov{position:fixed;inset:0;z-index:300;background:rgba(3,12,10,.78);display:flex;align-items:flex-start;justify-content:center;padding:max(16px,6vh) 20px 20px;overflow:auto}.eg-admin-card{background:#0f221e;border:1px solid #5b4d27;border-radius:10px;padding:22px;max-width:360px;width:100%;color:#e8f3ec;font-family:system-ui,sans-serif}.eg-admin-card h2{font-size:1.1rem;margin:0 0 6px}.eg-admin-card p{margin:0 0 12px;color:#9db8ab;font-size:.85rem}.eg-admin-card input{width:100%;box-sizing:border-box;background:#071613;border:1px solid #2c4a42;border-radius:6px;padding:11px 12px;color:#fff;font:1rem ui-monospace,Menlo,monospace}.eg-admin-card .r{display:flex;gap:8px;margin-top:12px}.eg-admin-card button{flex:1;border-radius:6px;padding:10px;font-weight:700;cursor:pointer;border:1px solid #5b4d27;background:#e7c46f;color:#2a2105}.eg-admin-card button.g{background:transparent;color:#cfe9dc;border-color:#2c4a42}.eg-admin-msg{min-height:1.2em;margin-top:8px;font-size:.82rem;color:#e8827a}';
     document.head.appendChild(s);
   }
   C.promptAdmin = function(){
     css();
     if (document.getElementById('eg-admin-ov')) return;
     var o = document.createElement('div'); o.className = 'eg-admin-ov'; o.id = 'eg-admin-ov';
-    o.innerHTML = '<div class="eg-admin-card"><h2>Mode admin</h2><p>Masukkan sandi admin untuk membuka semua misi dan game kapan saja.</p><input type="password" id="eg-admin-pw" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Sandi"><div class="eg-admin-msg" id="eg-admin-msg"></div><div class="r"><button class="g" id="eg-admin-cancel" type="button">Batal</button><button id="eg-admin-go" type="button">Masuk</button></div></div>';
+    o.innerHTML = '<div class="eg-admin-card"><h2>Mode admin</h2><p>Masukkan sandi admin untuk membuka semua misi dan game kapan saja.</p><input type="password" id="eg-admin-pw" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Sandi"><div class="eg-admin-msg" id="eg-admin-msg"></div><div class="r"><button class="g" id="eg-admin-cancel" type="button">Batal</button><button class="g" id="eg-admin-eye" type="button">Lihat</button><button id="eg-admin-go" type="button">Masuk</button></div></div>';
     document.body.appendChild(o);
     var pw = o.querySelector('#eg-admin-pw'), msg = o.querySelector('#eg-admin-msg'), fails = 0, lockedUntil = 0;
     function close(){ o.remove(); if (location.hash === '#admin') history.replaceState(null, '', location.pathname + location.search); }
@@ -101,6 +101,7 @@ window.EG_CONFIG = {
     }
     o.querySelector('#eg-admin-go').onclick = go;
     o.querySelector('#eg-admin-cancel').onclick = close;
+    o.querySelector('#eg-admin-eye').onclick = function(){ var show = pw.type === 'password'; pw.type = show ? 'text' : 'password'; this.textContent = show ? 'Sembunyikan' : 'Lihat'; pw.focus(); };
     pw.addEventListener('keydown', function(e){ if (e.key === 'Enter') go(); });
     setTimeout(function(){ pw.focus(); }, 50);
   };

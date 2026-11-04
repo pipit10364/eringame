@@ -194,12 +194,83 @@
   .gift-blurb{ margin-top: 6px; color: var(--ink-faint); font-size: 0.82rem; line-height: 1.5; }
 
   /* ---------- Celebration chamber (ruangan) ---------- */
-  .chamber{ width:100%; max-width:1100px; margin-top:20px; }
-  .room-hint{ text-align:center; color:var(--ink-faint); font-size:.82rem; margin-bottom:10px; }
-  .room-hint span{ display:none; } @media (max-width:860px){ .room-hint span{ display:inline; } }
-  .room-scroll{ overflow-x:auto; border:1px solid var(--border); border-radius:12px; background:#fff; -webkit-overflow-scrolling:touch; scrollbar-width:thin; }
-  .stage{ position:relative; width:100%; min-width:860px; aspect-ratio:3000/1688; container-type:inline-size; user-select:none; -webkit-user-select:none; }
-  .stage .bg{ position:absolute; inset:0; width:100%; height:100%; display:block; pointer-events:none; }
+  #screen-gifts.active{ display:block; padding:0; min-height:0; }
+  .chamber{ position:fixed; inset:0; z-index:5; overflow:hidden; background:#0b1f1c; container-type:size; --sa:#fffbe0; --sb:#ffd25e; }
+  .chamber::before{ content:''; position:absolute; inset:-6%; background:var(--bgurl) center/cover no-repeat; filter:blur(26px) brightness(.8); }
+  .stage{ position:absolute; left:50%; top:50%; width:min(100cqw, calc(100cqh * var(--ar,1.7778))); aspect-ratio:var(--ar,1.7778); transform:translate(-50%,-50%); container-type:inline-size; isolation:isolate; user-select:none; -webkit-user-select:none; }
+  .stage .bg{ position:absolute; inset:0; width:100%; height:100%; display:block; pointer-events:none; transition:filter .8s; filter:var(--bgf,none); }
+  .bal{ position:absolute; height:auto; pointer-events:none; transform-origin:50% 100%; animation:balfloat var(--d,5s) ease-in-out infinite; animation-delay:var(--dl,0s); filter:drop-shadow(0 3px 3px rgba(0,0,0,.15)); }
+  @keyframes balfloat{ 0%,100%{ transform:translateY(0) rotate(-2deg) } 50%{ transform:translateY(-1.4cqw) rotate(2deg) } }
+  .hs{ all:unset; position:absolute; cursor:pointer; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  .gift img{ width:100%; height:auto; display:block; transform-origin:50% 100%; transition:transform .2s, filter .2s; animation:gbob 3.6s ease-in-out infinite; animation-delay:var(--dl,0s); pointer-events:none; }
+  @keyframes gbob{ 0%,100%{ transform:translateY(0) } 50%{ transform:translateY(-.5cqw) } }
+  .gift:hover img, .gift:focus-visible img{ animation:none; transform:translateY(-.9cqw) rotate(-3deg) scale(1.06); filter:drop-shadow(0 0 .9cqw rgba(255,226,140,.95)); }
+  .gift.opening img{ animation:gpop .65s ease; filter:drop-shadow(0 0 1.6cqw #ffe9a8); }
+  @keyframes gpop{ 0%{transform:scale(1)} 20%{transform:scale(1.12) rotate(-6deg)} 40%{transform:scale(1.12) rotate(6deg)} 60%{transform:scale(1.15) rotate(-5deg)} 100%{transform:scale(1.2)} }
+  .pin{ position:absolute; left:50%; top:56%; transform:translate(-50%,-50%); width:max(11px,2.3cqw); height:max(11px,2.3cqw); border-radius:50%; display:grid; place-items:center; background:#e7c46f; color:#0b1f1c; font:800 max(8px,1.3cqw)/1 'Nunito',sans-serif; box-shadow:0 0 0 2px #0b1f1c, 0 0 .9cqw rgba(231,196,111,.95); animation:pinpulse 2.2s ease-in-out infinite; pointer-events:none; }
+  .pin.cp{ background:#7ee0d3; width:max(9px,1.7cqw); height:max(9px,1.7cqw); box-shadow:0 0 0 2px #0b1f1c, 0 0 1cqw rgba(126,224,211,1); }
+  @keyframes pinpulse{ 0%,100%{ transform:translate(-50%,-50%) scale(1) } 50%{ transform:translate(-50%,-50%) scale(1.18) } }
+  .cam:focus-visible{ outline:2px solid #1f9d8f; border-radius:8px; }
+  .flash{ position:absolute; width:8cqw; height:8cqw; transform:translate(-50%,-50%) scale(.4); border-radius:50%; background:radial-gradient(circle,#fff 0,rgba(255,255,255,.85) 20%,rgba(255,255,255,0) 66%); opacity:0; transition:opacity .2s, transform .2s; pointer-events:none; }
+  .cam:hover .flash, .cam:focus-visible .flash, .cam.opening .flash{ opacity:1; transform:translate(-50%,-50%) scale(1); }
+  .sparks{ position:absolute; inset:0; pointer-events:none; }
+  .sp{ position:absolute; width:var(--s,1.2cqw); height:var(--s,1.2cqw); transform:translate(-50%,-50%) scale(0); background:linear-gradient(135deg,var(--sa),var(--sb)); clip-path:polygon(50% 0,60% 40%,100% 50%,60% 60%,50% 100%,40% 60%,0 50%,40% 40%); filter:drop-shadow(0 0 3px var(--sb)); animation:twinkle var(--du,2.4s) ease-in-out infinite; animation-delay:var(--dl,0s); }
+  @keyframes twinkle{ 0%,100%{ transform:translate(-50%,-50%) scale(0) rotate(0) } 50%{ transform:translate(-50%,-50%) scale(1) rotate(45deg) } }
+  .cg{ position:absolute; width:1.5cqw; height:1.5cqw; transform:translate(-50%,-50%); border-radius:50%; background:radial-gradient(circle,rgba(255,225,120,.95),rgba(255,180,60,0) 70%); animation:cflick .7s ease-in-out infinite alternate; animation-delay:var(--dl,0s); }
+  @keyframes cflick{ from{ opacity:.45; transform:translate(-50%,-50%) scale(.8) } to{ opacity:1; transform:translate(-50%,-50%) scale(1.25) } }
+  /* ---- lighting per suasana ---- */
+  .lt{ position:absolute; inset:0; pointer-events:none; opacity:0; transition:opacity .9s; z-index:6; }
+  .bm{ position:absolute; top:-8%; width:36%; height:125%; transform-origin:50% 0; clip-path:polygon(46% 0,54% 0,100% 100%,0 100%); background:linear-gradient(180deg,var(--bc,#fff) 0%,transparent 88%); mix-blend-mode:screen; animation:swing var(--sw,4s) ease-in-out infinite alternate; }
+  .bm.b1{ left:4%; --bc:var(--c1); } .bm.b2{ left:32%; --bc:var(--c2); animation-delay:-1.3s; } .bm.b3{ left:60%; --bc:var(--c3); animation-delay:-2.1s; }
+  @keyframes swing{ from{ transform:rotate(-24deg) } to{ transform:rotate(24deg) } }
+  @keyframes breathe{ 50%{ opacity:.72 } }
+  @keyframes beat{ 0%,100%{ opacity:.55 } 50%{ opacity:.95 } }
+  @keyframes strobe{ 0%,38%,44%,70%,100%{ opacity:0 } 40%{ opacity:.5 } 42%{ opacity:.12 } 72%{ opacity:.28 } 74%{ opacity:0 } }
+  .chamber[data-vibe=piano] .lt-tint{ opacity:1; background:radial-gradient(ellipse 66% 60% at 50% 46%,rgba(255,206,120,.2),rgba(40,18,0,.4) 100%); animation:breathe 6s ease-in-out infinite; }
+  .chamber[data-vibe=cute]{ --sa:#fff; --sb:#ff9ccd; --bgf:saturate(1.1) brightness(1.05); }
+  .chamber[data-vibe=cute] .lt-tint{ opacity:1; background:linear-gradient(180deg,rgba(255,170,215,.28),rgba(255,214,150,.14)); }
+  .chamber[data-vibe=anime]{ --sa:#e8fdff; --sb:#5be7ff; --bgf:saturate(1.4) contrast(1.06); --c1:rgba(0,225,255,.7); --c2:rgba(255,70,200,.6); --c3:rgba(120,120,255,.6); }
+  .chamber[data-vibe=anime] .lt-tint{ opacity:1; background:linear-gradient(120deg,rgba(0,220,255,.2),rgba(255,60,200,.16)); }
+  .chamber[data-vibe=anime] .lt-beams{ opacity:.55; } .chamber[data-vibe=anime] .bm{ --sw:6s; }
+  .chamber[data-vibe=dj]{ --sa:#fff; --sb:#c06bff; --bgf:brightness(.78) saturate(1.2); --c1:rgba(255,0,200,.85); --c2:rgba(0,230,255,.85); --c3:rgba(255,230,0,.8); }
+  .chamber[data-vibe=dj] .lt-tint{ opacity:1; background:rgba(14,0,44,.5); animation:beat .47s ease-in-out infinite; }
+  .chamber[data-vibe=dj] .lt-beams{ opacity:.9; } .chamber[data-vibe=dj] .bm{ --sw:2.6s; }
+  .chamber[data-vibe=metal]{ --sa:#ffe0b0; --sb:#ff5a1f; --bgf:saturate(.8) contrast(1.15) brightness(.8); --c1:rgba(255,30,0,.6); --c2:rgba(255,80,0,.5); --c3:rgba(255,30,0,.6); }
+  .chamber[data-vibe=metal] .lt-tint{ opacity:1; background:radial-gradient(ellipse 70% 62% at 50% 46%,rgba(130,0,0,.16),rgba(0,0,0,.66) 100%); }
+  .chamber[data-vibe=metal] .lt-beams{ opacity:.35; } .chamber[data-vibe=metal] .bm{ --sw:5s; }
+  .chamber[data-vibe=metal] .lt-flash{ opacity:1; background:rgba(255,40,20,.55); animation:strobe 2.6s linear infinite; }
+  /* ---- tombol ikon ---- */
+  .rc{ all:unset; position:absolute; z-index:8; width:38px; height:38px; border-radius:50%; display:grid; place-items:center; cursor:pointer; color:#fff; background:rgba(11,31,28,.55); box-shadow:0 0 0 1px rgba(255,255,255,.28); -webkit-tap-highlight-color:transparent; }
+  .rc svg{ width:22px; height:22px; fill:currentColor; }
+  .rc:hover{ background:rgba(11,31,28,.85); } .rc:focus-visible{ outline:2px solid #7ee0d3; }
+  .rc-back{ top:max(10px,env(safe-area-inset-top)); left:max(10px,env(safe-area-inset-left)); }
+  .rc-fs{ top:max(10px,env(safe-area-inset-top)); right:max(10px,env(safe-area-inset-right)); }
+  .rc-vibe{ top:max(10px,env(safe-area-inset-top)); right:calc(max(10px,env(safe-area-inset-right)) + 46px); }
+  .rc-rotate{ display:none; top:max(10px,env(safe-area-inset-top)); right:calc(max(10px,env(safe-area-inset-right)) + 92px); }
+  @media (orientation:portrait) and (pointer:coarse){ .rc-rotate{ display:grid; } .rc-fs{ display:none; } }
+  .vibe-menu{ position:absolute; z-index:9; top:calc(max(10px,env(safe-area-inset-top)) + 46px); right:calc(max(10px,env(safe-area-inset-right)) + 46px); display:none; flex-direction:column; gap:2px; padding:6px; min-width:132px; background:rgba(11,31,28,.94); border:1px solid rgba(255,255,255,.22); border-radius:12px; }
+  .vibe-menu.on{ display:flex; }
+  .vibe-menu button{ all:unset; cursor:pointer; padding:9px 12px; border-radius:8px; color:#fff; font:700 .9rem 'Nunito',sans-serif; display:flex; gap:10px; align-items:center; }
+  .vibe-menu button:hover{ background:rgba(255,255,255,.1); } .vibe-menu button.sel{ background:rgba(231,196,111,.3); }
+  .chamber.fake-land{ inset:auto; top:0; left:0; width:var(--fh,100vh); height:var(--fw,100vw); transform-origin:0 0; transform:translateX(var(--fw,100vw)) rotate(90deg); }
+  .chamber.fake-land .rc-fs{ display:none; }
+  body.fake-land .gift-overlay{ inset:auto; top:0; left:0; width:var(--fh,100vh); height:var(--fw,100vw); transform-origin:0 0; transform:translateX(var(--fw,100vw)) rotate(90deg); }
+  @media (prefers-reduced-motion:reduce){ .bal,.gift img,.pin,.cg,.bm,.lt-tint,.lt-flash{ animation:none } .sp{ animation:none; transform:translate(-50%,-50%) scale(.7); opacity:.6 } }
+  @media (orientation:landscape) and (max-height:560px){ .gift-overlay{ padding:8px 12px; } }
+  /* ---- tulis surat di wall ---- */
+  .lcomp-back{ position:absolute; inset:0; z-index:5; display:none; align-items:center; justify-content:center; padding:16px; background:rgba(3,12,10,.74); }
+  .lcomp-back.on{ display:flex; }
+  .lcomp{ width:min(540px,100%); max-height:100%; overflow:auto; background:#0d1a18; border:1px solid var(--border); border-radius:14px; padding:14px; }
+  .lcomp .lp{ margin:0; }
+  .lcomp textarea{ all:unset; display:block; width:100%; min-height:170px; box-sizing:border-box; white-space:pre-wrap; font:inherit; color:inherit; line-height:1.5; }
+  .lc-row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:12px; }
+  .lc-sw{ cursor:pointer; width:28px; height:28px; padding:0 !important; margin:0 !important; border-radius:50% !important; border:2px solid rgba(255,255,255,.35) !important; }
+  .lc-sw.sel{ border-color:#e7c46f !important; box-shadow:0 0 0 2px #e7c46f; }
+  .lc-fo{ cursor:pointer; padding:4px 12px; border-radius:8px; border:2px solid rgba(255,255,255,.3); background:#fffdf7; color:#17332d; font-size:1.2rem; }
+  .lc-fo.sel{ border-color:#e7c46f; box-shadow:0 0 0 2px #e7c46f; }
+  .lc-err{ color:#ff9aa8; font-size:.85rem; min-height:1em; margin-top:8px; }
+  .lp-new{ animation:lpnew 1.4s ease 3; } @keyframes lpnew{ 50%{ box-shadow:0 0 0 4px #e7c46f, 0 0 24px #e7c46f; } }
+  /* ---------- Celebration chamber (ruangan) ---------- */
   .bal{ position:absolute; height:auto; pointer-events:none; transform-origin:50% 100%; animation:balfloat var(--d,5s) ease-in-out infinite; animation-delay:var(--dl,0s); filter:drop-shadow(0 3px 3px rgba(0,0,0,.12)); }
   @keyframes balfloat{ 0%,100%{ transform:translateY(0) rotate(-2deg) } 50%{ transform:translateY(-1.6cqw) rotate(2deg) } }
   .hs{ all:unset; position:absolute; cursor:pointer; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
@@ -208,9 +279,9 @@
   .gift:hover img, .gift:focus-visible img{ animation:none; transform:translateY(-.9cqw) rotate(-3deg) scale(1.06); filter:drop-shadow(0 0 .9cqw rgba(255,226,140,.95)); }
   .gift.opening img{ animation:gpop .65s ease; filter:drop-shadow(0 0 1.6cqw #ffe9a8); }
   @keyframes gpop{ 0%{transform:scale(1)} 20%{transform:scale(1.12) rotate(-6deg)} 40%{transform:scale(1.12) rotate(6deg)} 60%{transform:scale(1.15) rotate(-5deg)} 100%{transform:scale(1.2)} }
-  .pin{ position:absolute; left:50%; top:56%; transform:translate(-50%,-50%); width:max(17px,2.3cqw); height:max(17px,2.3cqw); border-radius:50%; display:grid; place-items:center; background:#e7c46f; color:#0b1f1c; font:800 max(10px,1.3cqw)/1 'Nunito',sans-serif; box-shadow:0 0 0 2px #0b1f1c, 0 0 .9cqw rgba(231,196,111,.95); animation:pinpulse 2.2s ease-in-out infinite; pointer-events:none; }
+  .pin{ position:absolute; left:50%; top:56%; transform:translate(-50%,-50%); width:max(12px,2.3cqw); height:max(12px,2.3cqw); border-radius:50%; display:grid; place-items:center; background:#e7c46f; color:#0b1f1c; font:800 max(8px,1.3cqw)/1 'Nunito',sans-serif; box-shadow:0 0 0 2px #0b1f1c, 0 0 .9cqw rgba(231,196,111,.95); animation:pinpulse 2.2s ease-in-out infinite; pointer-events:none; }
   .pin.sm{ font-size:max(9px,1.1cqw); top:50%; }
-  .pin.cp{ background:#7ee0d3; width:max(13px,1.7cqw); height:max(13px,1.7cqw); box-shadow:0 0 0 2px #0b1f1c, 0 0 1cqw rgba(126,224,211,1); }
+  .pin.cp{ background:#7ee0d3; width:max(10px,1.7cqw); height:max(10px,1.7cqw); box-shadow:0 0 0 2px #0b1f1c, 0 0 1cqw rgba(126,224,211,1); }
   @keyframes pinpulse{ 0%,100%{ transform:translate(-50%,-50%) scale(1) } 50%{ transform:translate(-50%,-50%) scale(1.18) } }
   .cam:focus-visible{ outline:2px solid #1f9d8f; border-radius:8px; }
   .flash{ position:absolute; width:8cqw; height:8cqw; transform:translate(-50%,-50%) scale(.4); border-radius:50%; background:radial-gradient(circle,#fff 0,rgba(255,255,255,.85) 20%,rgba(255,255,255,0) 66%); opacity:0; transition:opacity .2s, transform .2s; pointer-events:none; }
@@ -222,26 +293,6 @@
   @keyframes cflick{ from{ opacity:.45; transform:translate(-50%,-50%) scale(.8) } to{ opacity:1; transform:translate(-50%,-50%) scale(1.25) } }
   @media (prefers-reduced-motion:reduce){ .bal,.gift img,.pin,.cg{ animation:none } .sp{ animation:none; transform:translate(-50%,-50%) scale(.7); opacity:.6 } }
 
-  /* ---------- Mode HP: landscape ---------- */
-  .rotate-hint{ display:none; flex-direction:column; align-items:center; gap:14px; padding:44px 20px; text-align:center; color:var(--ink-dim); border:1px solid var(--border); border-radius:12px; background:rgba(13,26,24,.6); }
-  .rotate-hint button{ background:none; border:1px solid var(--border); color:var(--ink-faint); border-radius:6px; padding:8px 14px; font-size:.8rem; cursor:pointer; }
-  .rh-phone{ width:34px; height:58px; border:3px solid var(--gold); border-radius:7px; animation:rhturn 2.4s ease-in-out infinite; }
-  @keyframes rhturn{ 0%,25%{ transform:rotate(0) } 60%,100%{ transform:rotate(-90deg) } }
-  @media (orientation:portrait) and (max-width:900px){
-    .chamber:not(.force-portrait) .room-scroll, .chamber:not(.force-portrait) .room-hint{ display:none; }
-    .chamber:not(.force-portrait) .rotate-hint{ display:flex; }
-  }
-  @media (orientation:landscape) and (max-height:560px){
-    #screen-gifts.active{ padding:0; min-height:100dvh; }
-    #screen-gifts .welcome-wrap > :not(.chamber):not(.cta-row){ display:none; }
-    #screen-gifts .chamber{ position:fixed; inset:0; z-index:5; margin:0; max-width:none; background:linear-gradient(#fff 0 52%, #46574f 52% 80%, #2c3631 80%); }
-    #screen-gifts .room-hint{ display:none; }
-    #screen-gifts .room-scroll{ height:100%; border:0; border-radius:0; overflow:hidden; display:flex; justify-content:center; background:transparent; }
-    #screen-gifts .stage{ flex:none; height:100%; width:calc(100dvh * 3000 / 1688); min-width:0; }
-    #screen-gifts .cta-row{ position:fixed; right:max(10px,env(safe-area-inset-right)); bottom:10px; margin:0; z-index:7; }
-    #screen-gifts .cta-row .btn{ padding:8px 14px; font-size:.8rem; }
-    .gift-overlay{ padding:8px 12px; }
-  }
 
   .gift-overlay{ display:none; position:fixed; inset:0; background: rgba(3,10,8,0.92); z-index:60; padding: 20px 14px; }
   .gift-overlay.active{ display:flex; flex-direction:column; }
@@ -482,26 +533,19 @@
 
   <!-- ================= GIFT MENU SCREEN ================= -->
   <div class="screen" id="screen-gifts">
-    <div class="welcome-wrap">
-      <div class="eyebrow-mark">UNTUK ERIN</div>
-      <h1 class="welcome-title">Pilih Hadiahmu</h1>
-      <p class="welcome-sub">Buka sesuka hati, urutan bebas.</p>
-      <div class="chamber"><div class="rotate-hint"><div class="rh-phone"></div><p>Putar HP kamu ke mode <b>landscape</b> ya ↻</p><button type="button" onclick="this.closest('.chamber').classList.add('force-portrait')">Tetap di portrait</button></div><p class="room-hint">Ketuk kado bernomor atau titik kamera ✨ <span>(geser di HP)</span></p><div class="room-scroll" id="roomScroll"><div class="stage"><img class="bg" src="assets/room/bg.webp" alt="Ruang perayaan ulang tahun Erin" draggable="false"><img class="bal" src="assets/room/b-pink.webp" alt="" style="left:1.9%;top:31%;width:4.6%;--d:4s;--dl:-0s" draggable="false"><img class="bal" src="assets/room/h-orange.webp" alt="" style="left:7.6%;top:39%;width:4%;--d:4.7s;--dl:-1.1s" draggable="false"><img class="bal" src="assets/room/b-yellow.webp" alt="" style="left:93.9%;top:30%;width:4.6%;--d:5.4s;--dl:-0.6s" draggable="false"><img class="bal" src="assets/room/h-pink.webp" alt="" style="left:90.3%;top:50%;width:3.8%;--d:6.1s;--dl:-1.7s" draggable="false"><img class="bal" src="assets/room/h-yellow.webp" alt="" style="left:-0.2%;top:47%;width:3.6%;--d:6.8s;--dl:-2.2s" draggable="false"><div class="sparks" aria-hidden="true"><i class="sp" style="left:31%;top:6%;--s:0.9cqw;--dl:-0s;--du:1.8s"></i><i class="sp" style="left:38%;top:3%;--s:1.77cqw;--dl:-1.3s;--du:2.25s"></i><i class="sp" style="left:46%;top:9%;--s:1.4cqw;--dl:-0.2s;--du:2.7s"></i><i class="sp" style="left:55%;top:4%;--s:1.02cqw;--dl:-1.5s;--du:3.15s"></i><i class="sp" style="left:63%;top:8%;--s:1.9cqw;--dl:-0.4s;--du:3.6s"></i><i class="sp" style="left:70%;top:5%;--s:1.52cqw;--dl:-1.7s;--du:1.8s"></i><i class="sp" style="left:8%;top:20%;--s:1.15cqw;--dl:-0.6s;--du:2.25s"></i><i class="sp" style="left:14%;top:12%;--s:2.02cqw;--dl:-1.9s;--du:2.7s"></i><i class="sp" style="left:24%;top:16%;--s:1.65cqw;--dl:-0.8s;--du:3.15s"></i><i class="sp" style="left:78%;top:20%;--s:1.27cqw;--dl:-2.1s;--du:3.6s"></i><i class="sp" style="left:88%;top:12%;--s:0.9cqw;--dl:-1s;--du:1.8s"></i><i class="sp" style="left:95%;top:22%;--s:1.77cqw;--dl:-2.3s;--du:2.25s"></i><i class="sp" style="left:36%;top:24%;--s:1.4cqw;--dl:-1.2s;--du:2.7s"></i><i class="sp" style="left:42%;top:34%;--s:1.02cqw;--dl:-0.1s;--du:3.15s"></i><i class="sp" style="left:60%;top:28%;--s:1.9cqw;--dl:-1.4s;--du:3.6s"></i><i class="sp" style="left:66%;top:38%;--s:1.52cqw;--dl:-0.3s;--du:1.8s"></i><i class="sp" style="left:33%;top:45%;--s:1.15cqw;--dl:-1.6s;--du:2.25s"></i><i class="sp" style="left:47%;top:45%;--s:2.02cqw;--dl:-0.5s;--du:2.7s"></i><i class="sp" style="left:57%;top:36%;--s:1.65cqw;--dl:-1.8s;--du:3.15s"></i><i class="sp" style="left:52%;top:56%;--s:1.27cqw;--dl:-0.7s;--du:3.6s"></i><i class="sp" style="left:44%;top:60%;--s:0.9cqw;--dl:-2s;--du:1.8s"></i><i class="sp" style="left:58%;top:62%;--s:1.77cqw;--dl:-0.9s;--du:2.25s"></i><i class="sp" style="left:11%;top:62%;--s:1.4cqw;--dl:-2.2s;--du:2.7s"></i><i class="sp" style="left:27%;top:70%;--s:1.02cqw;--dl:-1.1s;--du:3.15s"></i><i class="sp" style="left:90%;top:68%;--s:1.9cqw;--dl:-0s;--du:3.6s"></i><i class="sp" style="left:74%;top:75%;--s:1.52cqw;--dl:-1.3s;--du:1.8s"></i><i class="sp" style="left:18%;top:86%;--s:1.15cqw;--dl:-0.2s;--du:2.25s"></i><i class="sp" style="left:39%;top:80%;--s:2.02cqw;--dl:-1.5s;--du:2.7s"></i><i class="sp" style="left:66%;top:82%;--s:1.65cqw;--dl:-0.4s;--du:3.15s"></i><i class="sp" style="left:50%;top:30%;--s:1.27cqw;--dl:-1.7s;--du:3.6s"></i><i class="cg" style="left:50.2%;top:48.2%;--dl:-0.0s"></i><i class="cg" style="left:51%;top:48.6%;--dl:-0.23s"></i><i class="cg" style="left:51.8%;top:47.6%;--dl:-0.46s"></i><i class="cg" style="left:52.6%;top:48.8%;--dl:-0.6900000000000001s"></i><i class="cg" style="left:53.5%;top:48.4%;--dl:-0.92s"></i></div><button class="hs cam" aria-label="Photobooth" style="left:11.0%;top:31.5%;width:16.0%;height:22.0%" onclick="pickGift(this,'photobooth')"><span class="flash" style="left:36.25%;top:61.36%"></span><span class="pin cp" style="left:36.25%;top:61.36%"></span></button><button class="hs gift" aria-label="Kado 1: Surat" style="left:13.6%;bottom:1.4%;width:7%;--dl:-0s" onclick="pickGift(this,'letter')"><img src="assets/room/g-pink.webp" alt="" draggable="false"><span class="pin">1</span></button><button class="hs gift" aria-label="Kado 2: Scrapbook" style="left:20.5%;bottom:2.4%;width:6.6%;--dl:-0.8s" onclick="pickGift(this,'scrapbook')"><img src="assets/room/g-mint.webp" alt="" draggable="false"><span class="pin">2</span></button><button class="hs gift" aria-label="Kado 3: Video" style="left:74.7%;bottom:2.4%;width:6.6%;--dl:-1.6s" onclick="pickGift(this,'video')"><img src="assets/room/g-blue.webp" alt="" draggable="false"><span class="pin">3</span></button><button class="hs gift" aria-label="Kado 4: Fanart" style="left:80.9%;bottom:1.4%;width:7%;--dl:-2.4s" onclick="pickGift(this,'fanart')"><img src="assets/room/g-cream.webp" alt="" draggable="false"><span class="pin">4</span></button></div></div></div>
-      <div class="cta-row">
-        <button class="btn btn-primary" onclick="showScreen('screen-closing')">Lanjut ke Penutup →</button>
-      </div>
-    </div>
+  <div class="chamber" id="chamber" data-vibe="piano"><div class="stage" id="stage"></div><button type="button" class="rc rc-back" id="rc-back" aria-label="Kembali" onclick="leaveRoom()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg></button><button type="button" class="rc rc-fs" id="rc-fs" aria-label="Layar penuh" onclick="toggleFs()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg></button><button type="button" class="rc rc-vibe" id="rc-vibe" aria-label="Suasana" onclick="toggleVibeMenu(event)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg></button><button type="button" class="rc rc-rotate" id="rc-rotate" aria-label="Putar layar" onclick="rotateRoom()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16.48 2.52c3.27 1.55 5.61 4.72 5.97 8.48h1.5C23.44 4.84 18.29 0 12 0l-.66.03 3.81 3.81 1.33-1.32zm-6.25-.77c-.59-.59-1.54-.59-2.12 0L1.75 8.11c-.59.59-.59 1.54 0 2.12l12.02 12.02c.59.59 1.54.59 2.12 0l6.36-6.36c.59-.59.59-1.54 0-2.12L10.23 1.75zm4.6 19.44L2.81 9.17l6.36-6.36 12.02 12.02-6.36 6.36zm-7.31.29C4.25 19.94 1.91 16.76 1.55 13H.05C.56 19.16 5.71 24 12 24l.66-.03-3.81-3.81-1.33 1.32z"/></svg></button><div class="vibe-menu" id="vibeMenu"></div></div>
   </div>
 
   <!-- ================= GIFT OVERLAY (iframe) ================= -->
   <div class="gift-overlay" id="gift-overlay">
     <div class="gift-overlay-head">
       <span class="gift-overlay-title" id="gift-overlay-title">Hadiah</span>
-      <span style="display:flex;gap:8px"><button class="gift-overlay-close" id="gift-extra-btn" style="display:none" onclick="openGift('extra')">✉ Tulis surat tambahan</button><button class="gift-overlay-close" onclick="closeGift()">Tutup ✕</button></span>
+      <span style="display:flex;gap:8px"><button class="gift-overlay-close" id="gift-pencil" style="display:none" aria-label="Tulis surat" onclick="openCompose()">✎</button><button class="gift-overlay-close" onclick="closeGift()">Tutup ✕</button></span>
     </div>
     <div class="gift-body" id="gift-body"></div>
-    <div class="gift-overlay-frame" id="gift-frame"><iframe id="gift-overlay-iframe" src="" title="Hadiah untuk Erin"></iframe></div>
+    <div class="gift-overlay-frame" id="gift-frame"><iframe id="gift-overlay-iframe" src="" title="Hadiah untuk Erin" allow="camera; fullscreen"></iframe></div>
     <div class="gift-overlay-fallback" id="gift-fallback">Kalau ga muncul, <a id="gift-overlay-link" href="#" target="_blank" rel="noopener">buka di tab baru</a>.</div>
+    <div class="lcomp-back" id="lcomp-back"><div class="lcomp"><div class="lp lp-polos lf-hand" id="lc-paper"><textarea id="lc-text" maxlength="1500" placeholder="Tulis suratmu untuk Erin…"></textarea><div class="sg" id="lc-count">0 / 1500</div></div><div class="lc-row" id="lc-papers"></div><div class="lc-row" id="lc-fonts"></div><div class="lc-err" id="lc-err"></div><div class="lc-row"><button class="fbtn" id="lc-send" onclick="sendCompose()">Kirim ➤</button><button class="fbtn" onclick="closeCompose()">Batal</button></div></div></div>
   </div>
 
   <!-- ================= CLOSING SCREEN ================= -->
@@ -696,10 +740,9 @@
     letter: 'https://padlet.com/GANTI_DENGAN_LINK_PADLET_KAMU',
     scrapbook: 'https://heyzine.com/GANTI_DENGAN_LINK_HEYZINE_KAMU',
     video: 'https://drive.google.com/GANTI_DENGAN_LINK_VIDEO_KAMU',
-    photobooth: 'photobooth.html?extra=1',
-    extra: 'letter.html?extra=1',
+    photobooth: 'roomselfie.html',
   };
-  const GIFT_TITLES = { letter: 'Surat untuk Erin', scrapbook: 'Scrapbook', video: 'Video untuk Erin', fanart: 'Fanart untuk Erin', photobooth: 'Photobooth (bonus)', extra: 'Surat Tambahan (bonus)' };
+  const GIFT_TITLES = { letter: 'Surat untuk Erin', scrapbook: 'Scrapbook', video: 'Video untuk Erin', fanart: 'Fanart untuk Erin', photobooth: 'Photobooth' };
 
   // ==================================================================
   // FIREBASE — HARUS SAMA PERSIS dengan file game lain
@@ -777,12 +820,125 @@
   checkLock();
   setInterval(checkLock, 1000);
   initUsernameField();
+  try { EgAudio.music('opening'); } catch (e) {}   // lagu pembuka mulai di ketukan pertama
+
+  // ---- ruangan: layout per ukuran layar, suasana (musik + lighting), tulis surat ----
+  const LAYOUTS = {
+    lap:  { ratio:6000/3375, img:'assets/room/bg-lap.webp',
+            gifts:[[5.2,99,4.7],[13.6,98,4.5],[85.6,99,4.5],[94.4,99,4.7]], cam:{ box:[14,41.5,13.5,17], dot:[17.8,54] },
+            balloons:[['b-pink',4,30,3.6,0],['h-orange',9.5,40,3.2,1.1],['b-yellow',96.5,22,3.6,.6],['h-pink',91.5,47,3,1.7]],
+            candles:[[50.1,49.2],[51,49.6],[52,48.8],[52.9,49.7],[53.7,49.4]] },
+    land: { ratio:7500/3375, img:'assets/room/bg-land.webp',
+            gifts:[[3.6,97.5,4.2],[11.8,95.5,4],[86.4,97,4],[95.6,97.5,4.2]], cam:{ box:[18.8,43.5,10.5,16.5], dot:[21.9,55.4] },
+            balloons:[['b-pink',5,28,3.2,0],['h-orange',12,38,2.8,1.1],['b-yellow',96.5,25,3.2,.6],['h-pink',90,46,2.7,1.7]],
+            candles:[[50.2,50],[51,50.3],[51.9,49.5],[52.7,50.4],[53.3,50.1]] },
+    port: { ratio:3375/7313, img:'assets/room/bg-port.webp',
+            gifts:[[7,98.7,11],[25,98.5,10.5],[76,98.7,10.5],[93,98.3,11]], cam:{ box:[1,56.5,34,16.5], dot:[14.2,65.2] },
+            balloons:[['b-pink',40,76,8,0],['h-yellow',50,80,7,1],['b-orange',60,75,8,.5]],
+            candles:[[47.6,43],[49.4,43.4],[51.6,42.5],[53.5,43.6],[55.5,43.1]] }
+  };
+  const GIFT_SET = [['g-pink','letter','Surat'],['g-mint','scrapbook','Scrapbook'],['g-blue','video','Video'],['g-cream','fanart','Fanart']];
+  const VIBES = { piano:['🎹','Piano'], cute:['🌸','Cute'], anime:['✨','Anime'], dj:['🎧','DJ'], metal:['🤘','Metal'] };
+  const VIBE_KEY = 'eg_room_vibe_v1';
+  let VIBE = (function(){ try { var v = localStorage.getItem(VIBE_KEY); return VIBES[v] ? v : 'piano'; } catch (e) { return 'piano'; } })();
+  let curLayout = null;
+  function pickLayout(){
+    const ch = document.getElementById('chamber'); if (!ch.clientHeight) return null;
+    const r = ch.clientWidth / ch.clientHeight, d = k => Math.abs(Math.log(r / LAYOUTS[k].ratio));
+    return Object.keys(LAYOUTS).sort((a, b) => d(a) - d(b))[0];
+  }
+  function applyLayout(force){ const k = pickLayout(); if (!k || (!force && k === curLayout)) return; curLayout = k; buildStage(k); }
+  function buildStage(k){
+    const L = LAYOUTS[k], st = document.getElementById('stage'), ch = document.getElementById('chamber'), f = v => (+v.toFixed(2));
+    st.style.setProperty('--ar', L.ratio); ch.style.setProperty('--bgurl', 'url(' + L.img + ')');
+    let seed = 7 + k.length, rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280, h = '';
+    h += '<img class="bg" src="' + L.img + '" alt="Ruang perayaan ulang tahun Erin" draggable="false">';
+    L.balloons.forEach((b, i) => { h += '<img class="bal" src="assets/room/' + b[0] + '.webp" alt="" draggable="false" style="left:' + f(b[1] - b[3] / 2) + '%;top:' + b[2] + '%;width:' + b[3] + '%;--d:' + f(4 + i * .7) + 's;--dl:-' + b[4] + 's">'; });
+    h += '<div class="sparks" aria-hidden="true">';
+    for (let i = 0; i < (k === 'port' ? 22 : 30); i++) h += '<i class="sp" style="left:' + f(4 + rnd() * 92) + '%;top:' + f(3 + rnd() * 75) + '%;--s:' + f(.9 + rnd() * 1.1) + 'cqw;--dl:-' + f(rnd() * 3) + 's;--du:' + f(1.8 + rnd() * 1.8) + 's"></i>';
+    L.candles.forEach((c, i) => { h += '<i class="cg" style="left:' + c[0] + '%;top:' + c[1] + '%;--dl:-' + f(i * .23) + 's"></i>'; });
+    h += '</div>';
+    const cb = L.cam.box, fx = (L.cam.dot[0] - cb[0]) / cb[2] * 100, fy = (L.cam.dot[1] - cb[1]) / cb[3] * 100;
+    h += '<button class="hs cam" aria-label="Photobooth" style="left:' + cb[0] + '%;top:' + cb[1] + '%;width:' + cb[2] + '%;height:' + cb[3] + '%" onclick="pickGift(this,\'photobooth\')"><span class="flash" style="left:' + f(fx) + '%;top:' + f(fy) + '%"></span><span class="pin cp" style="left:' + f(fx) + '%;top:' + f(fy) + '%"></span></button>';
+    L.gifts.forEach((g, i) => { const G = GIFT_SET[i]; h += '<button class="hs gift" aria-label="Kado ' + (i + 1) + ': ' + G[2] + '" style="left:' + f(g[0] - g[2] / 2) + '%;bottom:' + f(100 - g[1]) + '%;width:' + g[2] + '%;--dl:-' + f(i * .8) + 's" onclick="pickGift(this,\'' + G[1] + '\')"><img src="assets/room/' + G[0] + '.webp" alt="" draggable="false"><span class="pin">' + (i + 1) + '</span></button>'; });
+    h += '<div class="lt lt-tint"></div><div class="lt lt-beams"><i class="bm b1"></i><i class="bm b2"></i><i class="bm b3"></i></div><div class="lt lt-flash"></div>';
+    st.innerHTML = h;
+  }
+  function renderVibeMenu(){
+    const m = document.getElementById('vibeMenu'); m.innerHTML = '';
+    Object.keys(VIBES).forEach(k => { const b = document.createElement('button'); b.type = 'button'; b.className = (k === VIBE ? 'sel' : ''); b.innerHTML = '<span>' + VIBES[k][0] + '</span>' + VIBES[k][1]; b.onclick = e => { e.stopPropagation(); setVibe(k, true); toggleVibeMenu(); }; m.appendChild(b); });
+  }
+  function setVibe(k, user){
+    VIBE = k; try { localStorage.setItem(VIBE_KEY, k); } catch (e) {}
+    document.getElementById('chamber').dataset.vibe = k; renderVibeMenu();
+    if (user && window.EgAudio) EgAudio.music('room-' + k);
+  }
+  function toggleVibeMenu(e){ if (e) e.stopPropagation(); document.getElementById('vibeMenu').classList.toggle('on'); }
+  document.addEventListener('click', function(){ var m = document.getElementById('vibeMenu'); if (m) m.classList.remove('on'); });
+  (function(){ var rt; window.addEventListener('resize', function(){ clearTimeout(rt); rt = setTimeout(function(){ if (document.getElementById('screen-gifts').classList.contains('active')) applyLayout(false); }, 120); }); })();
+  setVibe(VIBE, false);
+
+  // ---- tulis surat tambahan langsung dari wall ----
+  let cPaper = 'polos', cFont = 'hand';
+  (function(){
+    const pr = document.getElementById('lc-papers'), fr = document.getElementById('lc-fonts');
+    ['polos','teal','mawar','lavender','butter','langit'].forEach(p => { const b = document.createElement('button'); b.type = 'button'; b.className = 'lc-sw lp lp-' + p + (p === cPaper ? ' sel' : ''); b.dataset.p = p; b.setAttribute('aria-label', 'Kertas ' + p); b.onclick = () => { cPaper = p; paintCompose(); }; pr.appendChild(b); });
+    [['sans','Aa','lf-sans'],['hand','Aa','lf-hand'],['serif','Aa','lf-serif']].forEach(f => { const b = document.createElement('button'); b.type = 'button'; b.className = 'lc-fo ' + f[2] + (f[0] === cFont ? ' sel' : ''); b.dataset.f = f[0]; b.textContent = f[1]; b.onclick = () => { cFont = f[0]; paintCompose(); }; fr.appendChild(b); });
+    document.getElementById('lc-text').addEventListener('input', function(){ document.getElementById('lc-count').textContent = this.value.length + ' / 1500'; });
+  })();
+  function paintCompose(){
+    document.getElementById('lc-paper').className = 'lp lp-' + cPaper + ' lf-' + cFont;
+    document.querySelectorAll('#lc-papers .lc-sw').forEach(b => b.classList.toggle('sel', b.dataset.p === cPaper));
+    document.querySelectorAll('#lc-fonts .lc-fo').forEach(b => b.classList.toggle('sel', b.dataset.f === cFont));
+  }
+  function openCompose(){
+    const u = getStoredUsername(); if (!u || !isValidUsername(u)){ alert('Masuk dulu dengan username ya.'); return; }
+    document.getElementById('lc-err').textContent = ''; paintCompose(); document.getElementById('lcomp-back').classList.add('on'); document.getElementById('lc-text').focus();
+  }
+  function closeCompose(){ document.getElementById('lcomp-back').classList.remove('on'); }
+  async function sendCompose(){
+    const u = getStoredUsername(), t = document.getElementById('lc-text').value.trim(), err = document.getElementById('lc-err'), btn = document.getElementById('lc-send');
+    if (t.length < 10){ err.textContent = 'Tulis minimal 10 karakter ya.'; return; }
+    btn.disabled = true; err.textContent = '';
+    try {
+      await db.ref('letterExtras').push({ user:u, text:t, at:Date.now(), paper:cPaper, font:cFont, subject:'', v:2 });
+      document.getElementById('lc-text').value = ''; document.getElementById('lc-count').textContent = '0 / 1500'; closeCompose();
+      await openLetterWall();
+      const w = document.querySelector('#gift-body .wall'); if (w && w.lastElementChild){ w.lastElementChild.classList.add('lp-new'); w.lastElementChild.scrollIntoView({ behavior:'smooth', block:'center' }); }
+    } catch (e) { console.warn(e); err.textContent = 'Suratmu belum terkirim. Pastikan kamu sudah klaim hadiah ya.'; }
+    btn.disabled = false;
+  }
+
+  // ---- ruang perayaan: layar penuh / putar ----
+  function setFake(on){
+    document.getElementById('chamber').classList.toggle('fake-land', on); document.body.classList.toggle('fake-land', on);
+    if (on){ document.documentElement.style.setProperty('--fw', innerWidth + 'px'); document.documentElement.style.setProperty('--fh', innerHeight + 'px'); }
+    applyLayout(true);
+  }
+  function rotateRoom(){
+    if (document.getElementById('chamber').classList.contains('fake-land')){ setFake(false); return; }
+    if (window.EgFS) EgFS.enter('landscape');
+    setTimeout(function(){ if (matchMedia('(orientation:portrait)').matches) setFake(true); }, 500);   // cadangan: putar tampilan sendiri (iPhone / rotasi terkunci)
+  }
+  function toggleFs(){
+    var d = document, el = d.documentElement;
+    if (d.fullscreenElement || d.webkitFullscreenElement){ (d.exitFullscreen || d.webkitExitFullscreen).call(d); return; }
+    var rf = el.requestFullscreen || el.webkitRequestFullscreen; if (rf){ try { rf.call(el); } catch (e) {} }
+  }
+  function leaveRoom(){ location.href = 'index.html#menu'; }
+  (function(){
+    if (!(document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen)){ var f = document.getElementById('rc-fs'); if (f) f.style.display = 'none'; }
+    try { matchMedia('(orientation:landscape)').addEventListener('change', function(e){ if (e.matches) setFake(false); }); } catch (e) {}
+    window.addEventListener('resize', function(){ if (document.body.classList.contains('fake-land')) setFake(true); });
+  })();
 
   function showScreen(id){
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
     window.scrollTo(0,0);
     if (window.EgFS){ if (id === 'screen-gifts') EgFS.enter('landscape'); else EgFS.unlock(); }
+    if (id !== 'screen-gifts') setFake(false); else applyLayout(true);
+    if (window.EgAudio){ if (id === 'screen-gifts') EgAudio.music('room-' + VIBE); else if (id === 'screen-cake') EgAudio.stopMusic(0.8); else if (id === 'screen-closing') EgAudio.music('closing'); else EgAudio.music('opening'); }
   }
 
   function hashStringToInt(str){
@@ -1124,8 +1280,6 @@
   function giftMsg(body, text){ body.innerHTML = ''; const d = document.createElement('div'); d.className = 'gift-msg'; d.textContent = text; body.appendChild(d); }
 
 
-  (function(){ var sc = document.getElementById('roomScroll'); if (!sc || !('IntersectionObserver' in window)) return;
-    var io = new IntersectionObserver(function(es){ if (es[0].isIntersecting){ sc.scrollLeft = (sc.scrollWidth - sc.clientWidth) / 2; io.disconnect(); } }, { threshold:.2 }); io.observe(sc); })();
   function pickGift(el, key){
     if (el.classList.contains('opening')) return;
     el.classList.add('opening');
@@ -1133,7 +1287,7 @@
     setTimeout(() => { openGift(key); el.classList.remove('opening'); }, 650);
   }
   function openGift(key){
-    $g('gift-extra-btn').style.display = (key === 'letter') ? '' : 'none';
+    $g('gift-pencil').style.display = (key === 'letter') ? '' : 'none';
     if (key === 'letter') return openLetterWall();
     if (key === 'video') return openVideos();
     if (key === 'fanart') return openFanart();

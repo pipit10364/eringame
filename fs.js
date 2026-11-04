@@ -14,5 +14,5 @@
     },
     unlock: function(){ try { screen.orientation && screen.orientation.unlock && screen.orientation.unlock(); } catch(e){} }
   };
-  if (coarse && !installed) document.addEventListener('pointerup', function(){ EgFS.enter(); }, { once:true });
+  if (coarse && !installed){ var tryFs = function(){ if (document.fullscreenElement || document.webkitFullscreenElement){ document.removeEventListener('pointerup', tryFs); return; } EgFS.enter(); }; document.addEventListener('pointerup', tryFs); }
 })();
