@@ -9,6 +9,8 @@
   var MUTE_KEY = 'eg_sound_muted_v1';
   var SFX_BASE = 'assets/sfx/', MUSIC_BASE = 'assets/music/';
   var MUSIC_VOL = 2.0;        // volume musik latar. Lagu ±-17,5 LUFS, 2.0 jadi ±-12 LUFS (setara app musik/video); limiter di master mencegah pecah
+  var SFX_VOL = 2.5;          // efek buatan browser (cling, tap, dll). Puncaknya aslinya cuma -10 s/d -26 dBFS, jauh di bawah suara Erin (-3 dBFS); 2.5 (+8 dB) menyamakan, limiter di master mencegah pecah
+  var VOICE_VOL = 1.3;        // suara Erin, naik sedikit supaya klip yang pelan (±-16 LUFS) lebih terdengar
   var VOICE_COOLDOWN = 7000;  // jeda minimal antar suara Erin (ms)
   var VOICE = {
     start:  ['let-me-cook'],
@@ -33,12 +35,14 @@
     if (!ctx) {
       var AC = w.AudioContext || w.webkitAudioContext;
       if (!AC) return null;
+      // iPhone: tanpa ini WebAudio jalur 'ambient' (lebih pelan, ikut tombol silent). 'playback' = volume media normal
+      try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch (e) {}
       ctx = new AC();
       master = ctx.createGain(); master.gain.value = muted ? 0 : 1;
       var lim = ctx.createDynamicsCompressor(); lim.threshold.value = -2; lim.knee.value = 0; lim.ratio.value = 20; lim.attack.value = 0.003; lim.release.value = 0.2;
       master.connect(lim); lim.connect(ctx.destination);
-      sfxBus = ctx.createGain(); sfxBus.gain.value = 1.0; sfxBus.connect(master);
-      voiceBus = ctx.createGain(); voiceBus.gain.value = 1; voiceBus.connect(master);
+      sfxBus = ctx.createGain(); sfxBus.gain.value = SFX_VOL; sfxBus.connect(master);
+      voiceBus = ctx.createGain(); voiceBus.gain.value = VOICE_VOL; voiceBus.connect(master);
       musicBus = ctx.createGain(); musicBus.gain.value = MUSIC_VOL; musicBus.connect(master);
       musicDuck = ctx.createGain(); musicDuck.gain.value = 1; musicDuck.connect(musicBus);
       noiseBuf = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
@@ -123,9 +127,9 @@
     cling:  function () { tone(1318.5, 0, 0.55, 'sine', 0.22); tone(1975.5, 0.02, 0.45, 'sine', 0.14); tone(2637, 0.04, 0.3, 'sine', 0.07); },
     buzz:   function () { tone(150, 0, 0.22, 'sawtooth', 0.16, 105); tone(158, 0, 0.22, 'square', 0.07, 110); },
     nope:   function () { tone(240, 0, 0.14, 'triangle', 0.14, 170); },
-    tick:   function () { tone(1250, 0, 0.04, 'square', 0.05); },
-    key:    function () { tone(1700, 0, 0.025, 'square', 0.025); },
-    tap:    function () { tone(820, 0, 0.06, 'triangle', 0.10, 620); },
+    tick:   function () { tone(1250, 0, 0.04, 'square', 0.09); },
+    key:    function () { tone(1700, 0, 0.025, 'square', 0.05); },
+    tap:    function () { tone(820, 0, 0.06, 'triangle', 0.16, 620); },
     pop:    function () { tone(520, 0, 0.1, 'sine', 0.16, 820); },
     rotate: function () { tone(700, 0, 0.05, 'triangle', 0.10, 480); tone(1400, 0, 0.02, 'square', 0.03); },
     lock:   function () { tone(300, 0, 0.09, 'triangle', 0.2, 190); tone(1000, 0.05, 0.05, 'square', 0.05); },
