@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content">
 <meta name="theme-color" content="#0b1f1c">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="mobile-web-app-capable" content="yes">
@@ -10,6 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <link rel="apple-touch-icon" href="assets/icon-180.png">
 <script src="fs.js"></script>
+<script src="kbfix.js"></script>
 <script src="config.js"></script>
 <script src="erin-audio.js"></script>
 <script>window.EgAudio=window.EgAudio||new Proxy({},{get:function(){return function(){}}});</script>
@@ -360,6 +361,33 @@
   @media (max-width: 480px){ .back-to-menu-btn{ top: 8px; left: 8px; font-size: 0.68rem; padding: 5px 10px; } }
   @media (prefers-reduced-motion: reduce){ *,*::before,*::after{ animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; scroll-behavior:auto !important; } }
   .username-input::placeholder{ font-size: 0.8rem; }
+
+  /* ================= MODE HP: grid di atas, soal + keyboard tetap di bawah ================= */
+  .ccb-nav, .xw-zb, .xw-kb{ display:none; }
+  body.xw-mobile #screen-vault.active{ position:fixed; inset:0; z-index:20; padding:0; background:var(--bg); align-items:stretch; min-height:0; }
+  body.xw-mobile #screen-vault .arena-wrap{ max-width:none; width:100%; height:100%; display:flex; flex-direction:column; padding:0 !important; min-height:0; }
+  body.xw-mobile #screen-vault .screen-label{ display:none; }
+  body.xw-mobile #screen-vault .arena-stats-row{ margin:0; padding:max(6px,env(safe-area-inset-top)) 8px 6px; gap:6px; flex-wrap:nowrap; justify-content:space-between; }
+  body.xw-mobile #screen-vault .stat-chip{ padding:5px 10px; font-size:0.68rem; }
+  body.xw-mobile .xw-layout{ flex:1; min-height:0; flex-direction:column; align-items:stretch; gap:0; }
+  body.xw-mobile .xw-clues-col{ display:none; }
+  body.xw-mobile .xw-board-col{ flex:1; min-height:0; display:flex; flex-direction:column; width:100%; }
+  body.xw-mobile .xw-board-scroll{ flex:1; min-height:0; max-width:none; max-height:none; border-radius:0; border-left:0; border-right:0; padding:6px; }
+  body.xw-mobile .xw-board-col .cta-row{ margin:6px 8px !important; justify-content:center; gap:8px; flex-wrap:nowrap; }
+  body.xw-mobile .xw-board-col .cta-row .btn{ padding:9px 14px; font-size:0.82rem; }
+  body.xw-mobile .xw-clue-list-btn{ display:inline-flex !important; margin:0; }
+  body.xw-mobile .xw-zb{ display:grid; place-items:center; flex:0 0 36px; height:36px; border-radius:50%; background:var(--bg-tile); border:1px solid var(--border); color:var(--teal); font-size:1.2rem; font-weight:700; cursor:pointer; }
+  body.xw-mobile .xw-check-feedback{ margin:0 8px 4px; }
+  body.xw-mobile .xw-current-clue-bar{ display:flex !important; position:static; transform:none; opacity:1; pointer-events:auto; width:100%; max-width:none; margin:0; border-radius:0; border-left:0; border-right:0; border-color:var(--teal); box-shadow:none; padding:6px 6px; align-items:center; gap:6px; }
+  body.xw-mobile .xw-current-clue-bar .ccb-text{ text-align:center; max-height:3.4em; overflow-y:auto; line-height:1.35; }
+  body.xw-mobile .xw-current-clue-bar .ccb-close{ display:none; }
+  body.xw-mobile .ccb-nav{ display:grid; place-items:center; flex:0 0 40px; height:40px; border-radius:6px; background:var(--bg-tile); border:1px solid var(--border); color:var(--ink); font-size:1.4rem; cursor:pointer; }
+  body.xw-mobile .xw-kb{ display:block; background:#07120f; padding:8px 4px calc(8px + env(safe-area-inset-bottom)); }
+  .xw-kb .kbr{ display:flex; gap:5px; justify-content:center; margin-bottom:6px; }
+  .xw-kb .kbr:last-child{ margin-bottom:0; }
+  .xw-kb .kbk{ flex:1 1 0; max-width:42px; height:46px; border-radius:6px; background:var(--bg-tile); border:1px solid var(--border); color:var(--ink); font:700 1.15rem 'Manrope',sans-serif; display:grid; place-items:center; padding:0; cursor:pointer; user-select:none; -webkit-user-select:none; touch-action:manipulation; }
+  .xw-kb .kbk:active{ background:var(--teal); color:#04120e; }
+  .xw-kb .kbk.kbw{ flex:1.6 1 0; max-width:64px; }
 </style>
 
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -442,8 +470,8 @@
       <div class="screen-label"><div class="eyebrow-mark">LEXICON VAULT</div></div>
 
       <div class="xw-current-clue-bar" id="xw-current-clue-bar">
-        <span class="ccb-num" id="ccb-num">—</span>
-        <span class="ccb-text" id="ccb-text">Ketuk kotak untuk mulai</span>
+        <button type="button" class="ccb-nav" aria-label="Soal sebelumnya" onclick="stepEntry(-1)">‹</button><span class="ccb-num" id="ccb-num">—</span>
+        <span class="ccb-text" id="ccb-text">Ketuk kotak untuk mulai</span><button type="button" class="ccb-nav" aria-label="Soal berikutnya" onclick="stepEntry(1)">›</button>
         <button type="button" class="ccb-dir" id="ccb-dir-btn" onclick="toggleDirection()">⇄ arah</button>
         <button type="button" class="ccb-close" aria-label="Tutup soal" onclick="hideClueBar()">✕</button>
       </div>
@@ -454,13 +482,16 @@
             <div class="xw-grid" id="xw-grid"></div>
           </div>
           <div class="cta-row" style="margin-top:16px;">
-            <button class="btn btn-secondary xw-clue-list-btn" onclick="openClueOverlay()">📋 Daftar Soal</button>
+            <button type="button" class="xw-zb" aria-label="Perkecil" onclick="xwZoom(-4)">−</button>
+            <button class="btn btn-secondary xw-clue-list-btn" onclick="openClueOverlay()">Daftar Soal</button>
             <button class="btn btn-primary" id="xw-check-btn" onclick="checkAnswers()">Cek Jawaban</button>
+            <button type="button" class="xw-zb" aria-label="Perbesar" onclick="xwZoom(4)">+</button>
           </div>
           <div class="xw-check-feedback" id="xw-check-feedback"></div>
         </div>
         <div class="xw-clues-col" id="xw-clues-col"></div>
       </div>
+      <div class="xw-kb" id="xw-kb"></div>
     </div>
   </div>
 
@@ -739,6 +770,8 @@
   let elapsedSec = 0;
   let timerHandle = null;
   let currentEntryIdx = null; // index into ENTRIES
+  const XW_MOBILE = matchMedia('(pointer:coarse)').matches;   // HP/tablet: pakai keyboard sendiri
+  if (XW_MOBILE) document.body.classList.add('xw-mobile');
   let cellInputs = []; // [r][c] -> <input> or null
   let filledCount = 0; // cells filled (for progress display, approximate via entries)
 
@@ -772,7 +805,7 @@
           input.type = 'text';
           input.maxLength = 1;
           input.autocomplete = 'off';
-          input.inputMode = 'text';
+          input.inputMode = XW_MOBILE ? 'none' : 'text';
           input.dataset.r = r; input.dataset.c = c;
           input.addEventListener('focus', () => onCellFocus(r,c));
           input.addEventListener('click', () => onCellClick(r,c));
@@ -919,6 +952,7 @@
   })();
   // Pastikan kotak yang aktif tidak tertutup pop-up.
   function ensureCellVisible(input){
+    if (XW_MOBILE){ centerInBoard(input); return; }
     const bar = document.getElementById('xw-current-clue-bar');
     if (!bar || getComputedStyle(bar).position !== 'fixed') return;
     const rect = input.getBoundingClientRect();
@@ -932,6 +966,43 @@
   // ==================================================================
   // TYPING
   // ==================================================================
+  // ---- mode HP: keyboard sendiri (tidak memakai keyboard bawaan HP) ----
+  function xwActive(){ const a = document.activeElement; if (a && a.tagName === 'INPUT' && a.dataset && a.dataset.r !== undefined) return { r:+a.dataset.r, c:+a.dataset.c }; return lastCell; }
+  function kbType(ch){ const a = xwActive(); if (!a) return; cellInputs[a.r][a.c].value = ch; onCellInput(a.r, a.c); }
+  function kbBack(){
+    const a = xwActive(); if (!a) return; const inp = cellInputs[a.r][a.c];
+    const clear = el => { el.value = ''; el.parentElement.classList.remove('filled','wrong'); updateClueDots(); updateProgress(); };
+    if (inp.value){ clear(inp); return; }
+    moveToPrevCell(a.r, a.c); const p = document.activeElement;
+    if (p && p.tagName === 'INPUT' && p.dataset && p.dataset.r !== undefined) clear(p);
+  }
+  function buildKb(){
+    const kb = document.getElementById('xw-kb'); if (!kb) return; kb.innerHTML = '';
+    ['QWERTYUIOP','ASDFGHJKL','ZXCVBNM'].forEach((row, ri) => {
+      const d = document.createElement('div'); d.className = 'kbr';
+      row.split('').forEach(ch => { const b = document.createElement('button'); b.type = 'button'; b.className = 'kbk'; b.textContent = ch; b.addEventListener('pointerdown', e => { e.preventDefault(); kbType(ch); }); d.appendChild(b); });
+      if (ri === 2){ const b = document.createElement('button'); b.type = 'button'; b.className = 'kbk kbw'; b.setAttribute('aria-label', 'Hapus'); b.textContent = '\u232B'; b.addEventListener('pointerdown', e => { e.preventDefault(); kbBack(); }); d.appendChild(b); }
+      kb.appendChild(d);
+    });
+  }
+  function stepEntry(d){
+    const order = ENTRIES.map((e, i) => i).sort((a, b) => ENTRIES[a].num - ENTRIES[b].num || (ENTRIES[a].dir === 'A' ? -1 : 1));
+    let p = order.indexOf(currentEntryIdx === null ? order[0] : currentEntryIdx); p = (p + d + order.length) % order.length;
+    selectClueByIdx(order[p]);
+  }
+  function centerInBoard(input, force){
+    const sc = document.querySelector('.xw-board-scroll'); if (!sc || !input) return;
+    const sr = sc.getBoundingClientRect(), cr = input.parentElement.getBoundingClientRect(), m = cr.width * 1.5;
+    if (force || cr.left < sr.left + m || cr.right > sr.right - m || cr.top < sr.top + m || cr.bottom > sr.bottom - m)
+      sc.scrollBy({ left:(cr.left + cr.width / 2) - (sr.left + sr.width / 2), top:(cr.top + cr.height / 2) - (sr.top + sr.height / 2), behavior: force ? 'auto' : 'smooth' });
+  }
+  let xwCell = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--xw-cell')) || 30;
+  function xwZoom(d){
+    xwCell = Math.min(44, Math.max(14, xwCell + d)); document.documentElement.style.setProperty('--xw-cell', xwCell + 'px');
+    const a = xwActive(); if (a) setTimeout(() => centerInBoard(cellInputs[a.r][a.c], true), 30);
+  }
+  if (XW_MOBILE) buildKb();
+
   function onCellInput(r,c,ev){
     let v = cellInputs[r][c].value.toUpperCase().replace(/[^A-Z0-9]/g,'');
     cellInputs[r][c].value = v.slice(-1);

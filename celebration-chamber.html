@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content">
 <meta name="theme-color" content="#0b1f1c">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="mobile-web-app-capable" content="yes">
@@ -10,6 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <link rel="apple-touch-icon" href="assets/icon-180.png">
 <script src="fs.js"></script>
+<script src="kbfix.js"></script>
 <script src="config.js"></script>
 <script src="erin-audio.js"></script>
 <script>window.EgAudio=window.EgAudio||new Proxy({},{get:function(){return function(){}}});</script>
@@ -198,6 +199,7 @@
   .chamber{ position:fixed; inset:0; z-index:5; overflow:hidden; background:#0b1f1c; container-type:size; --sa:#fffbe0; --sb:#ffd25e; }
   .chamber::before{ content:''; position:absolute; inset:-6%; background:var(--bgurl) center/cover no-repeat; filter:blur(26px) brightness(.8); }
   .stage{ position:absolute; left:50%; top:50%; width:min(100cqw, calc(100cqh * var(--ar,1.7778))); aspect-ratio:var(--ar,1.7778); transform:translate(-50%,-50%); container-type:inline-size; isolation:isolate; user-select:none; -webkit-user-select:none; }
+  .stage.cover{ width:max(100cqw, calc(100cqh * var(--ar,1.7778))); }
   .stage .bg{ position:absolute; inset:0; width:100%; height:100%; display:block; pointer-events:none; transition:filter .8s; filter:var(--bgf,none); }
   .bal{ position:absolute; height:auto; pointer-events:none; transform-origin:50% 100%; animation:balfloat var(--d,5s) ease-in-out infinite; animation-delay:var(--dl,0s); filter:drop-shadow(0 3px 3px rgba(0,0,0,.15)); }
   @keyframes balfloat{ 0%,100%{ transform:translateY(0) rotate(-2deg) } 50%{ transform:translateY(-1.4cqw) rotate(2deg) } }
@@ -838,7 +840,7 @@
             candles:[[47.6,43],[49.4,43.4],[51.6,42.5],[53.5,43.6],[55.5,43.1]] }
   };
   const GIFT_SET = [['g-pink','letter','Surat'],['g-mint','scrapbook','Scrapbook'],['g-blue','video','Video'],['g-cream','fanart','Fanart']];
-  const VIBES = { piano:['🎹','Piano'], cute:['🌸','Cute'], anime:['✨','Anime'], dj:['🎧','DJ'], metal:['🤘','Metal'] };
+  const VIBES = { piano:'Piano', cute:'Cute', anime:'Anime', dj:'DJ', metal:'Metal' };
   const VIBE_KEY = 'eg_room_vibe_v1';
   let VIBE = (function(){ try { var v = localStorage.getItem(VIBE_KEY); return VIBES[v] ? v : 'piano'; } catch (e) { return 'piano'; } })();
   let curLayout = null;
@@ -850,6 +852,10 @@
   function applyLayout(force){ const k = pickLayout(); if (!k || (!force && k === curLayout)) return; curLayout = k; buildStage(k); }
   function buildStage(k){
     const L = LAYOUTS[k], st = document.getElementById('stage'), ch = document.getElementById('chamber'), f = v => (+v.toFixed(2));
+    const cw = ch.clientWidth, chh = ch.clientHeight, rr = (cw / chh) / L.ratio, cover = rr <= 1.18 && rr >= 0.85;
+    let vis = { l:0, r:100, t:0, b:100 };
+    if (cover){ const sw = Math.max(cw, chh * L.ratio), sh = sw / L.ratio, mx = (sw - cw) / 2 / sw * 100, my = (sh - chh) / 2 / sh * 100; vis = { l:mx, r:100 - mx, t:my, b:100 - my }; }
+    st.classList.toggle('cover', cover);
     st.style.setProperty('--ar', L.ratio); ch.style.setProperty('--bgurl', 'url(' + L.img + ')');
     let seed = 7 + k.length, rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280, h = '';
     h += '<img class="bg" src="' + L.img + '" alt="Ruang perayaan ulang tahun Erin" draggable="false">';
@@ -860,13 +866,13 @@
     h += '</div>';
     const cb = L.cam.box, fx = (L.cam.dot[0] - cb[0]) / cb[2] * 100, fy = (L.cam.dot[1] - cb[1]) / cb[3] * 100;
     h += '<button class="hs cam" aria-label="Photobooth" style="left:' + cb[0] + '%;top:' + cb[1] + '%;width:' + cb[2] + '%;height:' + cb[3] + '%" onclick="pickGift(this,\'photobooth\')"><span class="flash" style="left:' + f(fx) + '%;top:' + f(fy) + '%"></span><span class="pin cp" style="left:' + f(fx) + '%;top:' + f(fy) + '%"></span></button>';
-    L.gifts.forEach((g, i) => { const G = GIFT_SET[i]; h += '<button class="hs gift" aria-label="Kado ' + (i + 1) + ': ' + G[2] + '" style="left:' + f(g[0] - g[2] / 2) + '%;bottom:' + f(100 - g[1]) + '%;width:' + g[2] + '%;--dl:-' + f(i * .8) + 's" onclick="pickGift(this,\'' + G[1] + '\')"><img src="assets/room/' + G[0] + '.webp" alt="" draggable="false"><span class="pin">' + (i + 1) + '</span></button>'; });
+    L.gifts.forEach((g, i) => { const G = GIFT_SET[i]; h += '<button class="hs gift" aria-label="Kado ' + (i + 1) + ': ' + G[2] + '" style="left:' + f(Math.min(Math.max(g[0], vis.l + g[2] / 2 + 1.5), vis.r - g[2] / 2 - 1.5) - g[2] / 2) + '%;bottom:' + f(100 - Math.min(g[1], vis.b - 1.5)) + '%;width:' + g[2] + '%;--dl:-' + f(i * .8) + 's" onclick="pickGift(this,\'' + G[1] + '\')"><img src="assets/room/' + G[0] + '.webp" alt="" draggable="false"><span class="pin">' + (i + 1) + '</span></button>'; });
     h += '<div class="lt lt-tint"></div><div class="lt lt-beams"><i class="bm b1"></i><i class="bm b2"></i><i class="bm b3"></i></div><div class="lt lt-flash"></div>';
     st.innerHTML = h;
   }
   function renderVibeMenu(){
     const m = document.getElementById('vibeMenu'); m.innerHTML = '';
-    Object.keys(VIBES).forEach(k => { const b = document.createElement('button'); b.type = 'button'; b.className = (k === VIBE ? 'sel' : ''); b.innerHTML = '<span>' + VIBES[k][0] + '</span>' + VIBES[k][1]; b.onclick = e => { e.stopPropagation(); setVibe(k, true); toggleVibeMenu(); }; m.appendChild(b); });
+    Object.keys(VIBES).forEach(k => { const b = document.createElement('button'); b.type = 'button'; b.className = (k === VIBE ? 'sel' : ''); b.textContent = VIBES[k]; b.onclick = e => { e.stopPropagation(); setVibe(k, true); toggleVibeMenu(); }; m.appendChild(b); });
   }
   function setVibe(k, user){
     VIBE = k; try { localStorage.setItem(VIBE_KEY, k); } catch (e) {}
@@ -875,7 +881,7 @@
   }
   function toggleVibeMenu(e){ if (e) e.stopPropagation(); document.getElementById('vibeMenu').classList.toggle('on'); }
   document.addEventListener('click', function(){ var m = document.getElementById('vibeMenu'); if (m) m.classList.remove('on'); });
-  (function(){ var rt; window.addEventListener('resize', function(){ clearTimeout(rt); rt = setTimeout(function(){ if (document.getElementById('screen-gifts').classList.contains('active')) applyLayout(false); }, 120); }); })();
+  (function(){ var rt; window.addEventListener('resize', function(){ clearTimeout(rt); rt = setTimeout(function(){ if (document.getElementById('screen-gifts').classList.contains('active')) applyLayout(true); }, 120); }); })();
   setVibe(VIBE, false);
 
   // ---- tulis surat tambahan langsung dari wall ----

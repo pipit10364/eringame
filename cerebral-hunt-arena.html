@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content">
 <meta name="theme-color" content="#0b1f1c">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="mobile-web-app-capable" content="yes">
@@ -10,6 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <link rel="apple-touch-icon" href="assets/icon-180.png">
 <script src="fs.js"></script>
+<script src="kbfix.js"></script>
 <script src="config.js"></script>
 <script src="erin-audio.js"></script>
 <script>window.EgAudio=window.EgAudio||new Proxy({},{get:function(){return function(){}}});</script>
@@ -294,9 +295,9 @@
   .anagram-tile small{ display:block; margin-top:6px; font-size:0.66rem; letter-spacing:0.08em; color:var(--ink-faint); font-weight:500; }
   .anagram-tile.solved{ background:rgba(52,211,153,0.15); border-color:var(--emerald); color:var(--emerald); cursor:default; }
   .anagram-tile.solved:hover{ transform:none; }
-  .solver-backdrop{ position:fixed; inset:0; z-index:200; background:rgba(3,12,10,0.8); display:none; align-items:center; justify-content:center; padding:20px; }
+  .solver-backdrop{ position:fixed; left:0; right:0; top:var(--vvt,0px); height:var(--vvh,100%); z-index:200; background:rgba(3,12,10,0.8); display:none; align-items:flex-start; justify-content:center; padding:16px 20px; overflow-y:auto; }
   .solver-backdrop.show{ display:flex; }
-  .solver-card{ background:var(--bg-panel); border:1px solid var(--gold); border-radius:6px; padding:26px 24px; max-width:420px; width:100%; text-align:center; }
+  .solver-card{ margin:auto; background:var(--bg-panel); border:1px solid var(--gold); border-radius:6px; padding:26px 24px; max-width:420px; width:100%; text-align:center; }
   .solver-letters{ font-family:'JetBrains Mono',monospace; font-weight:700; font-size:clamp(1.3rem,6vw,1.9rem); letter-spacing:0.2em; color:var(--cyan); margin:8px 0 18px; overflow-wrap:anywhere; }
   .solver-card input{ width:100%; background:var(--bg-tile); border:1px solid var(--border); border-radius:4px; padding:12px 14px; color:var(--ink); font-family:'JetBrains Mono',monospace; font-size:1.05rem; text-transform:uppercase; text-align:center; letter-spacing:0.12em; }
   .solver-card input:focus{ outline:none; border-color:var(--teal); }
