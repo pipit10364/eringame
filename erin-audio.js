@@ -8,7 +8,7 @@
   'use strict';
   var MUTE_KEY = 'eg_sound_muted_v1';
   var SFX_BASE = 'assets/sfx/', MUSIC_BASE = 'assets/music/';
-  var MUSIC_VOL = 1.25;       // volume musik latar. Lagu ±-17 LUFS, 1.25 jadi ±-15,5 LUFS (setara app musik/video); limiter di master mencegah pecah
+  var MUSIC_VOL = 2.0;        // volume musik latar. Lagu ±-17,5 LUFS, 2.0 jadi ±-12 LUFS (setara app musik/video); limiter di master mencegah pecah
   var VOICE_COOLDOWN = 7000;  // jeda minimal antar suara Erin (ms)
   var VOICE = {
     start:  ['let-me-cook'],
@@ -35,7 +35,7 @@
       if (!AC) return null;
       ctx = new AC();
       master = ctx.createGain(); master.gain.value = muted ? 0 : 1;
-      var lim = ctx.createDynamicsCompressor(); lim.threshold.value = -4; lim.knee.value = 0; lim.ratio.value = 20; lim.attack.value = 0.003; lim.release.value = 0.2;
+      var lim = ctx.createDynamicsCompressor(); lim.threshold.value = -2; lim.knee.value = 0; lim.ratio.value = 20; lim.attack.value = 0.003; lim.release.value = 0.2;
       master.connect(lim); lim.connect(ctx.destination);
       sfxBus = ctx.createGain(); sfxBus.gain.value = 1.0; sfxBus.connect(master);
       voiceBus = ctx.createGain(); voiceBus.gain.value = 1; voiceBus.connect(master);

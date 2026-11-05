@@ -10,12 +10,16 @@
   #app{ height:100%; display:flex; flex-direction:column; }
   .step{ display:none; flex:1; min-height:0; flex-direction:column; }
   #app[data-step="1"] #st1, #app[data-step="2"] #st2, #app[data-step="3"] #st3{ display:flex; }
-  .stage{ flex:1; min-height:0; display:flex; align-items:center; justify-content:center; padding:10px 10px 4px; }
-  .frame{ position:relative; height:100%; max-width:100%; aspect-ratio:2/3; border-radius:10px; overflow:hidden; background:#000; touch-action:none; box-shadow:0 0 0 1px rgba(255,255,255,.18), 0 8px 30px rgba(0,0,0,.45); }
+  .stage{ flex:1; min-height:0; display:flex; align-items:center; justify-content:center; padding:10px 10px 4px; container-type:size; }
+  .frame{ position:relative; width:min(100cqw, calc(100cqh * var(--arn,0.6667))); aspect-ratio:var(--par,600 / 900); border-radius:10px; overflow:hidden; background:#000; touch-action:none; box-shadow:0 0 0 1px rgba(255,255,255,.18), 0 8px 30px rgba(0,0,0,.45); }
   .frame canvas{ position:absolute; inset:0; width:100%; height:100%; display:block; }
   .ctrl{ display:flex; align-items:center; justify-content:center; gap:10px; flex-wrap:wrap; padding:8px 12px calc(10px + env(safe-area-inset-bottom)); }
   .hint{ text-align:center; font-size:.78rem; color:#8fb3aa; margin:0; padding:0 12px 2px; }
   .btn{ all:unset; cursor:pointer; padding:11px 20px; border-radius:999px; background:#e7c46f; color:#0b1f1c; font-weight:800; font-size:.95rem; text-align:center; }
+  .btn.sm{ padding:8px 14px; font-size:.82rem; }
+  .seg{ display:inline-flex; border-radius:999px; overflow:hidden; box-shadow:inset 0 0 0 1px rgba(255,255,255,.3); }
+  .seg button{ all:unset; cursor:pointer; padding:8px 14px; font-size:.82rem; font-weight:700; color:#cfe3dd; }
+  .seg button.on{ background:#e7c46f; color:#0b1f1c; }
   .btn.ghost{ background:rgba(255,255,255,.1); color:#e9f3f0; box-shadow:inset 0 0 0 1px rgba(255,255,255,.25); }
   .btn:disabled{ opacity:.45; cursor:default; } .btn:focus-visible,.ib:focus-visible{ outline:2px solid #7ee0d3; }
   .ib{ all:unset; cursor:pointer; width:40px; height:40px; border-radius:50%; display:grid; place-items:center; background:rgba(255,255,255,.1); box-shadow:inset 0 0 0 1px rgba(255,255,255,.25); font-size:1.3rem; line-height:1; }
@@ -50,14 +54,14 @@
   <section class="step" id="st1">
     <div class="stage"><div class="frame" id="f1"><canvas id="c1" width="600" height="900"></canvas><canvas id="mini" width="160" height="90"></canvas></div></div>
     <p class="hint">Geser untuk memilih spot foto · cubit atau scroll untuk zoom</p>
-    <div class="ctrl"><button class="ib" id="zOut" aria-label="Zoom out">−</button><input type="range" id="zoom" min="1" max="2.2" step="0.01" value="1.3" aria-label="Zoom"><button class="ib" id="zIn" aria-label="Zoom in">+</button><button class="btn" id="toCam">Lanjut ›</button></div>
+    <div class="ctrl"><button class="ib" id="zOut" aria-label="Zoom out">−</button><input type="range" id="zoom" min="1" max="2.2" step="0.01" value="1.3" aria-label="Zoom"><button class="ib" id="zIn" aria-label="Zoom in">+</button><div class="seg" id="orient"><button id="oP" class="on">Potret</button><button id="oL">Lanskap</button></div><button class="btn" id="toCam">Lanjut ›</button></div>
   </section>
 
   <!-- 2. selfie -->
   <section class="step" id="st2">
     <div class="stage"><div class="frame" id="f2"><canvas id="c2" width="600" height="900"></canvas><div id="status"></div><div id="count"></div><div id="flash"></div></div></div>
-    <p class="hint">Geser foto untuk menggeser posisimu · atur ukuran dengan slider</p>
-    <div class="ctrl"><input type="range" id="psize" min="0.5" max="1.5" step="0.01" value="0.9" aria-label="Ukuran"><button class="shutter" id="shot" aria-label="Ambil foto"></button><button class="btn ghost" id="retry" style="display:none">Coba lagi</button></div>
+    <p class="hint">Geser untuk memindahkan posisimu ke mana saja · cubit atau pakai slider untuk ukuran</p>
+    <div class="ctrl"><button class="btn ghost sm" id="gal">Galeri</button><button class="btn ghost sm" id="flip">Balik kamera</button><input type="range" id="psize" min="0.3" max="2.5" step="0.01" value="0.9" aria-label="Ukuran"><button class="shutter" id="shot" aria-label="Ambil foto"></button><button class="btn ghost sm" id="retry" style="display:none">Coba lagi</button><input type="file" id="file" accept="image/*" hidden></div>
   </section>
 
   <!-- 3. review + doodle -->
@@ -67,7 +71,7 @@
       <button class="sw sel" data-c="#ffffff" style="background:#fff" aria-label="Putih"></button><button class="sw" data-c="#111111" style="background:#111" aria-label="Hitam"></button><button class="sw" data-c="#ff4d6d" style="background:#ff4d6d" aria-label="Merah"></button><button class="sw" data-c="#ffd60a" style="background:#ffd60a" aria-label="Kuning"></button><button class="sw" data-c="#2ec4b6" style="background:#2ec4b6" aria-label="Hijau"></button><button class="sw" data-c="#ff8fab" style="background:#ff8fab" aria-label="Pink"></button>
       <input type="range" id="dsize" min="4" max="48" step="1" value="12" aria-label="Tebal"><button class="tool" id="eraser">Hapus</button><button class="tool" id="undo">↶</button><button class="tool" id="clearInk">Bersihkan</button>
     </div>
-    <div class="ctrl"><button class="btn ghost" id="again">↺ Ulangi</button><button class="btn ghost" id="respot">Ganti spot</button><button class="btn" id="save">Simpan ⬇</button></div>
+    <div class="ctrl"><button class="btn ghost" id="again">Ulangi</button><button class="btn ghost" id="respot">Ganti spot</button><button class="btn" id="save">Simpan</button></div>
   </section>
 </div>
 <video id="vid" playsinline muted autoplay></video>
@@ -77,9 +81,9 @@
 (function(){
 'use strict';
 var $ = function(id){ return document.getElementById(id); };
-var OW = 600, OH = 900, FW = 1200, FH = 1800;
 var SEG_CDN = 'https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation@0.1.1675465747/';
 var app = $('app');
+var land = false, OW = 600, OH = 900, FW = 1200, FH = 1800, AR = 2 / 3;
 function toast(t){ var e = $('toast'); e.textContent = t; e.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(function(){ e.classList.remove('on'); }, 2200); }
 function sleep(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
 
@@ -87,7 +91,15 @@ function sleep(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
 var bg = new Image(), bgReady = false;
 var st = { cx:0, cy:0, z:1.3 };
 var c1 = $('c1'), x1 = c1.getContext('2d'), mini = $('mini'), xm = mini.getContext('2d');
-function cropSize(){ var h = bg.naturalHeight / st.z; return { w:h * 2 / 3, h:h }; }
+var c2 = $('c2'), x2 = c2.getContext('2d');
+var bgPrev = document.createElement('canvas');
+function setOrient(l){
+  land = l; OW = l ? 900 : 600; OH = l ? 600 : 900; FW = l ? 1800 : 1200; FH = l ? 1200 : 1800; AR = OW / OH;
+  c1.width = c2.width = bgPrev.width = OW; c1.height = c2.height = bgPrev.height = OH;
+  var r = document.documentElement.style; r.setProperty('--par', OW + ' / ' + OH); r.setProperty('--arn', AR);
+  $('oP').classList.toggle('on', !l); $('oL').classList.toggle('on', l); render1();
+}
+function cropSize(){ var h = bg.naturalHeight / st.z; return { w:h * AR, h:h }; }
 function clampCrop(){
   st.z = Math.min(2.2, Math.max(1, st.z)); var s = cropSize();
   st.cx = Math.min(Math.max(st.cx, s.w / 2), bg.naturalWidth - s.w / 2);
@@ -96,27 +108,27 @@ function clampCrop(){
 function drawCrop(ctx, W, H){ var s = cropSize(); ctx.drawImage(bg, st.cx - s.w / 2, st.cy - s.h / 2, s.w, s.h, 0, 0, W, H); }
 function render1(){
   if (!bgReady) return; clampCrop(); drawCrop(x1, OW, OH);
-  xm.drawImage(bg, 0, 0, 160, 90); var s = cropSize(), k = 160 / bg.naturalWidth;
-  xm.fillStyle = 'rgba(0,0,0,.45)'; xm.fillRect(0, 0, 160, 90);
+  var s = cropSize(), k = 160 / bg.naturalWidth;
+  xm.drawImage(bg, 0, 0, 160, 90); xm.fillStyle = 'rgba(0,0,0,.45)'; xm.fillRect(0, 0, 160, 90);
   xm.drawImage(bg, st.cx - s.w / 2, st.cy - s.h / 2, s.w, s.h, (st.cx - s.w / 2) * k, (st.cy - s.h / 2) * k, s.w * k, s.h * k);
   xm.strokeStyle = '#e7c46f'; xm.lineWidth = 2; xm.strokeRect((st.cx - s.w / 2) * k, (st.cy - s.h / 2) * k, s.w * k, s.h * k);
   $('zoom').value = st.z;
 }
-bg.onload = function(){ bgReady = true; st.cx = bg.naturalWidth * 0.5; st.cy = bg.naturalHeight * 0.5; render1(); setTimeout(loadSeg, 800); };
+bg.onload = function(){ bgReady = true; st.cx = bg.naturalWidth * 0.5; st.cy = bg.naturalHeight * 0.5; setOrient(false); setTimeout(loadSeg, 800); };
 bg.src = 'assets/room/selfie-bg.webp';
+$('oP').onclick = function(){ setOrient(false); }; $('oL').onclick = function(){ setOrient(true); };
 
-var ptrs = {}, pinch0 = 0, z0 = 1;
-var f1 = $('f1');
-f1.addEventListener('pointerdown', function(e){ f1.setPointerCapture(e.pointerId); ptrs[e.pointerId] = { x:e.clientX, y:e.clientY }; var ids = Object.keys(ptrs); if (ids.length === 2){ pinch0 = dist(); z0 = st.z; } });
+var ptrs = {}, pinch0 = 0, z0 = 1, f1 = $('f1');
+function dist(m){ var a = Object.keys(m).map(function(k){ return m[k]; }); return Math.hypot(a[0].x - a[1].x, a[0].y - a[1].y) || 1; }
+f1.addEventListener('pointerdown', function(e){ f1.setPointerCapture(e.pointerId); ptrs[e.pointerId] = { x:e.clientX, y:e.clientY }; if (Object.keys(ptrs).length === 2){ pinch0 = dist(ptrs); z0 = st.z; } });
 f1.addEventListener('pointermove', function(e){
-  var p = ptrs[e.pointerId]; if (!p) return; var ids = Object.keys(ptrs);
-  if (ids.length === 1){ var k = cropSize().h / f1.clientHeight; st.cx -= (e.clientX - p.x) * k; st.cy -= (e.clientY - p.y) * k; p.x = e.clientX; p.y = e.clientY; }
-  else if (ids.length === 2){ p.x = e.clientX; p.y = e.clientY; if (pinch0) st.z = z0 * dist() / pinch0; }
+  var p = ptrs[e.pointerId]; if (!p) return; var n = Object.keys(ptrs).length;
+  if (n === 1){ var k = cropSize().h / f1.clientHeight; st.cx -= (e.clientX - p.x) * k; st.cy -= (e.clientY - p.y) * k; p.x = e.clientX; p.y = e.clientY; }
+  else if (n === 2){ p.x = e.clientX; p.y = e.clientY; if (pinch0) st.z = z0 * dist(ptrs) / pinch0; }
   render1();
 });
 function endPtr(e){ delete ptrs[e.pointerId]; pinch0 = 0; }
 f1.addEventListener('pointerup', endPtr); f1.addEventListener('pointercancel', endPtr);
-function dist(){ var a = Object.keys(ptrs).map(function(k){ return ptrs[k]; }); return Math.hypot(a[0].x - a[1].x, a[0].y - a[1].y) || 1; }
 f1.addEventListener('wheel', function(e){ e.preventDefault(); st.z *= Math.exp(-e.deltaY * 0.0012); render1(); }, { passive:false });
 $('zoom').addEventListener('input', function(){ st.z = parseFloat(this.value); render1(); });
 $('zIn').onclick = function(){ st.z *= 1.12; render1(); }; $('zOut').onclick = function(){ st.z /= 1.12; render1(); };
@@ -140,12 +152,10 @@ function loadSeg(){
   return segP;
 }
 
-/* ---------- 2. selfie ---------- */
-var vid = $('vid'), stream = null, live = false, loopId = 0;
-var c2 = $('c2'), x2 = c2.getContext('2d');
+/* ---------- 2. selfie: kamera / galeri ---------- */
+var vid = $('vid'), stream = null, live = false, loopId = 0, facing = 'user', mirror = true, galleryMode = false, srcDate = null;
 var pc = document.createElement('canvas'), pctx = pc.getContext('2d');
-var bgPrev = document.createElement('canvas'); bgPrev.width = OW; bgPrev.height = OH;
-var ps = 0.9, px = 0;
+var ps = 0.9, px = 0, py = 0;
 function status(t){ var s = $('status'); s.textContent = t || ''; s.classList.toggle('on', !!t); }
 function buildPerson(src, vw, vh){
   if (pc.width !== vw || pc.height !== vh){ pc.width = vw; pc.height = vh; }
@@ -162,65 +172,96 @@ function buildPerson(src, vw, vh){
 function drawPerson(ctx, W, H){
   var k = W / OW, vw = pc.width, vh = pc.height; if (!vw) return;
   var s = (0.78 * H / vh) * ps, dw = vw * s, dh = vh * s;
-  ctx.save(); ctx.translate(W / 2 + px * k, H); ctx.scale(-1, 1); ctx.drawImage(pc, -dw / 2, -dh, dw, dh); ctx.restore();   // dicerminkan seperti preview selfie
+  ctx.save(); ctx.translate(W / 2 + px * k, H + py * k); ctx.scale(mirror ? -1 : 1, 1); ctx.drawImage(pc, -dw / 2, -dh, dw, dh); ctx.restore();
 }
+function renderStatic(){ x2.drawImage(bgPrev, 0, 0); drawPerson(x2, OW, OH); }
 async function loop(id){
   while (live && id === loopId){
     if (vid.readyState >= 2 && vid.videoWidth){
       var vw = vid.videoWidth, vh = vid.videoHeight;
-      if (segReady){ try { if (!modelSet){ seg.setOptions({ modelSelection: vw >= vh ? 1 : 0 }); modelSet = true; } await seg.send({ image:vid }); } catch (e) {} }
-      buildPerson(vid, vw, vh); x2.drawImage(bgPrev, 0, 0); drawPerson(x2, OW, OH);
+      if (segReady){ try { if (!modelSet){ seg.setOptions({ modelSelection: vw >= vh ? 1 : 0, selfieMode:false }); modelSet = true; } await seg.send({ image:vid }); } catch (e) {} }
+      buildPerson(vid, vw, vh); renderStatic();
     }
     await new Promise(function(r){ requestAnimationFrame(r); });
   }
 }
+function stopCam(){ live = false; loopId++; if (stream){ stream.getTracks().forEach(function(t){ t.stop(); }); stream = null; } }
 async function startCam(){
+  stopCam(); galleryMode = false; modelSet = false; mirror = (facing === 'user');
   $('retry').style.display = 'none'; $('shot').disabled = true; status('Meminta izin kamera…');
   drawCrop(bgPrev.getContext('2d'), OW, OH); x2.drawImage(bgPrev, 0, 0);
-  try { stream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:'user', width:{ ideal:1280 }, height:{ ideal:720 } }, audio:false }); }
+  try { stream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:facing, width:{ ideal:1280 }, height:{ ideal:720 } }, audio:false }); }
   catch (e) { status('Kamera belum bisa dibuka. Izinkan akses kamera, lalu tekan Coba lagi.'); $('retry').style.display = ''; return; }
   vid.srcObject = stream; try { await vid.play(); } catch (e) {}
   live = true; $('shot').disabled = false; var id = ++loopId; loop(id);
-  if (segReady) status(''); else { status('Memuat penghapus latar…'); loadSeg().then(function(ok){ status(ok ? '' : 'Penghapus latar tidak termuat (cek internet). Memakai mode oval.'); if (!ok) setTimeout(function(){ status(''); }, 3500); else status(''); }); }
+  if (segReady) status(''); else { status('Memuat penghapus latar…'); loadSeg().then(function(ok){ status(ok ? '' : 'Penghapus latar tidak termuat (cek internet). Memakai mode oval.'); if (!ok) setTimeout(function(){ status(''); }, 3500); }); }
 }
-function stopCam(){ live = false; loopId++; if (stream){ stream.getTracks().forEach(function(t){ t.stop(); }); stream = null; } }
 $('retry').onclick = startCam;
-$('psize').addEventListener('input', function(){ ps = parseFloat(this.value); });
-var f2 = $('f2'), drag = null;
-f2.addEventListener('pointerdown', function(e){ f2.setPointerCapture(e.pointerId); drag = { x:e.clientX, px:px }; });
-f2.addEventListener('pointermove', function(e){ if (drag){ px = drag.px + (e.clientX - drag.x) * (OW / f2.clientWidth); px = Math.max(-OW * 0.6, Math.min(OW * 0.6, px)); } });
-f2.addEventListener('pointerup', function(){ drag = null; }); f2.addEventListener('pointercancel', function(){ drag = null; });
+$('flip').onclick = function(){ facing = (facing === 'user') ? 'environment' : 'user'; startCam(); };
+$('gal').onclick = function(){ $('file').click(); };
+$('file').onchange = async function(e){
+  var f = e.target.files && e.target.files[0]; e.target.value = ''; if (!f) return;
+  stopCam(); status('Menghapus latar foto…'); $('shot').disabled = true;
+  try {
+    var bmp = await createImageBitmap(f, { imageOrientation:'from-image' });
+    var sc = Math.min(1, 1600 / Math.max(bmp.width, bmp.height)), w = Math.round(bmp.width * sc), h = Math.round(bmp.height * sc);
+    var cv = document.createElement('canvas'); cv.width = w; cv.height = h; cv.getContext('2d').drawImage(bmp, 0, 0, w, h);
+    await loadSeg();
+    if (segReady){ seg.setOptions({ modelSelection: w >= h ? 1 : 0, selfieMode:false }); modelSet = false; await seg.send({ image:cv }); }
+    galleryMode = true; mirror = false; srcDate = new Date(f.lastModified || Date.now());
+    buildPerson(cv, w, h); px = 0; py = 0; renderStatic(); status(segReady ? '' : 'Penghapus latar tidak termuat. Memakai mode oval.'); if (!segReady) setTimeout(function(){ status(''); }, 3500);
+    $('shot').disabled = false;
+  } catch (err) { console.warn(err); status('Foto tidak bisa dibuka. Coba foto lain.'); setTimeout(function(){ status(''); }, 3000); }
+};
+$('psize').addEventListener('input', function(){ ps = parseFloat(this.value); if (galleryMode) renderStatic(); });
+var f2 = $('f2'), P2 = {}, pd0 = 0, ps0 = 1;
+f2.addEventListener('pointerdown', function(e){ f2.setPointerCapture(e.pointerId); P2[e.pointerId] = { x:e.clientX, y:e.clientY }; if (Object.keys(P2).length === 2){ pd0 = dist(P2); ps0 = ps; } });
+f2.addEventListener('pointermove', function(e){
+  var p = P2[e.pointerId]; if (!p) return; var n = Object.keys(P2).length, k = OW / f2.clientWidth;
+  if (n === 1){ px += (e.clientX - p.x) * k; py += (e.clientY - p.y) * k; px = Math.max(-OW * 0.9, Math.min(OW * 0.9, px)); py = Math.max(-OH * 0.7, Math.min(OH * 0.5, py)); p.x = e.clientX; p.y = e.clientY; }
+  else if (n === 2){ p.x = e.clientX; p.y = e.clientY; if (pd0){ ps = Math.max(0.3, Math.min(2.5, ps0 * dist(P2) / pd0)); $('psize').value = ps; } }
+  if (galleryMode) renderStatic();
+});
+function endP2(e){ delete P2[e.pointerId]; pd0 = 0; }
+f2.addEventListener('pointerup', endP2); f2.addEventListener('pointercancel', endP2);
 
 var base = $('base'), bx = base.getContext('2d'), when = null;
 function stamp(ctx, W, H, d){
-  var pad = W * 0.05;
+  var u = Math.min(W, H), pad = u * 0.05;
   var tgl = d.toLocaleDateString('id-ID', { day:'2-digit', month:'short', year:'numeric' }).toUpperCase().replace(/\./g, '');
   var jam = d.toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit', hour12:false }).replace('.', ':');
-  ctx.save(); ctx.font = '700 ' + Math.round(W * 0.038) + 'px "Courier New", ui-monospace, monospace'; ctx.textAlign = 'right'; ctx.textBaseline = 'alphabetic';
-  ctx.shadowColor = 'rgba(255,120,0,.9)'; ctx.shadowBlur = W * 0.012; ctx.fillStyle = '#ffb347'; ctx.fillText(tgl + '  ' + jam, W - pad, H - pad); ctx.restore();
+  ctx.save(); ctx.font = '700 ' + Math.round(u * 0.038) + 'px "Courier New", ui-monospace, monospace'; ctx.textAlign = 'right'; ctx.textBaseline = 'alphabetic';
+  ctx.shadowColor = 'rgba(255,120,0,.9)'; ctx.shadowBlur = u * 0.012; ctx.fillStyle = '#ffb347'; ctx.fillText(tgl + '  ' + jam, W - pad, H - pad); ctx.restore();
+}
+function compose(){
+  base.width = FW; base.height = FH; $('ink').width = FW; $('ink').height = FH; strokes = [];
+  drawCrop(bx, FW, FH); drawPerson(bx, FW, FH); stamp(bx, FW, FH, when);
 }
 $('shot').onclick = async function(){
-  if (!live) return; var b = this; b.disabled = true;
-  for (var n = 3; n > 0; n--){ $('count').textContent = n; await sleep(800); }
-  $('count').textContent = ''; var fl = $('flash'); fl.classList.add('on'); setTimeout(function(){ fl.classList.remove('on'); }, 60);
-  live = false; loopId++; await sleep(150);
-  when = new Date();                       // waktu foto diambil (realtime)
-  var vw = vid.videoWidth, vh = vid.videoHeight;
-  if (segReady){ try { await seg.send({ image:vid }); } catch (e) {} }
-  buildPerson(vid, vw, vh);
-  base.width = FW; base.height = FH; drawCrop(bx, FW, FH); drawPerson(bx, FW, FH); stamp(bx, FW, FH, when);
-  stopCam(); go(3); b.disabled = false;
+  var b = this; b.disabled = true;
+  if (galleryMode){ when = srcDate || new Date(); }
+  else {
+    if (!live){ b.disabled = false; return; }
+    for (var n = 3; n > 0; n--){ $('count').textContent = n; await sleep(800); }
+    $('count').textContent = ''; var fl = $('flash'); fl.classList.add('on'); setTimeout(function(){ fl.classList.remove('on'); }, 60);
+    live = false; loopId++; await sleep(150);
+    when = new Date();                       // waktu foto diambil (realtime)
+    var vw = vid.videoWidth, vh = vid.videoHeight;
+    if (segReady){ try { await seg.send({ image:vid }); } catch (e) {} }
+    buildPerson(vid, vw, vh);
+  }
+  compose(); stopCam(); go(3); b.disabled = false;
 };
 
 /* ---------- 3. review + doodle ---------- */
 var ink = $('ink'), ix = ink.getContext('2d'), strokes = [], cur = null, tool = { color:'#ffffff', size:12, erase:false };
-function ipt(e){ var r = ink.getBoundingClientRect(); return [(e.clientX - r.left) * FW / r.width, (e.clientY - r.top) * FH / r.height]; }
+function ipt(e){ var r = ink.getBoundingClientRect(); return [(e.clientX - r.left) * ink.width / r.width, (e.clientY - r.top) * ink.height / r.height]; }
 function seg2(ctx, s, a, b){
   ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.lineWidth = s.size; ctx.strokeStyle = s.color; ctx.fillStyle = s.color; ctx.globalCompositeOperation = s.erase ? 'destination-out' : 'source-over';
   if (!b){ ctx.beginPath(); ctx.arc(a[0], a[1], s.size / 2, 0, Math.PI * 2); ctx.fill(); } else { ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke(); }
   ctx.globalCompositeOperation = 'source-over';
 }
-function redraw(){ ix.clearRect(0, 0, FW, FH); strokes.forEach(function(s){ s.pts.forEach(function(p, i){ seg2(ix, s, s.pts[i - 1] || p, i ? p : null); }); }); }
+function redraw(){ ix.clearRect(0, 0, ink.width, ink.height); strokes.forEach(function(s){ s.pts.forEach(function(p, i){ seg2(ix, s, s.pts[i - 1] || p, i ? p : null); }); }); }
 ink.addEventListener('pointerdown', function(e){ ink.setPointerCapture(e.pointerId); var p = ipt(e); cur = { color:tool.color, size:tool.size, erase:tool.erase, pts:[p] }; strokes.push(cur); seg2(ix, cur, p, null); });
 ink.addEventListener('pointermove', function(e){ if (!cur) return; var p = ipt(e), q = cur.pts[cur.pts.length - 1]; cur.pts.push(p); seg2(ix, cur, q, p); });
 function endInk(){ cur = null; } ink.addEventListener('pointerup', endInk); ink.addEventListener('pointercancel', endInk);
@@ -236,7 +277,7 @@ $('save').onclick = function(){
     var d = when || new Date(), p2 = function(n){ return ('0' + n).slice(-2); };
     var name = 'erin-selfie-' + d.getFullYear() + p2(d.getMonth() + 1) + p2(d.getDate()) + '-' + p2(d.getHours()) + p2(d.getMinutes()) + '.jpg';
     var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function(){ URL.revokeObjectURL(a.href); }, 4000);
-    toast('Foto tersimpan ✓');
+    toast('Foto tersimpan');
   }, 'image/jpeg', 0.95);
 };
 $('again').onclick = function(){ go(2); }; $('respot').onclick = function(){ go(1); };
@@ -247,7 +288,7 @@ function go(n){
   if (prev === 2 && n !== 2) stopCam();
   app.dataset.step = n; $('back').style.visibility = n > 1 ? 'visible' : 'hidden';
   if (n === 1) render1();
-  if (n === 2){ strokes = []; ix.clearRect(0, 0, FW, FH); startCam(); }
+  if (n === 2){ ix.clearRect(0, 0, ink.width, ink.height); startCam(); }
 }
 $('toCam').onclick = function(){ if (bgReady) go(2); };
 $('back').onclick = function(){ var n = parseInt(app.dataset.step, 10); go(n === 3 ? 2 : 1); };

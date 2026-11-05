@@ -387,6 +387,7 @@
   .xw-kb .kbr:last-child{ margin-bottom:0; }
   .xw-kb .kbk{ flex:1 1 0; max-width:42px; height:46px; border-radius:6px; background:var(--bg-tile); border:1px solid var(--border); color:var(--ink); font:700 1.15rem 'Manrope',sans-serif; display:grid; place-items:center; padding:0; cursor:pointer; user-select:none; -webkit-user-select:none; touch-action:manipulation; }
   .xw-kb .kbk:active{ background:var(--teal); color:#04120e; }
+  .xw-kb .kbr:first-child .kbk{ height:38px; font-size:1rem; color:var(--teal); }
   .xw-kb .kbk.kbw{ flex:1.6 1 0; max-width:64px; }
 </style>
 
@@ -978,10 +979,10 @@
   }
   function buildKb(){
     const kb = document.getElementById('xw-kb'); if (!kb) return; kb.innerHTML = '';
-    ['QWERTYUIOP','ASDFGHJKL','ZXCVBNM'].forEach((row, ri) => {
+    ['1234567890','QWERTYUIOP','ASDFGHJKL','ZXCVBNM'].forEach((row, ri) => {
       const d = document.createElement('div'); d.className = 'kbr';
       row.split('').forEach(ch => { const b = document.createElement('button'); b.type = 'button'; b.className = 'kbk'; b.textContent = ch; b.addEventListener('pointerdown', e => { e.preventDefault(); kbType(ch); }); d.appendChild(b); });
-      if (ri === 2){ const b = document.createElement('button'); b.type = 'button'; b.className = 'kbk kbw'; b.setAttribute('aria-label', 'Hapus'); b.textContent = '\u232B'; b.addEventListener('pointerdown', e => { e.preventDefault(); kbBack(); }); d.appendChild(b); }
+      if (ri === 3){ const b = document.createElement('button'); b.type = 'button'; b.className = 'kbk kbw'; b.setAttribute('aria-label', 'Hapus'); b.textContent = '\u232B'; b.addEventListener('pointerdown', e => { e.preventDefault(); kbBack(); }); d.appendChild(b); }
       kb.appendChild(d);
     });
   }
