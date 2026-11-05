@@ -8,8 +8,8 @@
   'use strict';
   var MUTE_KEY = 'eg_sound_muted_v1';
   var SFX_BASE = 'assets/sfx/', MUSIC_BASE = 'assets/music/';
-  var MUSIC_VOL = 2.0;        // volume musik latar. Lagu ±-17,5 LUFS, 2.0 jadi ±-12 LUFS (setara app musik/video); limiter di master mencegah pecah
-  var SFX_VOL = 2.5;          // efek buatan browser (cling, tap, dll). Puncaknya aslinya cuma -10 s/d -26 dBFS, jauh di bawah suara Erin (-3 dBFS); 2.5 (+8 dB) menyamakan, limiter di master mencegah pecah
+  var MUSIC_VOL = 3.0;        // penguat musik latar SETELAH kompresor musik. Lagu aslinya ±-17,5 LUFS dan dinamis (bagian tenangnya bisa -21 dBFS); dengan kompresor + 3.0 rata-rata jadi ±-9 dan bagian tenangnya ±-11, jadi tetap terdengar di volume HP/laptop yang kecil
+  var SFX_VOL = 4.5;          // efek buatan browser (cling, tap, tick, dll). Aslinya -23 s/d -45 LUFS, jauh di bawah suara Erin (-11 s/d -16) dan musik (-11). Dengan 4.0 plus nilai per efek di bawah jadi sekitar -12 s/d -20 LUFS
   var VOICE_VOL = 1.3;        // suara Erin, naik sedikit supaya klip yang pelan (±-16 LUFS) lebih terdengar
   var VOICE_COOLDOWN = 7000;  // jeda minimal antar suara Erin (ms)
   var VOICE = {
@@ -23,7 +23,7 @@
     prize:  ['omg']
   };
 
-  var ctx = null, master, sfxBus, voiceBus, musicDuck, musicBus, noiseBuf;
+  var ctx = null, master, sfxBus, voiceBus, musicComp, musicDuck, musicBus, noiseBuf;
   var muted = false;
   try { muted = localStorage.getItem(MUTE_KEY) === '1'; } catch (e) {}
   var buffers = {}, pending = {};
@@ -35,16 +35,24 @@
     if (!ctx) {
       var AC = w.AudioContext || w.webkitAudioContext;
       if (!AC) return null;
-      // iPhone: tanpa ini WebAudio jalur 'ambient' (lebih pelan, ikut tombol silent). 'playback' = volume media normal
+      // iPhone: tanpa ini WebAudio jalur 'ambient' (lebih pelan, ikut tombol silent). Di Android/Windows tidak berpengaruh
       try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch (e) {}
       ctx = new AC();
       master = ctx.createGain(); master.gain.value = muted ? 0 : 1;
-      var lim = ctx.createDynamicsCompressor(); lim.threshold.value = -2; lim.knee.value = 0; lim.ratio.value = 20; lim.attack.value = 0.003; lim.release.value = 0.2;
-      master.connect(lim); lim.connect(ctx.destination);
+      var lim = ctx.createDynamicsCompressor(); lim.threshold.value = -3; lim.knee.value = 0; lim.ratio.value = 20; lim.attack.value = 0.001; lim.release.value = 0.2;
+      var ceil = ctx.createGain(); ceil.gain.value = 0.97;   // sisakan sedikit ruang supaya puncak tidak melewati 0 dBFS (pecah)
+      master.connect(lim); lim.connect(ceil); ceil.connect(ctx.destination);
       sfxBus = ctx.createGain(); sfxBus.gain.value = SFX_VOL; sfxBus.connect(master);
-      voiceBus = ctx.createGain(); voiceBus.gain.value = VOICE_VOL; voiceBus.connect(master);
+      // suara Erin: kompresor ringan + penguat, supaya bagian pelannya (mis. bisikan) ikut terdengar
+      voiceBus = ctx.createGain(); voiceBus.gain.value = VOICE_VOL;
+      var voiceComp = ctx.createDynamicsCompressor(); voiceComp.threshold.value = -24; voiceComp.knee.value = 20; voiceComp.ratio.value = 3; voiceComp.attack.value = 0.005; voiceComp.release.value = 0.15;
+      var voiceMk = ctx.createGain(); voiceMk.gain.value = 1.6;
+      voiceBus.connect(voiceComp); voiceComp.connect(voiceMk); voiceMk.connect(master);
       musicBus = ctx.createGain(); musicBus.gain.value = MUSIC_VOL; musicBus.connect(master);
       musicDuck = ctx.createGain(); musicDuck.gain.value = 1; musicDuck.connect(musicBus);
+      // kompresor musik: merapatkan bagian tenang dan keras, jalur: lagu -> musicComp -> musicDuck -> musicBus -> master
+      musicComp = ctx.createDynamicsCompressor(); musicComp.threshold.value = -30; musicComp.knee.value = 20; musicComp.ratio.value = 4; musicComp.attack.value = 0.01; musicComp.release.value = 0.25;
+      musicComp.connect(musicDuck);
       noiseBuf = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
       var d = noiseBuf.getChannelData(0);
       for (var i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
@@ -125,22 +133,22 @@
 
   var FX = {
     cling:  function () { tone(1318.5, 0, 0.55, 'sine', 0.22); tone(1975.5, 0.02, 0.45, 'sine', 0.14); tone(2637, 0.04, 0.3, 'sine', 0.07); },
-    buzz:   function () { tone(150, 0, 0.22, 'sawtooth', 0.16, 105); tone(158, 0, 0.22, 'square', 0.07, 110); },
-    nope:   function () { tone(240, 0, 0.14, 'triangle', 0.14, 170); },
-    tick:   function () { tone(1250, 0, 0.04, 'square', 0.09); },
-    key:    function () { tone(1700, 0, 0.025, 'square', 0.05); },
-    tap:    function () { tone(820, 0, 0.06, 'triangle', 0.16, 620); },
-    pop:    function () { tone(520, 0, 0.1, 'sine', 0.16, 820); },
-    rotate: function () { tone(700, 0, 0.05, 'triangle', 0.10, 480); tone(1400, 0, 0.02, 'square', 0.03); },
-    lock:   function () { tone(300, 0, 0.09, 'triangle', 0.2, 190); tone(1000, 0.05, 0.05, 'square', 0.05); },
-    door:   function () { tone(110, 0, 0.25, 'triangle', 0.22, 70); [523.25, 659.25, 783.99, 1046.5].forEach(function (f, i) { tone(f, 0.08 + i * 0.075, 0.35, 'sine', 0.14); }); },
-    whoosh: function () { noise(0, 0.38, 0.16, 400, 2600); },
+    buzz:   function () { tone(150, 0, 0.22, 'sawtooth', 0.28, 105); tone(158, 0, 0.22, 'square', 0.12, 110); },
+    nope:   function () { tone(240, 0, 0.14, 'triangle', 0.28, 170); },
+    tick:   function () { tone(1250, 0, 0.04, 'square', 0.16); },
+    key:    function () { tone(1700, 0, 0.025, 'square', 0.14); },
+    tap:    function () { tone(820, 0, 0.06, 'triangle', 0.22, 620); },
+    pop:    function () { tone(520, 0, 0.1, 'sine', 0.30, 820); },
+    rotate: function () { tone(700, 0, 0.05, 'triangle', 0.22, 480); tone(1400, 0, 0.02, 'square', 0.08); },
+    lock:   function () { tone(300, 0, 0.09, 'triangle', 0.3, 190); tone(1000, 0.05, 0.05, 'square', 0.10); },
+    door:   function () { tone(110, 0, 0.25, 'triangle', 0.30, 70); [523.25, 659.25, 783.99, 1046.5].forEach(function (f, i) { tone(f, 0.08 + i * 0.075, 0.35, 'sine', 0.20); }); },
+    whoosh: function () { noise(0, 0.38, 0.8, 400, 2600); },
     fanfare: function () {
       [523.25, 659.25, 783.99, 1046.5].forEach(function (f, i) { tone(f, i * 0.09, 0.3, 'triangle', 0.16); });
       [1046.5, 1318.5, 1568].forEach(function (f) { tone(f, 0.42, 0.9, 'sine', 0.12); });
       tone(2093, 0.55, 0.5, 'sine', 0.05); tone(2637, 0.65, 0.5, 'sine', 0.04);
     },
-    chime:  function () { tone(784, 0, 0.35, 'sine', 0.14); tone(1046.5, 0.12, 0.5, 'sine', 0.12); }
+    chime:  function () { tone(784, 0, 0.35, 'sine', 0.20); tone(1046.5, 0.12, 0.5, 'sine', 0.18); }
   };
   var NOTES = { red: 261.63, blue: 329.63, green: 392.0, yellow: 523.25 };
 
@@ -169,7 +177,7 @@
     a.src = MUSIC_BASE + name + '.mp3';
     var node = ctx.createMediaElementSource(a);
     var g = ctx.createGain(); g.gain.value = 0.0001;
-    node.connect(g); g.connect(musicDuck);
+    node.connect(g); g.connect(musicComp);
     var cur = { el: a, node: node, gain: g, name: name };
     musicCur = cur;
     a.addEventListener('error', function () {
@@ -299,7 +307,7 @@
     lock: function () { sfx(FX.lock); haptic(25); },
     rotate: function () { sfx(FX.rotate); },
     whoosh: function () { sfx(FX.whoosh); },
-    note: function (color) { sfx(function () { tone(NOTES[color] || 440, 0, 0.3, 'triangle', 0.2); }); },
+    note: function (color) { sfx(function () { tone(NOTES[color] || 440, 0, 0.3, 'triangle', 0.30); }); },
     _debug: function () { return { loaded: Object.keys(buffers), state: ctx && ctx.state, muted: muted, music: musicName, playing: !!(musicCur && !musicCur.el.paused), t: musicCur ? musicCur.el.currentTime : 0, pending: !!pendingMusic, failed: Object.keys(musicFailed) }; }
   };
 })(window);
